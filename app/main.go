@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"stringconv"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -54,7 +55,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		case "SET":
 			if strings.ToUpper(statement[3]) == "PX"{ //  checking if they added expiry date. 
 				storage[statement[1]] = statement[2]
-				ms := strings.ParseInt(statement[5])
+				ms := stringconv.ParseInt(statement[5])
 				ticker := time.NewTicker(ms * (time.Second/1000))
 				for range ticker.C{
 					delete(storage, statement[1])
