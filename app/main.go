@@ -118,11 +118,11 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 		n,_ := reader.ReadByte()
 		reader.ReadString('\n')
 
-		name := make([]byte, int(n - '0')) // create a buffer to hold the new data 
-		reader.Read(name)
-		fmt.Println(string(name))
+		otherName := make([]byte, int(n - '0')) // create a buffer to hold the new data 
+		reader.Read(otherName)
+		fmt.Println(string(otherName))
 
-		statement = append(statement, string(name))
+		statement = append(statement, string(otherName))
 
 		reader.ReadString('\n') // bypass the last /r/n
 		count--
