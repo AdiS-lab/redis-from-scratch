@@ -21,7 +21,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		reader := bufio.NewReader(conn)
 		t,_ := reader.ReadByte()
 		n,_ := reader.ReadByte()
-		initNum := int(n-'1')
+		initNum := int(n-'0')
 
 		switch string(t){
 		case "*": 
@@ -31,7 +31,8 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 
 			initial,_ := reader.ReadByte()
 			initVal := int(initial - '0')
-			statement = handleRealConnection(reader, conn, initNum, initVal) // normalize number
+			statement = handleRealConnection(reader, conn, initNum-1, initVal) // normalize number
+
 		case "$": statement = handleRealConnection(reader, conn, 1, initNum)
 		default:
 			fmt.Println("Invalid type on first char")
