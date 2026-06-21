@@ -78,8 +78,8 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			}
 		case "RPUSH":
 			listName := statement[1]
-			listVal := statement[2]
-			lists[listName] = append(lists[listName], listVal)
+			listVals := statement[2:]
+			lists[listName] = append(lists[listName], listVals)
 			//create a list if don't exist and append and return the length of list in RESP format
 			conn.Write([]byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
 		default: 
