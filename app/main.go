@@ -100,7 +100,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				start = length + start
 			}
 			else if stop < 0 {
-				start = length + start
+				stop = length + start
 			}
 		
 			interval:=stop-start+1
