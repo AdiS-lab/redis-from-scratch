@@ -83,10 +83,10 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 	}
 }
 
-func wait(key string, ticker time.Ticker){
-	for range ticker.C{
+func wait(key string, clock time.Ticker){
+	for range clock.C{
 		delete(storage, key)
-		ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
+		clock.Stop() // set ticker that when first time runs out, just delete, and then go on.
 	}
 }
 func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initial int) []string {
