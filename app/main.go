@@ -24,10 +24,10 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 
 		switch string(t){
 		case "*": 
-			reader.ReadByte()
-			reader.ReadByte()
-			statement = handleRealConnection(reader, conn, int(n-'0')) // normalize number
-		case "$": statement = handleRealConnection(reader, conn, 1)
+			reader.ReadByte("/n")
+			initial,_ := reader.ReadByte() 
+			statement = handleRealConnection(reader, conn, int(n-'1'), initial) // normalize number
+		case "$": statement = handleRealConnection(reader, conn, 1, n)
 		default:
 			fmt.Println("Invalid type on first char")
 			os.Exit(0)
@@ -44,11 +44,18 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 	}
 }
 
-func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int) []string {
+func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initial int) []string {
 	var statement []string  
+
+	name := make([]byte, int(intial - '0')) // create a buffer to hold the new data 
+	reader.Read(name)
+	statement = append(statement, string(name))
+
 	for count > 0{
+		reader.ReadByte("/n")
 		b,_ := reader.ReadByte() 
-		if b != '$'{
+
+		if string(b) != "$"{
 			fmt.Println("Invalid type inside")
 			os.Exit(0)
 		}
@@ -59,7 +66,6 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int) []stri
 
 		statement = append(statement, string(name))
 
-		reader.ReadByte()
 		reader.ReadByte() // bypass the last /r/n
 		count--
 	}
