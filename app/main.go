@@ -54,7 +54,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			messageStr := string(statement[1])
 			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr)))
 		case "SET":
-			if strings.ToUpper(statement[3]) == "PX"{ //  checking if they added expiry date. 
+			if len(statement) > 3 && strings.ToUpper(statement[3]) == "PX"{ //  checking if they added expiry date. 
 				storage[statement[1]] = statement[2]
 				ms,_ := strconv.Atoi(statement[4])
 				fmt.Println(storage)
