@@ -26,7 +26,7 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
-
+		//_____________ loop through client message ______________________________
 		buf := make([]byte, 1024)  
 		for {
 			_,err := conn.Read(buf)
@@ -35,6 +35,7 @@ func main() {
 			}
 		fmt.Println("made it inside the loop")
 		conn.Write([]byte("+PONG\r\n"))
+		break
 		}
 	}
 }
