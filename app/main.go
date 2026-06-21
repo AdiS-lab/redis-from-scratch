@@ -79,6 +79,7 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 
 	for count > 0{
 		b,_ := reader.ReadByte() 
+		fmt.Println()
 
 		if b != '$'{
 			fmt.Println("Invalid type inside")
@@ -94,6 +95,7 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 		statement = append(statement, string(name))
 
 		reader.ReadByte() // bypass the last /r/n
+		fmt.Println(statement)
 		count--
 	}
 	fmt.Println(statement)
