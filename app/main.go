@@ -11,35 +11,59 @@ import (
 var _ = net.Listen
 var _ = os.Exit
 
-// func dataParser(input string){
-// 	reader := bufio.readByte(conn)
-// 	b,_ = reader.readByte() 
-// }
+// buf := make([]byte, 1024)  create buffer, read stream and assign to buffer, and then do logic based on that
+// n,err := conn.Read(buf)  number of bytes
 
 //_____________ loop through client message ______________________________
-// func handleConnection(conn net.Conn){
-// buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, and then do logic based on that
-// 	for{
-// 		n,err := conn.Read(buf) //  number of bytes
-// 		message := string(buf[:n])
-// 		if err != nil{
-// 		break
-// 		}
-// 		message := string(buf[:n])
-// 		switch message[0]: 
-// 		case "*" 
-// 		case "$" 
-// 		fmt.Println(message)
-// 		fmt.Println(n)
-// 	}
-// }
-
-func handleRealConnection(conn net.Conn){
+func handleConnection(conn net.Conn){ //  conn is a byte slice
 	for{
+		var statement []string
 		reader := bufio.NewReader(conn)
-		b,_ := reader.ReadByte() 
-		fmt.Println(string(b))
+		t,_ := reader.ReadByte()
+		n,_ := reader.ReadByte()
+
+		switch string(t){
+		case "*": 
+			reader.ReadByte()
+			reader.ReadByte()
+			statement = handleRealConnection(reader, conn, int(n-'0'))
+		case "$": statement = handleRealConnection(reader, conn, 1)
+		default:
+			fmt.Println("Invalid type")
+			os.Exit(0)
+		}
+
+		switch statement[0]{
+		case "PING": conn.Write([]byte("+PONG\r\n")) //  have to write back as byte slice
+		case "ECHO":
+			messageStr := string(statement[1])
+			conn.Write([]byte(fmt.Sprintf("+%f\r\n", messageStr)))
+		default: 
+			conn.Write([]byte("+messageNotFound\r\n"))
+		}
 	}
+}
+
+func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int) []string {
+	var statement []string  
+	for count > 0{
+		b,_ := reader.ReadByte() 
+		if b != '$'{
+			fmt.Println("Invalid type")
+			os.Exit(0)
+		}
+
+		n,_ := reader.ReadByte()
+		name := make([]byte, int(n - '0')) // create a buffer to hold the new data 
+		reader.Read(name)
+
+		statement = append(statement, string(name))
+
+		reader.ReadByte()
+		reader.ReadByte() // bypass the last /r/n
+		count--
+	}
+	return statement
 }
 
 func main() {
@@ -57,6 +81,6 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
-		go handleRealConnection(conn) 
+		go handleConnection(conn) 
 	}
 }
