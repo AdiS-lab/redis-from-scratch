@@ -59,10 +59,10 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				ms,_ := strconv.Atoi(statement[4])
 				ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
 				fmt.Println(storage)
-				for range ticker.C{
-				delete(storage, statement[1])
-				ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
-				conn.Write([]byte("+OK\r\n"))
+				go for range ticker.C{
+					delete(storage, statement[1])
+					ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
+					conn.Write([]byte("+OK\r\n"))
 				}
  			}else{
 				storage[statement[1]] = statement[2] // use map to set pair
