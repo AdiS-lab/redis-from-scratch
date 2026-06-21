@@ -34,9 +34,9 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		switch string(t){
 		case "*": 
 			reader.ReadString('$')// by pass the /r/n and $
-			initial,_ := reader.ReadByte()
-			initVal := int(initial - '0')
-			reader.ReadString('\n')
+			initial,_ := reader.ReadString('\n')
+
+			initVal := strconv.Atoi(strings.TrimSpace(intial))
 
 			statement = handleRealConnection(reader, conn, initNum-1, initVal) // normalize number
 
@@ -152,11 +152,11 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 			os.Exit(0)
 		}
 
-		n,_ := reader.ReadByte()
-		reader.ReadString('\n')
+		n,_ := reader.ReadString('\n')
 		fmt.Println(int(n-'0'))
+		size := strconv.Atoi(strings.TrimSpace(n))
 
-		otherName := make([]byte, int(n - '0')) // create a buffer to hold the new data 
+		otherName := make([]byte, int(n. - '0')) // create a buffer to hold the new data 
 		reader.Read(otherName)
 		fmt.Println(string(otherName))
 
