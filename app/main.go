@@ -28,11 +28,14 @@ func main() {
 		}
 		//_____________ loop through client message ______________________________
 		buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, and then do logic based on that
-		for conn != nil{
+		for{
 			_,err := conn.Read(buf)
 			if err != nil{
 				break
+			}else if buf == nil{
+				break
 			}
+		fmt.Println("made it to the end of loop")
 		conn.Write([]byte("+PONG\r\n"))
 		}
 	}
