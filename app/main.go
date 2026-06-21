@@ -10,8 +10,22 @@ import (
 var _ = net.Listen
 var _ = os.Exit
 
-func main() {
 
+
+//_____________ loop through client message ______________________________
+func handleConnection(conn){
+buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, and then do logic based on that
+	for{
+		_,err := conn.Read(buf)
+		if err != nil{
+			break
+		}
+	conn.Write([]byte("+PONG\r\n"))
+	
+	}
+}
+
+func main() {
 	//__________________________ intialize TCP connection _____________________________
 	listener, err := net.Listen("tcp", "0.0.0.0:6379")
 	if err != nil {
@@ -22,21 +36,10 @@ func main() {
 	for{
 		fmt.Println("made it to the start")
 		conn, err := listener.Accept()
-		
-		go handleConnection(conn)
 		if err!= nil{ 
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
-		//_____________ loop through client message ______________________________
-		buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, and then do logic based on that
-		for{
-			_,err := conn.Read(buf)
-			if err != nil{
-				break
-			}
-		conn.Write([]byte("+PONG\r\n"))
-		}
-		fmt.Println("made it to the end")
+		go handleConnection(conn) 
 	}
 }
