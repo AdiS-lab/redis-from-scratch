@@ -75,6 +75,8 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 	statement = append(statement, string(name))
 	reader.ReadString('\n')
 
+	fmt.Println(string(name))
+
 	for count > 0{
 		b,_ := reader.ReadByte() 
 
