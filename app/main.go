@@ -14,6 +14,10 @@ var _ = os.Exit
 // buf := make([]byte, 1024)  create buffer, read stream and assign to buffer, and then do logic based on that
 // n,err := conn.Read(buf)  number of bytes
 
+
+var storage map[string]string{}
+
+
 //_____________ loop through client message ______________________________
 func handleConnection(conn net.Conn){ //  conn is a byte slice
 	for{
@@ -43,6 +47,16 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		case "ECHO":
 			messageStr := string(statement[1])
 			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr)))
+		case "SET":
+			storage[statement[1]] = statement[2] // use map to set pair
+			conn.Write([]byte("+OK\r\n"))
+		case "GET":
+			value, exists := storage[statement[1]]
+			if exists{
+			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n"), len(value), value))
+			}else{
+				conn.Write([]byte("$-1\r\n"))
+			}
 		default: 
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
