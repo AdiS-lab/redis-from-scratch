@@ -59,7 +59,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				ms,_ := strconv.Atoi(statement[4])
 				ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
 				fmt.Println(storage)
-				go wait(statement[1])
+				go wait(statement[1], ticker)
 				conn.Write([]byte("+OK\r\n"))
 
  			}else{
@@ -83,7 +83,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 	}
 }
 
-func wait(key string){
+func wait(key string, ticker time.NewTicker){
 	for range ticker.C{
 		delete(storage, key)
 		ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
