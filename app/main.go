@@ -10,7 +10,10 @@ import (
 var _ = net.Listen
 var _ = os.Exit
 
+func dataParser(input string){
 
+
+}
 
 //_____________ loop through client message ______________________________
 func handleConnection(conn net.Conn){
@@ -23,9 +26,10 @@ buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, a
 		// }else if buf == "PING"{
 		// 	conn.Write([]byte("+PONG\r\n"))
 		// }else if buf == "ECHO"{
-		// 	conn.Write([]byte())
+		// 	conn.Write([]byte("+parsedMessage\r\n"))
 		// }
 		fmt.Println(message)
+		fmt.Println(n)
 	}
 }
 
