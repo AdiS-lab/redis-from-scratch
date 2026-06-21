@@ -42,7 +42,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		case "PING": conn.Write([]byte("+PONG\r\n")) //  have to write back as byte slice
 		case "ECHO":
 			messageStr := string(statement[1])
-			conn.Write([]byte(fmt.Sprintf("+$%s\r\n", messageStr)))
+			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr)))
 		default: 
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
