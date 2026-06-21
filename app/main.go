@@ -19,8 +19,8 @@ func main() {
 		os.Exit(1)
 	}
 	//___________________________ read from multiple clients ___________________________
-
-	for listener{
+	fmt.Println(listener)
+	for listener!= nil{
 		conn, err := listener.Accept()
 		if err!= nil{ 
 			fmt.Println("Error accepting connection: ", err.Error())
