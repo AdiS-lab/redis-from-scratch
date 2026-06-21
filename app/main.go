@@ -83,8 +83,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				lists[listName] = append(lists[listName], listVals[i])
 				//create a list if don't exist and append and return the length of list in RESP format
 			}
-				conn.Write([]byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
-			}
+			conn.Write([]byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
 		default: 
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
