@@ -25,7 +25,7 @@ buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, a
 		// }else if buf == "ECHO"{
 		// 	conn.Write([]byte())
 		// }
-		fmt.Println(bmessageuf)
+		fmt.Println(message)
 	}
 }
 
