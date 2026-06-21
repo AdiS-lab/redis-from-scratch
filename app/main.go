@@ -69,7 +69,7 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 		}
 
 		n,_ := reader.ReadByte()
-		fmt.Println(n)
+		fmt.Println(int(n-'0'))
 		name := make([]byte, int(n - '0')) // create a buffer to hold the new data 
 		reader.Read(name)
 
