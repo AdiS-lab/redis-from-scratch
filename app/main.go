@@ -16,7 +16,8 @@ var _ = os.Exit
 func handleConnection(conn net.Conn){
 buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, and then do logic based on that
 	for{
-		_,err := conn.Read(buf)
+		n,err := conn.Read(buf) //  number of bytes
+		message := string(buf[:n])
 		if err != nil{
 			break}
 		// }else if buf == "PING"{
@@ -24,7 +25,7 @@ buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, a
 		// }else if buf == "ECHO"{
 		// 	conn.Write([]byte())
 		// }
-		fmt.Println(buf)
+		fmt.Println(bmessageuf)
 	}
 }
 
