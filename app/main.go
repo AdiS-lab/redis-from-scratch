@@ -91,11 +91,16 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			length := len(lists[listName])
 			var message string
 
-			if !exists || start >= length || start > stop{
+			if !exists || math.Abs(start) >= length || math.Abs(start) > math.Abs(stop){
 				conn.Write([]byte("*0\r\n"))
 				continue
-			}else if stop>length-1{
+			}else if math.Abs(stop)>length-1{
 				stop = length-1
+			}else if start < 0{
+				start = length + start
+			}
+			else if stop < 0 {
+				start = length + start
 			}
 		
 			interval:=stop-start+1
