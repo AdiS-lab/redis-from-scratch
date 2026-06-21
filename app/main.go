@@ -49,6 +49,8 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr)))
 		case "SET":
 			storage[statement[1]] = statement[2] // use map to set pair
+			fmt.Println(statement)
+			fmt.Println(storage)
 			conn.Write([]byte("+OK\r\n"))
 		case "GET":
 			value, exists := storage[statement[1]]
@@ -69,13 +71,11 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 	name := make([]byte, initial) // create a buffer to hold the new data 
 	reader.Read(name)
 	statement = append(statement, string(name))
-	fmt.Println(statement)
 
 	for count > 0{
 		reader.ReadString('\n')
 
 		b,_ := reader.ReadByte() 
-		fmt.Println(string(b))
 
 		if b != '$'{
 			fmt.Println("Invalid type inside")
@@ -88,13 +88,11 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 		name := make([]byte, int(n - '0')) // create a buffer to hold the new data 
 		reader.Read(name)
 
-		fmt.Println(string(name))
 		statement = append(statement, string(name))
 
 		reader.ReadByte() // bypass the last /r/n
 		count--
 	}
-	fmt.Println(statement)
 	return statement
 }
 
