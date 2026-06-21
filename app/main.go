@@ -32,8 +32,6 @@ func main() {
 			_,err := conn.Read(buf)
 			if err != nil{
 				break
-			}else if buf == nil{
-				break
 			}
 		fmt.Println("made it to the end of loop")
 		conn.Write([]byte("+PONG\r\n"))
