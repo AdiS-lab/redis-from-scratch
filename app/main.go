@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
+	"time"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -44,13 +46,23 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			os.Exit(0)
 		}
 
-		switch statement[0]{
+		switch strings.toUpper(statement[0]){
 		case "PING": conn.Write([]byte("+PONG\r\n")) //  have to write back as byte slice
 		case "ECHO":
 			messageStr := string(statement[1])
 			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr)))
 		case "SET":
-			storage[statement[1]] = statement[2] // use map to set pair
+			if strings.toUppercase(statement[3]) == "PX"{ //  checking if they added expiry date. 
+				storage[statement[1]] = statement[2]
+				ms := int(statement[5] - '0')
+				ticker := time.NewTicker(ms * (time.Second/1000))
+				for range ticker.C{
+					delete(storage, statement[1])
+					ticker.Stop() // set ticker that when first time runs out, just delete, and then go on. 
+				}
+ 			}else{
+				storage[statement[1]] = statement[2] // use map to set pair
+			}
 			fmt.Println(statement)
 			fmt.Println(storage)
 			conn.Write([]byte("+OK\r\n"))
