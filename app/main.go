@@ -25,7 +25,7 @@ func main() {
 	if err != nil {
 		fmt.Println("Error accepting connection: ", err.Error())
 		os.Exit(1)
+	}else {
+		fmt.Println(`+PONG\r\n`)
 	}
-
-	fmt.Println(`+PONG\r\n`)
 }
