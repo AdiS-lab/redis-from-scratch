@@ -60,14 +60,14 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				fmt.Println(storage)
 				for range ticker.C{
 				delete(storage, statement[1])
-				ticker.Stop() // set ticker that when first time runs out, just delete, and then go on. 
+				ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
+				conn.Write([]byte("+OK\r\n"))
 				}
  			}else{
 				storage[statement[1]] = statement[2] // use map to set pair
 			}
 			fmt.Println(statement)
 			fmt.Println(storage)
-			conn.Write([]byte("+OK\r\n"))
 		case "GET":
 			value, exists := storage[statement[1]]
 			if exists{
@@ -105,6 +105,7 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 
 		name := make([]byte, int(n - '0')) // create a buffer to hold the new data 
 		reader.Read(name)
+		fmt.Println(string(name))
 
 		statement = append(statement, string(name))
 
