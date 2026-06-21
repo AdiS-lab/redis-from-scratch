@@ -42,7 +42,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		case "PING": conn.Write([]byte("+PONG\r\n")) //  have to write back as byte slice
 		case "ECHO":
 			messageStr := string(statement[1])
-			conn.Write([]byte(fmt.Sprintf("+%s\r\n", messageStr)))
+			conn.Write([]byte(fmt.Sprintf("$%s\r\n", messageStr)))
 		default: 
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
@@ -70,7 +70,7 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 
 		n,_ := reader.ReadByte()
 		reader.ReadString('\n')
-		
+
 		name := make([]byte, int(n - '0')) // create a buffer to hold the new data 
 		reader.Read(name)
 
