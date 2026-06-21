@@ -20,12 +20,13 @@ func main() {
 	}
 	//___________________________ read from multiple clients ___________________________
 
-	for {
+	for listener{
 		conn, err := listener.Accept()
 		if err!= nil{ 
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
+
 		buf := make([]byte, 1024)  
 		for {
 			_,err := conn.Read(buf)
