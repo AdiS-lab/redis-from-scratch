@@ -35,7 +35,7 @@ var _ = os.Exit
 // }
 
 func handleRealConnection(conn net.Conn){
-	reader := bufio.newReader(conn)
+	reader := bufio.NewReader(conn)
 	b,_ := reader.readByte() 
 	fmt.Println(string(b))
 }
