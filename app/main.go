@@ -31,6 +31,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 
 			initial,_ := reader.ReadByte()
 			initVal := int(initial - '0')
+
 			statement = handleRealConnection(reader, conn, initNum-1, initVal) // normalize number
 
 		case "$": statement = handleRealConnection(reader, conn, 1, initNum)
@@ -57,11 +58,13 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 	reader.Read(name)
 	statement = append(statement, string(name))
 	fmt.Println(statement)
+
 	for count > 0{
 		reader.ReadByte()
 		reader.ReadByte()
 
 		b,_ := reader.ReadByte() 
+		fmt.Println(string(b))
 
 		if string(b) != "$"{
 			fmt.Println("Invalid type inside")
