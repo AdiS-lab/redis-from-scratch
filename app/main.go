@@ -29,7 +29,7 @@ func main() {
 			os.Exit(1)
 	} 
 
-	for conn {
+	for conn!=nil {
 		buf := make([]byte, 1024)
 		response, err := conn.Read(buf)
 		if err != nil{
