@@ -28,11 +28,14 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 	} 
-	
+
 	for conn {
 		buf := make([]byte, 1024)
 		response, err := conn.Read(buf)
-		if response == 'PING' {		
+		if err != nil{
+			fmt.Println("Error reading message: ", err.Error())
+			os.Exit(1)
+		}else if response == 'PING' {		
 			conn.Write([]byte("+PONG\r\n"))
 		}
 	}
