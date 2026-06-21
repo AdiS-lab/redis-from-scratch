@@ -77,6 +77,7 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 		reader.ReadByte() // bypass the last /r/n
 		count--
 	}
+	fmt.Println(statement)
 	return statement
 }
 
