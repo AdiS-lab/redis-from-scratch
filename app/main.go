@@ -57,6 +57,10 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				storage[statement[1]] = statement[2]
 				ms,_ := strconv.Atoi(statement[4])
 				ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
+				fmt.Println(storage)
+				for range ticker.C{
+				delete(storage, statement[1])
+				ticker.Stop() // set ticker that when first time runs out, just delete, and then go on. 
 				}
  			}else{
 				storage[statement[1]] = statement[2] // use map to set pair
@@ -64,9 +68,6 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			fmt.Println(statement)
 			fmt.Println(storage)
 			conn.Write([]byte("+OK\r\n"))
-			for range ticker.C{
-				delete(storage, statement[1])
-				ticker.Stop() // set ticker that when first time runs out, just delete, and then go on. 
 		case "GET":
 			value, exists := storage[statement[1]]
 			if exists{
