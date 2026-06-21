@@ -13,7 +13,7 @@ var _ = os.Exit
 
 
 //_____________ loop through client message ______________________________
-func handleConnection(conn){
+func handleConnection(conn net.Conn){
 buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, and then do logic based on that
 	for{
 		_,err := conn.Read(buf)
