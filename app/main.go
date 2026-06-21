@@ -11,10 +11,10 @@ import (
 var _ = net.Listen
 var _ = os.Exit
 
-func dataParser(input string){
-	reader := bufio.readByte(conn)
-	b,_ = reader.readByte() 
-}
+// func dataParser(input string){
+// 	reader := bufio.readByte(conn)
+// 	b,_ = reader.readByte() 
+// }
 
 //_____________ loop through client message ______________________________
 func handleConnection(conn net.Conn){
