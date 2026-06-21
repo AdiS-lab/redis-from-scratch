@@ -20,6 +20,7 @@ func main() {
 	}
 
 	for{
+		fmt.Println("made it to the start")
 		conn, err := listener.Accept()
 		fmt.Println(conn)
 		if err!= nil{ 
@@ -34,7 +35,6 @@ func main() {
 				break
 			}
 		conn.Write([]byte("+PONG\r\n"))
-		fmt.Println("made it past write")
 		break
 		}
 		fmt.Println("made it to the end")
