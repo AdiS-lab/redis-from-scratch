@@ -20,6 +20,7 @@ func main() {
 			os.Exit(1)
 		}
 	//___________________________ read from multiple clients ___________________________
+		fmt.Println(listener)
 		conn, err := listener.Accept()
 		if err!= nil{ 
 			fmt.Println("Error accepting connection: ", err.Error())
@@ -32,6 +33,7 @@ func main() {
 			if err != nil{
 				break
 			}
+		fmt.Println("made it inside the loop")
 		conn.Write([]byte("+PONG\r\n"))
 		}
 	}
