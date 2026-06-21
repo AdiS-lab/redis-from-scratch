@@ -55,7 +55,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		case "SET":
 			if strings.ToUpper(statement[3]) == "PX"{ //  checking if they added expiry date. 
 				storage[statement[1]] = statement[2]
-				ms,_ := strconv.Atoi(statement[5])
+				ms,_ := strconv.Atoi(statement[4])
 				ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
 				for range ticker.C{
 					delete(storage, statement[1])
@@ -92,7 +92,8 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 
 	for count > 0{
 		b,_ := reader.ReadByte() 
-
+		fmt.Println(statement)
+		
 		if b != '$'{
 			fmt.Println("Invalid type inside")
 			os.Exit(0)
