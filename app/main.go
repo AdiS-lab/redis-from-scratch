@@ -19,7 +19,7 @@ var _ = os.Exit
 
 
 var storage = make(map[string]string)
-
+var lists = make(map[string][]string)
 
 //_____________ loop through client message ______________________________
 func handleConnection(conn net.Conn){ //  conn is a byte slice
@@ -76,6 +76,12 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			}else{
 				conn.Write([]byte("$-1\r\n"))
 			}
+		case "RPUSH":
+			listName := statement[1]
+			listVal := statement[2]
+			lists[listName] = append(lists[listName], listVal)
+			//create a list if don't exist and append and return the length of list in RESP format
+			conn.Write([]byte( ":%d\r\n", ))
 		default: 
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
