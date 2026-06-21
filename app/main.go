@@ -16,7 +16,6 @@ var _ = os.Exit
 
 //_____________ loop through client message ______________________________
 func handleConnection(conn net.Conn){ //  conn is a byte slice
-	fmt.Println(conn)
 	for{
 		var statement []string
 		reader := bufio.NewReader(conn)
@@ -70,6 +69,7 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 		}
 
 		n,_ := reader.ReadByte()
+		fmt.Println(n)
 		name := make([]byte, int(n - '0')) // create a buffer to hold the new data 
 		reader.Read(name)
 
