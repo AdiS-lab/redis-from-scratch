@@ -156,7 +156,7 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 		fmt.Println(int(n-'0'))
 		size := strconv.Atoi(strings.TrimSpace(n))
 
-		otherName := make([]byte, int(n. - '0')) // create a buffer to hold the new data 
+		otherName := make([]byte, size) // create a buffer to hold the new data 
 		reader.Read(otherName)
 		fmt.Println(string(otherName))
 
