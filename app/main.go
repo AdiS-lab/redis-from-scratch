@@ -15,7 +15,7 @@ var _ = os.Exit
 // n,err := conn.Read(buf)  number of bytes
 
 
-var storage= make(map[string]string)
+var storage := make(map[string]string)
 
 
 //_____________ loop through client message ______________________________
@@ -79,7 +79,7 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 
 	for count > 0{
 		b,_ := reader.ReadByte() 
-=
+
 		if b != '$'{
 			fmt.Println("Invalid type inside")
 			os.Exit(0)
