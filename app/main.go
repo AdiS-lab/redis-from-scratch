@@ -87,20 +87,26 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		case "LRANGE":
 			listName := statement[1]
 			_, exists := lists[listName]
-			start,_ := strconv.ParseInt(statement[2], 10, 64)
-			stop,_ := strconv.ParseInt(statement[3], 10, 64)
+			start,_ := strconv.Atoi(statement[2])
+			stop,_ := strconv.Atoi(statement[3])
 			length := len(lists[listName])
 			var message string
 
-			if !exists || math.Abs(start) >= length || math.Abs(start) > math.Abs(stop){
+			if !exists || start >= length || start >stop{
 				conn.Write([]byte("*0\r\n"))
 				continue
 			}else if math.Abs(stop)>length-1{
 				stop = length-1
 			}else if start < 0{
 				start = length + start
+				if start <0{
+					start = 0 
+				}
 			}else if stop < 0 {
 				stop = length + start
+				if stop < 0{
+					stop = 0
+				}
 			}
 		
 			interval:=stop-start+1
