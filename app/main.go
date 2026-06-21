@@ -17,22 +17,22 @@ var _ = os.Exit
 // }
 
 //_____________ loop through client message ______________________________
-func handleConnection(conn net.Conn){
-buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, and then do logic based on that
-	for{
-		n,err := conn.Read(buf) //  number of bytes
-		message := string(buf[:n])
-		if err != nil{
-		break
-		}
-		message := string(buf[:n])
-		switch message[0]: 
-		case "*" 
-		case "$" 
-		fmt.Println(message)
-		fmt.Println(n)
-	}
-}
+// func handleConnection(conn net.Conn){
+// buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, and then do logic based on that
+// 	for{
+// 		n,err := conn.Read(buf) //  number of bytes
+// 		message := string(buf[:n])
+// 		if err != nil{
+// 		break
+// 		}
+// 		message := string(buf[:n])
+// 		switch message[0]: 
+// 		case "*" 
+// 		case "$" 
+// 		fmt.Println(message)
+// 		fmt.Println(n)
+// 	}
+// }
 
 func handleRealConnection(conn net.Conn){
 	reader := bufio.newReader(conn)
