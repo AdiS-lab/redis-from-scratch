@@ -106,7 +106,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 					stop = 0
 				}
 			}
-			if !exists || start >= length || start>stop{
+			if !exists || start > length || start>stop{
 				conn.Write([]byte("*0\r\n"))
 				continue
 			}
