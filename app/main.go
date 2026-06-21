@@ -24,22 +24,12 @@ func main() {
 
 	conn, err := listener.Accept()
 
-	if err != nil {
-			fmt.Println("Error accepting connection: ", err.Error())
-			os.Exit(1)
-	} 
-
-	for conn {
-		buf := make([]byte, 1024)
-		res, err := conn.Read(buf)
-
+	buf := make([]byte, 1024)  
+	for {
+		_,err := conn.Read(buf)
 		if err != nil{
-			fmt.Println("Error reading message: ", err.Error())
-			os.Exit(1)
-
-		}else if buf == "PING" {		
-			conn.Write([]byte("+PONG\r\n"))
+			break
 		}
-	}
+	conn.Write([]byte("+PONG\r\n"))
 
 }
