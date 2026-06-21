@@ -36,7 +36,9 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 
 			statement = handleRealConnection(reader, conn, initNum-1, initVal) // normalize number
 
-		case "$": statement = handleRealConnection(reader, conn, 1, initNum)
+		case "$": 
+			reader.ReadString('\n')
+			statement = handleRealConnection(reader, conn, 1, initNum)
 		default:
 			fmt.Println("Invalid type on first char")
 			os.Exit(0)
