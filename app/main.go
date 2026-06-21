@@ -31,12 +31,13 @@ func main() {
 
 	for conn {
 		buf := make([]byte, 1024)
-		response, err := conn.Read(buf)
+		res, err := conn.Read(buf)
 
 		if err != nil{
 			fmt.Println("Error reading message: ", err.Error())
 			os.Exit(1)
-		}else if response == "PING" {		
+
+		}else if buf == "PING" {		
 			conn.Write([]byte("+PONG\r\n"))
 		}
 	}
