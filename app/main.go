@@ -35,7 +35,6 @@ func main() {
 				break
 			}
 		conn.Write([]byte("+PONG\r\n"))
-		break
 		}
 		fmt.Println("made it to the end")
 	}
