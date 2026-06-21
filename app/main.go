@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"os"
@@ -11,8 +12,8 @@ var _ = net.Listen
 var _ = os.Exit
 
 func dataParser(input string){
-
-
+	reader := bufio.readByte(conn)
+	b,_ = reader.readByte() 
 }
 
 //_____________ loop through client message ______________________________
@@ -22,15 +23,21 @@ buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, a
 		n,err := conn.Read(buf) //  number of bytes
 		message := string(buf[:n])
 		if err != nil{
-			break}
-		// }else if buf == "PING"{
-		// 	conn.Write([]byte("+PONG\r\n"))
-		// }else if buf == "ECHO"{
-		// 	conn.Write([]byte("+parsedMessage\r\n"))
-		// }
+		break
+		}
+		message := string(buf[:n])
+		switch message[0]: 
+		case "*" 
+		case "$" 
 		fmt.Println(message)
 		fmt.Println(n)
 	}
+}
+
+func handleRealConnection(conn net.Conn){
+	reader := bufio.newReader(conn)
+	b,_ = reader.readByte() 
+	fmt.Println(string(b))
 }
 
 func main() {
@@ -48,6 +55,6 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
-		go handleConnection(conn) 
+		go handleRealConnection(conn) 
 	}
 }
