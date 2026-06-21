@@ -23,6 +23,10 @@ func main() {
 	}
 
 	conn, err := listener.Accept()
+	if err!= nil{ 
+		fmt.Println("Error accepting connection: ", err.Error())
+		os.Exit(1)
+	}
 
 	buf := make([]byte, 1024)  
 	for {
