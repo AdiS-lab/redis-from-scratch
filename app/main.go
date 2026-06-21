@@ -37,5 +37,6 @@ func main() {
 		fmt.Println("made it past write")
 		break
 		}
+		fmt.Println("made it to the end")
 	}
 }
