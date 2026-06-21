@@ -23,6 +23,7 @@ var storage = make(map[string]string)
 
 //_____________ loop through client message ______________________________
 func handleConnection(conn net.Conn){ //  conn is a byte slice
+	ftm.Println(conn)
 	for{
 		var statement []string
 		reader := bufio.NewReader(conn)
