@@ -83,6 +83,30 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				//create a list if don't exist and append and return the length of list in RESP format
 			}
 			conn.Write([]byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
+		case "LRANGE":
+			listName := statement[1]
+			_, exists := lists[listName]
+			start,_ := strconv.Atoi(statement[2])
+			stop,_ := strconv.Atoi(statement[3])
+			length := len(lists[listName])
+			var message string
+
+			if !exists || start >= length || start > stop{
+				conn.Write([]byte("*0\r\n"))
+				continue
+			}else if stop>length{
+				stop = length
+			}
+		
+			interval:=stop-start+1
+			message = (Sprintf("*%d\r\n", interval ))
+			for i:=start; i<=stop; i++ {
+				val := lists[listName][i]
+				message += Sprintf("$%d\r\n%s\r\n", len(val), val) 
+			}
+			conn.Write([]byte(message))	
+			
+
 		default: 
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
