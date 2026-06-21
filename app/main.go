@@ -24,9 +24,9 @@ var storage = make(map[string]string)
 //_____________ loop through client message ______________________________
 func handleConnection(conn net.Conn){ //  conn is a byte slice
 	fmt.Println(conn)
+	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward 
 	for{
 		var statement []string
-		reader := bufio.NewReader(conn)
 		t,_ := reader.ReadByte()
 		n,_ := reader.ReadByte()
 		initNum := int(n-'0')
@@ -83,7 +83,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 	}
 }
 
-func wait(key string, ticker time.NewTicker){
+func wait(key string, ticker time.Ticker){
 	for range ticker.C{
 		delete(storage, key)
 		ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
