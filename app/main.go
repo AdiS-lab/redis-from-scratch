@@ -99,7 +99,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			}
 		
 			interval:=stop-start+1
-			message = (Sprintf("*%d\r\n", interval ))
+			message = Sprintf("*%d\r\n", interval )
 			for i:=start; i<=stop; i++ {
 				val := lists[listName][i]
 				message += Sprintf("$%d\r\n%s\r\n", len(val), val) 
