@@ -33,8 +33,8 @@ func main() {
 			if err != nil{
 				break
 			}
-		fmt.Println("made it to the end of loop")
 		conn.Write([]byte("+PONG\r\n"))
+		break
 		}
 	}
 }
