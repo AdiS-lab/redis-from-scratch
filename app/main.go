@@ -98,8 +98,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				stop = length-1
 			}else if start < 0{
 				start = length + start
-			}
-			else if stop < 0 {
+			}else if stop < 0 {
 				stop = length + start
 			}
 		
