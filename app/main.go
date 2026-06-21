@@ -25,12 +25,10 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 
 		switch string(t){
 		case "*": 
-			reader.ReadByte()
-			reader.ReadByte()
-			reader.ReadByte() // by pass the /r/n and $
-
+			reader.ReadString('$')// by pass the /r/n and $
 			initial,_ := reader.ReadByte()
 			initVal := int(initial - '0')
+			reader.ReadString('\n')
 
 			statement = handleRealConnection(reader, conn, initNum-1, initVal) // normalize number
 
@@ -44,7 +42,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		case "PING": conn.Write([]byte("+PONG\r\n")) //  have to write back as byte slice
 		case "ECHO":
 			messageStr := string(statement[1])
-			conn.Write([]byte(fmt.Sprintf("+%f\r\n", messageStr)))
+			conn.Write([]byte(fmt.Sprintf("+%s\r\n", messageStr)))
 		default: 
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
@@ -60,13 +58,12 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 	fmt.Println(statement)
 
 	for count > 0{
-		reader.ReadByte()
-		reader.ReadByte()
+		reader.ReadString('$')
 
 		b,_ := reader.ReadByte() 
 		fmt.Println(string(b))
 
-		if string(b) != "$"{
+		if b != '$'{
 			fmt.Println("Invalid type inside")
 			os.Exit(0)
 		}
