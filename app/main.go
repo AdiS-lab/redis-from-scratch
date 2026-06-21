@@ -19,8 +19,12 @@ buf := make([]byte, 1024)  // create buffer, read stream and assign to buffer, a
 		_,err := conn.Read(buf)
 		if err != nil{
 			break
+		}else if buf == "PING"{
+			conn.Write([]byte("+PONG\r\n"))
+		}else if buf == "ECHO"{
+			conn.Write([]byte())
 		}
-	conn.Write([]byte("+PONG\r\n"))
+		fmt.Println(buf)
 	
 	}
 }
