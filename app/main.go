@@ -15,7 +15,7 @@ var _ = os.Exit
 // n,err := conn.Read(buf)  number of bytes
 
 
-var storage map[string]string{}
+var storage map[string]string
 
 
 //_____________ loop through client message ______________________________
