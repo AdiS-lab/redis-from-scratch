@@ -56,7 +56,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			if strings.ToUpper(statement[3]) == "PX"{ //  checking if they added expiry date. 
 				storage[statement[1]] = statement[2]
 				ms,_ := strconv.Atoi(statement[5])
-				ticker := time.NewTicker(ms * (time.Second/1000))
+				ticker := time.NewTicker(timeDuration(ms) * time.Millisecond)
 				for range ticker.C{
 					delete(storage, statement[1])
 					ticker.Stop() // set ticker that when first time runs out, just delete, and then go on. 
