@@ -180,12 +180,13 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 }
 
 
-func createArr(array []string, first int, last int) { // used as a template to create arrays to send back
-	interval:= last - first
+func createArr(array []string, first int, last int) (string){ // used as a template to create arrays to send back
+	index := first
+	interval := last - index
 	message := fmt.Sprintf("*%d\r\n", interval)
 
-	for first; first < last; first++ {
-		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[first]), array[first])
+	for index; first < last; index++ {
+		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[index]), array[index])
 	}	
 	return message 
 }
