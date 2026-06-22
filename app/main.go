@@ -124,7 +124,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 					sendArr(lists[listName], 0, lengthList)
 					lists[listName] = []string{}
 				}else{
-					count := strconv.Atoi(statement[2])
+					count,_ := strconv.Atoi(statement[2])
 					sendArr(lists[listName], 0, count)
 					lists[listName] = lists[listName][0:count]
 				}
