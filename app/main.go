@@ -87,7 +87,9 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				check = false
 
 				watchedModified := false
-				for key, value := range watchedKeys{
+				for key, value := range watchedKeys{ 
+					fmt.Println(value) 
+					fmt.Println(storage[key])
 					_,exists := storage[key]
 					if (exists && value != storage[key]){ // check if key + mod val is there in storage
 						watchedModified = true
