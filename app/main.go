@@ -188,7 +188,7 @@ func waitChange(listName string, timeout float64, conn net.Conn){
 	fmt.Println(timeout)
 	fmt.Println("made it inside WaitChange")
 	ticker := time.NewTicker(10 * time.Millisecond)
-	deadline := time.Now().Add(time.Duration(timeout) * time.Second)
+	deadline := time.Now().Add(time.Duration(timeout*1000) * time.Millisecond)
 	fmt.Println(deadline)
 
 	for range ticker.C{ // ticker.C is a channel that sends something to go every so seconds. we want to check it's range (?)
