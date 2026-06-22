@@ -185,12 +185,14 @@ func LPOP(listName string, sliceNum int, conn net.Conn){
 }
 //__________________ poll and wait to see if length updates ________________________
 func waitChange(listName string, timeout int, conn net.Conn){
+	ftm.Println(timeout)
 	fmt.Println("made it inside WaitChange")
 	ticker := time.NewTicker(10 * time.Millisecond)
 	deadline := time.Now().Add(time.Duration(timeout) * time.Second)
 	fmt.Println(deadline)
 
 	for range ticker.C{ // ticker.C is a channel that sends something to go every so seconds. we want to check it's range (?)
+		if fmt.Println(time.Now())
 		if(len(lists[listName]) > 0){
 			fmt.Println("made it to valid")
 			val := lists[listName][0]
