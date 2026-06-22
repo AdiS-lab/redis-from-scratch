@@ -49,13 +49,13 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			fmt.Println("Invalid type on first char")
 			os.Exit(0)
 		}
+		input := statement[0]
 
-
-		if (isQueue == true && len(statement)>0 && strings.ToUpper(statement[0]) != "EXEC"){
+		if (isQueue == true && len(statement)>0 && input != "EXEC" && input != "GET"){
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
 		
-		}else if (isQueue == true && len(statement)>0 && strings.ToUpper(statement[0]) == "EXEC"){
+		}else if (isQueue == true && len(statement)>0 && input == "EXEC"){
 			isQueue = false
 			writeArr := []string{}
 			message := ""
