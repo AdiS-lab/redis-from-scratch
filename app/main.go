@@ -158,6 +158,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		case "INCR":
 			storageKey := statement[1]
 			value, exists := storage[storageKey]
+			fmt.Println(storage[storageKey])
 			fmt.Println(value)
 			if exists == false {
 				fmt.Println("making it here then failing")
