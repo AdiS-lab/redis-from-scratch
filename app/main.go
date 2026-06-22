@@ -61,6 +61,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				writeVal := execute(queue[i], conn)
 				writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
 			}
+			fmt.Println(writeArr)
 			message := createArr(writeArr, 0, len(writeArr))
 			conn.Write([]byte(message))
 
