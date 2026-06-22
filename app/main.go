@@ -19,13 +19,13 @@ var _ = os.Exit
 
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
+var watchedKeys = make(map[string]string)
 var check bool
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	var queue [][]string
-	watchedKeys := []string{}
 	isQueue :=  false
 	check = false
 	for {
@@ -63,7 +63,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				conn.Write([]byte("-ERR WATCH inside MULTI is not allowed\r\n"))
 			}else{
 				for i:=1; i<len(statement); i++ {
-					watchedKeys = append(watchedKeys, statement[i])
+					watchedKeys[statement[i]] = storage[statement[i]]
 				}
 				conn.Write([]byte("+OK\r\n"))
 			}
@@ -84,23 +84,37 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				isQueue = false
 				conn.Write([]byte("*0\r\n"))
 			}else{
-			isQueue = false
-			check = false
-			writeArr := []string{}
-			message := ""
-			fmt.Println(queue)
-			for i:=0; i<len(queue); i++ {
-				writeVal := execute(queue[i], conn)
-				writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
-			}
-			count := len(writeArr)
-			message += fmt.Sprintf("*%d\r\n", count)
-			for j:=0; j<count; j++ {
-				message+=writeArr[j]
-			}
-			fmt.Println(message)
-			conn.Write([]byte(message))
-			queue = [][]string{}
+				isQueue = false
+				check = false
+
+				watchedModified := false
+				for key, value := range watchedKeys{
+					_,exists := storage[key]
+					if (exists && value != storage[key]){ // check if key + mod val is there in storage
+						watchedModified = true
+					}
+				}
+				if(watchedModified){
+					conn.Write([]byte("*-1\r\n"))
+					queue = [][]string{}
+				}else{
+					// find every key inside watched, and then check if that exists on storage
+					writeArr := []string{}
+					message := ""
+					fmt.Println(queue)
+					for i:=0; i<len(queue); i++ {
+						writeVal := execute(queue[i], conn)
+						writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
+					}
+					count := len(writeArr)
+					message += fmt.Sprintf("*%d\r\n", count)
+					for j:=0; j<count; j++ {
+					message+=writeArr[j]
+					}
+					fmt.Println(message)
+					conn.Write([]byte(message))
+					queue = [][]string{}
+				}	
 			}
 	
 		}else if (isQueue == true && len(statement)>0){
@@ -289,7 +303,7 @@ func waitChange(listName string, timeout float64, conn net.Conn, ch1 chan string
 	deadline := time.Now().Add(time.Duration(timeout*1000) * time.Millisecond)
 	fmt.Println(deadline)
 
-	for range ticker.C { // ticker.C is a channel that sends something to go every so seconds. we want to check it's range (?)
+	for range ticker.C { // what does ticker c represent?
 		if len(lists[listName]) > 0 {
 			val := lists[listName][0]
 			lists[listName] = []string{}

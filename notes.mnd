@@ -3,3 +3,15 @@ time.Sleep(timeDuration) --> ch := make(chan string)
 time.Ticker(timeDuration) --> for range ticker.C()
 
 BLPOP --> when duration is 0 wait indefinitely for response, otherwise add 
+
+Questions:
+what does ticker.C mean?
+
+traversing objects
+
+var objName = make(map[string]string) --> map[key]val
+delete(obj, key)
+for key, value range object{
+
+}
+obj[] = val
