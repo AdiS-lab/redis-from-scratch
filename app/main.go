@@ -111,7 +111,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				conn.Write([]byte(":0\r\n" ))
 			}
 			
-		case "LPOP":
+		case "LPOP": // to remove the first values when given something like LPOP 1 
 			listName := statement[1]
 			_, exists := lists[listName]
 			lengthList = len(lists[listName])
@@ -125,8 +125,8 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 					sendArr(lists[listName])
 				}else{
 					count = statement[2]
-					lists[listName] = lists[listName][count:]
-					sendArr(lists[listName][count:])
+					lists[listName] = lists[listName][0:count]
+					sendArr(lists[listName], 0, count)
 				}
 				
 			}else{
@@ -135,7 +135,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(tempVal), tempVal)))
 			}
 		
-		case "LRANGE":
+		case "LRANGE": //  to find the range when given smth like LRANGE 0 5 
 			listName := statement[1]
 			_, exists := lists[listName]
 			start,_ := strconv.Atoi(statement[2])
@@ -163,13 +163,14 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				continue
 			}
 		
-			interval:=stop-start+1
-			message = fmt.Sprintf("*%d\r\n", interval )
-			for i:=start; i<=stop; i++ {
-				val := lists[listName][i]
-				message += fmt.Sprintf("$%d\r\n%s\r\n", len(val), val) 
-			}
-			conn.Write([]byte(message))	
+			// interval:=stop-start+1
+			// message = fmt.Sprintf("*%d\r\n", interval )
+			// for i:=start; i<=stop; i++ {
+			// 	val := lists[listName][i]
+			// 	message += fmt.Sprintf("$%d\r\n%s\r\n", len(val), val) 
+			// }
+			// conn.Write([]byte(message))	
+			sendArr(lists[listName],start,stop+1)
 			
 
 		default: 
@@ -179,9 +180,11 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 }
 
 
-func sendArr(array []string) {
-	message := fmt.Sprintf("*%d\r\n", len(array))
-	for(i:=0; i<len(array); i++){
+func sendArr(array []string, first int, last int) {
+	interval:= last - first
+	message := fmt.Sprintf("*%d\r\n", interval)
+
+	for first; first < last; first++ {
 		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[i]), array[i])
 	}	
 	conn.Write([]byte(message))
