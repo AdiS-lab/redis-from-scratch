@@ -65,7 +65,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}else{
 				conn.Write([]byte("-ERR DISCARD without MULTI\r\n"))
 			}
-		}else if (isQueue == true && len(statement)>0 && input == "EXEC"){
+		}else if (input == "EXEC"){
 			if isQueue == false{
 				conn.Write([]byte("-ERR EXEC without MULTI\r\n"))
 			}else if(len(queue) == 0){ 
