@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"reflect"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
