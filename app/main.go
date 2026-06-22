@@ -160,7 +160,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			value, exists := storage[storageKey]
 			fmt.Println(storage[storageKey])
 			fmt.Println(value)
-			fmt.Println(storageKey)
+			fmt.Println(storage)
 			if exists == false {
 				fmt.Println("making it here then failing")
 				conn.Write([]byte(":1\r\n"))
