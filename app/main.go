@@ -187,6 +187,7 @@ func createArr(array []string, first int, last int) (string){ // used as a templ
 
 	for index < last {
 		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[index]), array[index])
+		index++
 	}	
 	return message 
 }
