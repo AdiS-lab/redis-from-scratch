@@ -85,11 +85,10 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 
 		case "LPUSH" :{
 			listName := statement[1]	
-			tempArr := []int
 			value, _ = lists[listName]
-			
+
 			for i:=len(statement)-1; i>=2; i-- {
-				tempArr = append(tempArr, statement[i])
+				tempArr := append(tempArr, statement[i])
 				//create a list if don't exist and append and return the length of list in RESP format
 			}
 			tempArr = append(tempArr, value)
