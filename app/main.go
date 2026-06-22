@@ -144,11 +144,11 @@ func execute(statement []string ,conn net.Conn) string{
 				return ("$-1\r\n")
 			} else if len(statement) > 2 {
 				sliceNum, _ := strconv.Atoi(statement[2])
-				LPOP(listName, sliceNum, conn)
-				return ""
+				message := LPOP(listName, sliceNum, conn)
+				return message
 			} else {
-				LPOP(listName, 0, conn)
-				return ""
+				message := LPOP(listName, 0, conn)
+				return message
 			}
 		case "LRANGE": //  to find the range when given smth like LRANGE 0 5
 			listName := statement[1]
@@ -182,11 +182,13 @@ func execute(statement []string ,conn net.Conn) string{
 			listName := statement[1]
 			timeout, _ := strconv.ParseFloat(statement[2], 64)
 			if len(lists[listName]) > 0 {
-				LPOP(listName, 0, conn)
-				return ""
+				message := LPOP(listName, 0, conn)
+				return message
 			} else {
-				go waitChange(listName, timeout, conn)
-				return ""
+				ch1 := make(chan string)
+				waitChange(listName, timeout, conn, ch1) 
+				val := <- ch1
+				return val
 			}
 		case "INCR": // increment any numerical value inside storage by 1
 			storageKey := statement[1]
@@ -227,29 +229,30 @@ func execute(statement []string ,conn net.Conn) string{
 }
 
 
-func LPOP(listName string, sliceNum int, conn net.Conn) {
+func LPOP(listName string, sliceNum int, conn net.Conn)string {
 	fmt.Println("made it inside LPOP function")
 	lengthList := len(lists[listName])
 
 	if sliceNum > 0 {
 		if sliceNum >= lengthList { //  check if LPOP name 2, 2 > list length
 			message := createArr(lists[listName], 0, lengthList)
-			conn.Write([]byte(message))
 			lists[listName] = []string{}
+			return message
+			
 		} else { // otherwise just POP out the first n values, and return them
 			message := createArr(lists[listName], 0, sliceNum)
-			conn.Write([]byte(message))
 			lists[listName] = lists[listName][sliceNum:]
+			return message
 		}
 	} else {
 		tempVal := lists[listName][0]
 		lists[listName] = lists[listName][1:]
-		conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(tempVal), tempVal)))
+		return fmt.Sprintf("$%d\r\n%s\r\n", len(tempVal), tempVal)
 	}
 }
 
 // __________________ poll and wait to see if length updates ________________________
-func waitChange(listName string, timeout float64, conn net.Conn) {
+func waitChange(listName string, timeout float64, conn net.Conn, ch chan string) {
 	fmt.Println(timeout)
 	fmt.Println("made it inside WaitChange")
 	ticker := time.NewTicker(10 * time.Millisecond)
@@ -260,15 +263,15 @@ func waitChange(listName string, timeout float64, conn net.Conn) {
 		if len(lists[listName]) > 0 {
 			val := lists[listName][0]
 			lists[listName] = []string{}
-			conn.Write([]byte(fmt.Sprintf("*2\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(listName), listName, len(val), val)))
 			ticker.Stop()
-			return
+			tempVal := fmt.Sprintf("*2\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(listName), listName, len(val), val)
+			ch <- tempVal
 		}
 		if timeout > 0 && time.Now().After(deadline) {
 			fmt.Println(time.Now())
-			conn.Write([]byte("*-1\r\n")) // send a null array
 			ticker.Stop()
-			return
+			tempVal := "*-1\r\n"  // send a null array
+			ch <- tempVal
 		}
 	}
 }
