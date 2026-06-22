@@ -120,7 +120,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				tempVal := lists[listName][0]
 				tempArr := lists[listName][1:]
 				lists[listName] = tempArr
-				conn.Write([]byte(fmt.Sprintf("$%d\r\n", tempVal)))
+				conn.Write([]byte(fmt.Sprintf("$%s\r\n", tempVal)))
 			}
 		
 		case "LRANGE":
