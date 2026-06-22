@@ -122,7 +122,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			}else if(length > 2){
 				if(length > lengthList){
 					sendArr(lists[listName], 0, lengthList)
-					lists[listName] = []
+					lists[listName] = []string{}
 				}else{
 					count = statement[2]
 					sendArr(lists[listName], 0, count)
