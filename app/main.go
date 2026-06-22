@@ -114,7 +114,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		case "LPOP": // to remove the first values when given something like LPOP 1 
 			listName := statement[1]
 			_, exists := lists[listName]
-			lengthList = len(lists[listName])
+			lengthList := len(lists[listName])
 			length := len(statement)
 			
 			if(exists == false){
@@ -184,7 +184,7 @@ func sendArr(array []string, first int, last int) {
 	message := fmt.Sprintf("*%d\r\n", interval)
 
 	for first; first < last; first++ {
-		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[i]), array[i])
+		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[first]), array[first])
 	}	
 	conn.Write([]byte(message))
 }
