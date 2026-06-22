@@ -51,7 +51,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		}
 		input := statement[0]
 
-		if (isQueue == true && len(statement)>0 && input != "EXEC" && input != "GET"){
+		if (isQueue == true && len(statement)>0 && input != "EXEC"){
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
 		
@@ -115,7 +115,7 @@ func execute(statement []string ,conn net.Conn) string{
 				fmt.Println("made it here")
 				return (fmt.Sprintf("$%d\r\n%s\r\n", len(value), storage[storageKey]))
 			} else {
-				return ("$-1\r\n")
+				return ("-1\r\n")
 			}
 		case "RPUSH": // append new data to a list (a list is just a slice)
 			listName := statement[1]
