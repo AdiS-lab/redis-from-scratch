@@ -28,8 +28,9 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 	for{
 		var statement []string
 		t,_ := reader.ReadByte()
-		n,_ := reader.ReadByte()
-		initNum,_ := strconv.Atoi(strings.TrimSpace(string(n)))
+		n,_ := reader.ReadString('\r')
+		initNum,_ := strconv.Atoi(strings.TrimSpace(n))
+		fmt.Println(initNum)
 
 		switch string(t){
 		case "*": 
