@@ -260,7 +260,6 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 func main() {
 	//__________________________ intialize TCP connection _____________________________
 	listener, err := net.Listen("tcp", "0.0.0.0:6379")
-	go waitChange()
 	if err != nil {
 		fmt.Println("Failed to bind to port 6379")
 		os.Exit(1)
