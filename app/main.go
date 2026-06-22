@@ -47,6 +47,8 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			os.Exit(0)
 		}
 
+
+		//______________________________ reading command __________________________________________
 		switch strings.ToUpper(statement[0]){
 		case "PING": conn.Write([]byte("+PONG\r\n")) //  have to write back as byte slice
 		case "ECHO":
@@ -109,7 +111,19 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				conn.Write([]byte(":0\r\n" ))
 			}
 			
-
+		case "LPOP":
+			listName := statement[1]	
+			_, exists = lists[listName]
+			if(!exists){
+				conn.Write([]byte("$-1\r\n"))
+			}
+			else{
+				tempVal := lists[listName][0]
+				tempArr := lists[listName][1:]
+				lists[listName] = tempArr
+				conn.Write([]byte(fmt.Sprintf("$%d\r\n", tempVal)))
+			}
+		
 		case "LRANGE":
 			listName := statement[1]
 			_, exists := lists[listName]
