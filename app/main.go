@@ -91,7 +91,9 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 					fmt.Println(value) 
 					fmt.Println(storage[key])
 					_,exists := storage[key]
+
 					if (exists && value != storage[key]){ // check if key + mod val is there in storage
+						storage[key] = value
 						watchedModified = true
 					}
 				}
@@ -130,10 +132,10 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}
 		}
 		//______________________________ reading command __________________________________________
-		fmt.Println("THIS IS STPRAGE \n")
+		fmt.Println("THIS IS Storage \n")
 		fmt.Println(storage)
 
-		fmt.Println("THIS IS KEYS \n")
+		fmt.Println("THIS IS Keys \n")
 		fmt.Println(watchedKeys)
 
 	}
