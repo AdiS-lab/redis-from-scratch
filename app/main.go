@@ -120,7 +120,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			if(exists == false){
 				conn.Write([]byte("$-1\r\n"))
 			}else if(length > 2){
-				if(length > lengthList){
+				if(length >= lengthList){
 					message := createArr(lists[listName], 0, lengthList)
 					conn.Write([]byte(message))
 					lists[listName] = []string{}
@@ -128,7 +128,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 					count,_ := strconv.Atoi(statement[2])
 					message := createArr(lists[listName], 0, count)
 					conn.Write([]byte(message))
-					lists[listName] = lists[listName][0:count]
+					lists[listName] = lists[listName][count:]
 				}
 			}else{
 				tempVal := lists[listName][0]
