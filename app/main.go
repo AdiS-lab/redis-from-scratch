@@ -181,7 +181,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			isQueue = true
 		case "EXEC":
 			if isQueue == false{
-				conn.Write([]byte("-1\r\n"))
+				conn.Write([]byte("+ERR EXEC without MULTI\r\n"))
 			}else{
 				message := createArr(queue, 0, len(queue))
 				conn.Write([]byte(message))
