@@ -230,11 +230,9 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 	statement = append(statement, string(name))
 	reader.ReadString('\n')
 
-	fmt.Println(string(name))
 
 	for count > 0{
 		b,_ := reader.ReadByte() 
-		fmt.Println(statement)
 
 		if b != '$'{
 			fmt.Println("Invalid type inside")
@@ -246,7 +244,6 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 
 		otherName := make([]byte, size) // create a buffer to hold the new data 
 		reader.Read(otherName)
-		fmt.Println(string(otherName))
 
 		statement = append(statement, string(otherName))
 
