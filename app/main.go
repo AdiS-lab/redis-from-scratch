@@ -199,6 +199,7 @@ func waitChange(listName string, timeout int, conn net.Conn){
 			return
 		}
 		if(timeout > 0 && time.Now().After(deadline)){
+			fmt.Println("made it inside here")
 			conn.Write([]byte("*-1\r\n")) // send a null array 
 			ticker.Stop()
 			return
