@@ -184,8 +184,12 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			isQueue = true
 		case "EXEC":
 			if isQueue == false{
-				conn.Write([]byte("-ERR EXEC without MULTI\r\n"))
-			}else if(len(queue) == 0){
+				conn.Write([]byte("-ERR EXEC without MULTI\r\n")) // funcify entire thing, send storage, or any arr, but it would be that 
+				//in this case we send the queue with statemetns, but we have to make sure to do it slowly, so set an interval, and then send them
+				//one by one, nah, but then they're asking for a list so expectation to append to arr, perhaps have to change
+				//all connections to returning message, and then use the messages returned from each call, to append to arr
+				//
+			}else if(len(queue) == 0){ 
 				conn.Write([]byte("*0\r\n"))
 				isQueue = false
 			}else{
@@ -194,6 +198,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		default:
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
+		fmt.Println(queue)
 	}
 	}
 }
