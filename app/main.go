@@ -399,6 +399,7 @@ func main() {
 	fmt.Println(os.Args[1])
 	if(os.Args[1] == "--port"){
 		port = os.Args[2]
+		fmt.Println(os.Args[2])
 	}
 	listener, err := net.Listen("tcp", port)
 	if err != nil {
