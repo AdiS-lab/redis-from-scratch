@@ -20,12 +20,13 @@ var _ = os.Exit
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
 var queue [][]string
-
+var check bool
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	isQueue :=  false
+	check = false
 	for {
 		var statement []string
 		t, _ := reader.ReadByte()
@@ -52,6 +53,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 
 		if input ==  "MULTI" && isQueue == false {
 			isQueue = true
+			check = true
 			conn.Write([]byte("+OK\r\n"))
 		}else if (isQueue == true && len(statement)>0 && input != "EXEC"){
 			queue = append(queue, statement)
@@ -59,6 +61,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		
 		}else if (isQueue == true && len(statement)>0 && input == "EXEC"){
 			isQueue = false
+			check = false
 			writeArr := []string{}
 			message := ""
 			fmt.Println(queue)
@@ -223,14 +226,14 @@ func execute(statement []string ,conn net.Conn) string{
 			}
 		case "EXEC":
 			fmt.Println("made it here when I wasn't supposed to")
-			if isQueue == false{
+			if check == false{
 				return ("-ERR EXEC without MULTI\r\n") // funcify entire thing, send storage, or any arr, but it would be that 
 				//in this case we send the queue with statemetns, but we have to make sure to do it slowly, so set an interval, and then send them
 				//one by one, nah, but then they're asking for a list so expectation to append to arr, perhaps have to change
 				//all connections to returning message, and then use the messages returned from each call, to append to arr
 				//
 			}else if(len(queue) == 0){ 
-				isQueue = false
+				check = false
 				return ("*0\r\n")
 			}
 			return ""
