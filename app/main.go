@@ -55,7 +55,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			isQueue = true
 			check = true
 			conn.Write([]byte("+OK\r\n"))
-		}else if (isQueue == true && len(statement)>0 && input != "EXEC"){
+		}else if (isQueue == true && len(statement)>0 && input != "EXEC" && input != "DISCARD"){
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
 		
@@ -237,6 +237,13 @@ func execute(statement []string ,conn net.Conn) string{
 				return ("*0\r\n")
 			}
 			return ""
+		case "DISCARD":
+			if check == true{
+				queue = [][]string{}
+				return "+OK\r\n"
+			}else{
+				return "-ERR DISCARD without MULTI\r\n"
+			}
 		default:
 			return ("+messageNotFound\r\n")
 		}
