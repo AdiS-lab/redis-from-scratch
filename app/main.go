@@ -64,6 +64,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}
 			fmt.Println(writeArr)
 			message := createArr(writeArr, 0, len(writeArr))
+			fmt.Println(message)
 			conn.Write([]byte(message))
 
 		}else{
