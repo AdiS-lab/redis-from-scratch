@@ -25,7 +25,6 @@ var queue [][]string
 func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	isQueue :=  false
-	notExec := false
 	for {
 		var statement []string
 		t, _ := reader.ReadByte()
@@ -49,7 +48,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			os.Exit(0)
 		}
 
-		if (isQueue == true && len(statement)>0 && notExec == true){
+		if (isQueue == true && len(statement)>0 && statement[1] != "EXEC"){
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
 		}else{
@@ -184,17 +183,13 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			conn.Write([]byte("+OK\r\n"))
 			isQueue = true
 		case "EXEC":
-			notExec = true
 			if isQueue == false{
 				conn.Write([]byte("-ERR EXEC without MULTI\r\n"))
-				notExec = false
 			}else if(len(queue) == 0){
 				conn.Write([]byte("*0\r\n"))
 				isQueue = false
-				notExec = false
 			}else{
 				conn.Write([]byte("*1\r\n$2\r\nOK\r\n"))
-				notExec = false
 			}
 		default:
 			conn.Write([]byte("+messageNotFound\r\n"))
