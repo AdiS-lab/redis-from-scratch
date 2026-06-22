@@ -82,18 +82,18 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				conn.Write([]byte("*0\r\n"))
 			}else{
 				isQueue = false
-				}
 				if(watchCheck){
 					for key, value := range watchedKeys{ 
-					_,exists := storage[key]
-					if (exists){ // check if key is there more general constraintnow
-						storage[key] = value
+						_,exists := storage[key]
+						if (exists){ // check if key is there then revert, more general constraint now
+							storage[key] = value
+						}
 					}
-				}
 					conn.Write([]byte("*-1\r\n"))
 					queue = [][]string{}
+					watchCheck = false
 
-					}else{
+				}else{
 					// find every key inside watched, and then check if that exists on storage
 					writeArr := []string{}
 					message := ""
@@ -112,7 +112,6 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 					queue = [][]string{}
 				}	
 			}
-	
 		}else if (isQueue == true && len(statement)>0){
 
 			queue = append(queue, statement)
@@ -125,10 +124,10 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}
 		}
 		//______________________________ reading command __________________________________________
-		fmt.Println("THIS IS Storage \n")
+		fmt.Println("THIS IS Storage n")
 		fmt.Println(storage)
 
-		fmt.Println("THIS IS Keys \n")
+		fmt.Println("THIS IS Keys n")
 		fmt.Println(watchedKeys)
 
 	}
@@ -143,9 +142,12 @@ func execute(statement []string ,conn net.Conn) string{
 			messageStr := string(statement[1])
 			return (fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr))
 		case "SET":
-			watchCheck = true
 			if len(statement) > 3 && strings.ToUpper(statement[3]) == "PX" { //  checking if they added expiry date.
 				storage[statement[1]] = statement[2]
+				_, exists := watchedKeys[statement[1]]
+				if(exists){
+					watchCheck = true
+				}
 				ms, _ := strconv.Atoi(statement[4])
 				fmt.Println(storage)
 				go wait(statement[1], ms)
@@ -260,9 +262,10 @@ func execute(statement []string ,conn net.Conn) string{
 				return ("-ERR value is not an integer or out of range\r\n")
 
 			} else {
-				// }else if(reflect.TypeOf(lists[listName]) != "int"){
-				// 	return ("+-1\r\n"))"
-				watchCheck = true
+				_, exists := watchedKeys[statement[1]]
+				if(exists){
+					watchCheck = true
+				}
 				fmt.Println("making it here and messing after")
 				tempVal, _ := strconv.Atoi(storage[storageKey])
 				storage[storageKey] = strconv.Itoa(tempVal + 1)
@@ -374,6 +377,8 @@ func handleRealConnection(reader *bufio.Reader, count int, initial int) []string
 	fmt.Println(statement)
 	return statement
 }
+// want to check if key exists inside the watching storage
+
 
 func main() {
 	//__________________________ intialize TCP connection _____________________________
