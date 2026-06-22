@@ -161,6 +161,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 }
 
 func LPOP(listName string, sliceNum int, conn net.Conn){
+	fmt.Println("made it inside LPOP function")
 	lengthList := len(lists[listName])
 
 	if(sliceNum > 0){
@@ -181,6 +182,7 @@ func LPOP(listName string, sliceNum int, conn net.Conn){
 }
 //__________________ poll and wait to see if length updates ________________________
 func waitChange(listName string, timeout int, conn net.Conn){
+	fmt.Println("made it inside WaitChange")
 	ticker := time.NewTicker(100 * time.Millisecond)
 	deadline := time.Now().Add(time.Duration(timeout) * time.Second)
 
@@ -202,6 +204,7 @@ func waitChange(listName string, timeout int, conn net.Conn){
 
 
 func createArr(array []string, first int, last int) (string){ // used as a template to create arrays to send back
+	fmt.Println("made it inside createArr function")
 	index := first
 	interval := last - index
 	message := fmt.Sprintf("*%d\r\n", interval)
@@ -215,6 +218,7 @@ func createArr(array []string, first int, last int) (string){ // used as a templ
 
 
 func wait(key string, ms int){
+	fmt.Println("made it inside wait function")
 	ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
 	for range ticker.C{
 		delete(storage, key)
@@ -222,6 +226,7 @@ func wait(key string, ms int){
 	}
 }
 func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initial int) []string {
+	fmt.Println("made it inside handleRealConn function")
 	var statement []string  
 
 	name := make([]byte, initial) // create a buffer to hold the new data 
@@ -268,7 +273,6 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
-		fmt.Println(conn)
 		go handleConnection(conn) 
 	}
 }
