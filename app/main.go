@@ -144,6 +144,7 @@ func execute(statement []string ,conn net.Conn) string{
 		case "SET":
 			if len(statement) > 3 && strings.ToUpper(statement[3]) == "PX" { //  checking if they added expiry date.
 				storage[statement[1]] = statement[2]
+				fmt.Println(statement[1])
 				_, exists := watchedKeys[statement[1]]
 				if(exists){
 					watchCheck = true
