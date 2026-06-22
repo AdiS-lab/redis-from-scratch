@@ -185,7 +185,7 @@ func LPOP(listName string, sliceNum int, conn net.Conn){
 }
 //__________________ poll and wait to see if length updates ________________________
 func waitChange(listName string, timeout int, conn net.Conn){
-	ftm.Println(timeout)
+	fmt.Println(timeout)
 	fmt.Println("made it inside WaitChange")
 	ticker := time.NewTicker(10 * time.Millisecond)
 	deadline := time.Now().Add(time.Duration(timeout) * time.Second)
