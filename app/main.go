@@ -64,10 +64,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}else{
 				conn.Write([]byte("-ERR DISCARD without MULTI\r\n"))
 			}
-
-		}else if (isQueue = false && input == "EXEC")
-		
-		else if (isQueue == true && len(statement)>0 && input != "EXEC"){
+		}else if (isQueue == true && len(statement)>0 && input != "EXEC"){
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
 		
@@ -96,6 +93,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}else if(len(queue) == 0){ 
 				isQueue = false
 				conn.Write([]byte("*0\r\n"))
+			}
 		}else{
 			writeVal := execute(statement, conn)
 			if writeVal != ""{
@@ -103,7 +101,6 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}
 		}
 		//______________________________ reading command __________________________________________
-	
 		fmt.Println("queue")
 		fmt.Println(queue)
 
