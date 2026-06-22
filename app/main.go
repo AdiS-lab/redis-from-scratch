@@ -58,6 +58,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		}else if (isQueue == true && len(statement)>0 && strings.ToUpper(statement[0]) == "EXEC"){
 			isQueue = false
 			writeArr := []string{}
+			fmt.Println(queue)
 			for i:=0; i<len(queue); i++ {
 				writeVal := execute(queue[i], conn)
 				writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
