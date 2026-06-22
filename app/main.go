@@ -121,14 +121,13 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				conn.Write([]byte("$-1\r\n"))
 			}else if(length > 2){
 				if(length > lengthList){
+					sendArr(lists[listName], 0, lengthList)
 					lists[listName] = []
-					sendArr(lists[listName])
 				}else{
 					count = statement[2]
-					lists[listName] = lists[listName][0:count]
 					sendArr(lists[listName], 0, count)
+					lists[listName] = lists[listName][0:count]
 				}
-				
 			}else{
 				tempVal := lists[listName][0]
 				lists[listName] = lists[listName][2:]
