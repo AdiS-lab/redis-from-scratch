@@ -19,8 +19,8 @@ var _ = os.Exit
 
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
-var isQueue = false
-var queue = make(map[string]string)
+var isQueue bool
+var queue []string
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
