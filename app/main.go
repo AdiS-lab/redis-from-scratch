@@ -151,11 +151,11 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			conn.Write([]byte(message))
 		case "BLPOP":
 			listName := statement[1]
-			timeout,_ := strconv.Atoi(statement[2])
+			timeout,_ := strconv.ParseFloat(statement[2], 64)
 			if(len(lists[listName])>0){
 				LPOP(listName,0,conn)
 			}else {
-				go waitChange(listName,timeout, conn)
+				go waitChange(listName, timeout, conn)
 			}
 		default: 
 			conn.Write([]byte("+messageNotFound\r\n"))
@@ -184,7 +184,7 @@ func LPOP(listName string, sliceNum int, conn net.Conn){
 	}	
 }
 //__________________ poll and wait to see if length updates ________________________
-func waitChange(listName string, timeout int, conn net.Conn){
+func waitChange(listName string, timeout float64, conn net.Conn){
 	fmt.Println(timeout)
 	fmt.Println("made it inside WaitChange")
 	ticker := time.NewTicker(10 * time.Millisecond)
