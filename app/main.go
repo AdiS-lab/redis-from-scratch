@@ -275,7 +275,7 @@ func execute(statement []string ,conn net.Conn) string{
 				return (fmt.Sprintf(":%d\r\n", tempVal+1))
 			}
 		case "INFO":	
-			conn.Write([]byte("$11\r\nrole:master\r\n"))
+			return "$11\r\nrole:master\r\n"
 		default:
 			return ("+messageNotFound\r\n")
 		}
