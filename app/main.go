@@ -19,19 +19,20 @@ var _ = os.Exit
 
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
-var isQueue bool
 var queue []string
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
-	isQueue = false
+	isQueue :=  false
 	for {
 		var statement []string
 		t, _ := reader.ReadByte()
 		n, _ := reader.ReadString('\r')
 		initNum, _ := strconv.Atoi(strings.TrimSpace(n))
 		fmt.Println(initNum)
+
+
 
 		switch string(t) {
 		case "*":
@@ -182,6 +183,8 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		case "EXEC":
 			if isQueue == false{
 				conn.Write([]byte("-ERR EXEC without MULTI\r\n"))
+			}else if(len(queue) == 0){
+				conn.Write([]byte("*0\r\n"))
 			}else{
 				message := createArr(queue, 0, len(queue))
 				conn.Write([]byte(message))
@@ -191,6 +194,8 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		}
 	}
 }
+
+
 
 func LPOP(listName string, sliceNum int, conn net.Conn) {
 	fmt.Println("made it inside LPOP function")
