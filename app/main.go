@@ -24,7 +24,6 @@ var isWaiting bool
 
 //_____________ loop through client message ______________________________
 func handleConnection(conn net.Conn){ //  conn is a byte slice
-	fmt.Println(conn)
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward 
 	for{
 		var statement []string
