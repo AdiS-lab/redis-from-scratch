@@ -169,7 +169,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}else if (reflect.TypeOf(storage[storageKey]) != nil){
 				tempVal,_ := strconv.Atoi("0")
 				otherTempVal,_ := strconv.Atoi("a")
-				fmt.Println(otherTempVal)
+				fmt.Println(otherTempVal - '0')
 				fmt.Println(tempVal - '0')
 			}else{
 			// }else if(reflect.TypeOf(lists[listName]) != "int"){
