@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"reflect"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -156,7 +157,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			} else {
 				go waitChange(listName, timeout, conn)
 			}
-		case "INCR":
+		case "INCR": // increment any numerical value inside storage by 1
 			storageKey := statement[1]
 			value, exists := storage[storageKey]
 			fmt.Println(storage[storageKey])
@@ -165,6 +166,8 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			if exists == false {
 				storage[storageKey] = "1"
 				conn.Write([]byte(":1\r\n"))
+			}else if (reflect.TypeOf(storage[storageKey]) != nil){
+				fmt.Println(value)
 			}else{
 			// }else if(reflect.TypeOf(lists[listName]) != "int"){
 			// 	conn.Write([]byte("+-1\r\n"))
