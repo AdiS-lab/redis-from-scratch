@@ -29,7 +29,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		var statement []string
 		t,_ := reader.ReadByte()
 		n,_ := reader.ReadByte()
-		initNum,_ := strconv.Atoi(strings.TrimSpace(n))
+		initNum,_ := strconv.Atoi(strings.TrimSpace(string(n)))
 
 		switch string(t){
 		case "*": 
