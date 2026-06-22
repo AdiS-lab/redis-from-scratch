@@ -157,14 +157,17 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}
 		case "INCR":
 			storageKey := statement[1]
-
-			// if !exists {
-			// 	conn.Write([]byte("+-1\r\n"))
+			value, exists := storage[storageKey]
+			fmt.Println(value)
+			if !exists {
+				conn.Write([]byte(":1\r\n"))
+			}else{
 			// }else if(reflect.TypeOf(lists[listName]) != "int"){
 			// 	conn.Write([]byte("+-1\r\n"))
-			tempVal, _ := strconv.Atoi(storage[storageKey])
-			storage[storageKey] = string(tempVal + 1)
-			conn.Write([]byte(fmt.Sprintf(":%d\r\n", tempVal+1)))
+				tempVal, _ := strconv.Atoi(storage[storageKey])
+				storage[storageKey] = string(tempVal + 1)
+				conn.Write([]byte(fmt.Sprintf(":%d\r\n", tempVal+1)))
+			}
 
 		default:
 			conn.Write([]byte("+messageNotFound\r\n"))
