@@ -20,13 +20,12 @@ var _ = os.Exit
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
 var queue [][]string
-var isQueue bool
 
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
-	isQueue =  false
+	isQueue :=  false
 	for {
 		var statement []string
 		t, _ := reader.ReadByte()
@@ -51,7 +50,10 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		}
 		input := statement[0]
 
-		if (isQueue == true && len(statement)>0 && input != "EXEC"){
+		if input ==  "MULTI" && isQueue == false {
+			isQueue = true
+			conn.Write([]byte("+OK\r\n"))
+		}else if (isQueue == true && len(statement)>0 && input != "EXEC"){
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
 		
@@ -219,9 +221,6 @@ func execute(statement []string ,conn net.Conn) string{
 				storage[storageKey] = strconv.Itoa(tempVal + 1)
 				return (fmt.Sprintf(":%d\r\n", tempVal+1))
 			}
-		case "MULTI":
-			isQueue = true
-			return ("+OK\r\n")
 		case "EXEC":
 			fmt.Println("made it here when I wasn't supposed to")
 			if isQueue == false{
