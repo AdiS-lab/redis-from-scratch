@@ -111,7 +111,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				conn.Write([]byte(":0\r\n" ))
 			}
 			
-		case "LPOP": // to remove the first values when given something like LPOP 1 
+		case "LPOP": // to remove the first values when given something like LPOP name 2 
 			listName := statement[1]
 			_, exists := lists[listName]
 			lengthList := len(lists[listName])
@@ -120,11 +120,11 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			if(exists == false){
 				conn.Write([]byte("$-1\r\n"))
 			}else if(length > 2){
-				if(length >= lengthList){
+				if(statement[2] >= lengthList){ //  check if LPOP name 2, 2 > list length
 					message := createArr(lists[listName], 0, lengthList)
 					conn.Write([]byte(message))
 					lists[listName] = []string{}
-				}else{
+				}else{ // otherwise just POP out the first n values, and return them
 					count,_ := strconv.Atoi(statement[2])
 					message := createArr(lists[listName], 0, count)
 					conn.Write([]byte(message))
@@ -132,7 +132,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				}
 			}else{
 				tempVal := lists[listName][0]
-				lists[listName] = lists[listName][2:]
+				lists[listName] = lists[listName][1:]
 				conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(tempVal), tempVal)))
 			}
 		
