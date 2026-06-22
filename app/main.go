@@ -163,17 +163,19 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			if exists == false {
 				storage[storageKey] = "1"
 				conn.Write([]byte(":1\r\n"))
-			}else if err != nil {
+			} else if err != nil {
 				conn.Write([]byte("-ERR value is not an integer or out of range\r\n"))
 
-			}else{
-			// }else if(reflect.TypeOf(lists[listName]) != "int"){
-			// 	conn.Write([]byte("+-1\r\n"))"
+			} else {
+				// }else if(reflect.TypeOf(lists[listName]) != "int"){
+				// 	conn.Write([]byte("+-1\r\n"))"
 				fmt.Println("making it here and messing after")
 				tempVal, _ := strconv.Atoi(storage[storageKey])
 				storage[storageKey] = strconv.Itoa(tempVal + 1)
 				conn.Write([]byte(fmt.Sprintf(":%d\r\n", tempVal+1)))
 			}
+		case "MULTI":
+			conn.Write([]byte("+OK\r\n"))
 
 		default:
 			conn.Write([]byte("+messageNotFound\r\n"))
