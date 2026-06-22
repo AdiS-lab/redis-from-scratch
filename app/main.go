@@ -86,6 +86,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		case "LPUSH" :{
 			listName := statement[1]	
 			value, _ = lists[listName]
+			var tempArr []string
 
 			for i:=len(statement)-1; i>=2; i-- {
 				tempArr := append(tempArr, statement[i])
