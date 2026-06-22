@@ -185,7 +185,7 @@ func createArr(array []string, first int, last int) (string){ // used as a templ
 	interval := last - index
 	message := fmt.Sprintf("*%d\r\n", interval)
 
-	for index; first < last; index++ {
+	for index; index < last; index++ {
 		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[index]), array[index])
 	}	
 	return message 
