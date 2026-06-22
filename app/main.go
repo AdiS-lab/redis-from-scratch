@@ -29,7 +29,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		var statement []string
 		t,_ := reader.ReadByte()
 		n,_ := reader.ReadByte()
-		initNum := int(n-'0')
+		initNum,_ := strconv.Atoi(strings.TrimSpace(n))
 
 		switch string(t){
 		case "*": 
@@ -236,7 +236,7 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 	reader.Read(name)
 	statement = append(statement, string(name))
 	reader.ReadString('\n')
-
+	fmt.Println(count)
 
 	for count > 0{
 		b,_ := reader.ReadByte() 
