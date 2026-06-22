@@ -162,7 +162,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			fmt.Println(value)
 			fmt.Println(storage)
 			if exists == false {
-				fmt.Println("making it here then failing")
+				storage[storageKey] = "1"
 				conn.Write([]byte(":1\r\n"))
 			}else{
 			// }else if(reflect.TypeOf(lists[listName]) != "int"){
