@@ -167,7 +167,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				storage[storageKey] = "1"
 				conn.Write([]byte(":1\r\n"))
 			}else if (reflect.TypeOf(storage[storageKey]) != nil){
-				tempVal,_ := strconv.Atoi("banana")
+				tempVal,_ := strconv.Atoi("0")
 				fmt.Println(tempVal)
 			}else{
 			// }else if(reflect.TypeOf(lists[listName]) != "int"){
