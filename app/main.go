@@ -284,6 +284,7 @@ func waitChange(listName string, timeout float64, conn net.Conn, ch1 chan string
 		if timeout > 0 && time.Now().After(deadline) {
 			fmt.Println(time.Now())
 			tempVal := "*-1\r\n"  // send a null array
+			fmt.Println(tempVal)
 			ch1 <- tempVal
 			ticker.Stop()
 		}
