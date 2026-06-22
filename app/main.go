@@ -25,6 +25,7 @@ var queue []string
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
+	isQueue = false
 	for {
 		var statement []string
 		t, _ := reader.ReadByte()
