@@ -56,6 +56,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			conn.Write([]byte("+QUEUED\r\n"))
 		
 		}else if (isQueue == true && len(statement)>0 && strings.ToUpper(statement[0]) == "EXEC"){
+			isQueue = false
 			writeArr := []string{}
 			for i:=0; i<len(queue); i++ {
 				writeVal := execute(queue[i], conn)
@@ -215,6 +216,7 @@ func execute(statement []string ,conn net.Conn) string{
 			isQueue = true
 			return ("+OK\r\n")
 		case "EXEC":
+			fmt.Println("made it here when I wasn't supposed to")
 			if isQueue == false{
 				return ("-ERR EXEC without MULTI\r\n") // funcify entire thing, send storage, or any arr, but it would be that 
 				//in this case we send the queue with statemetns, but we have to make sure to do it slowly, so set an interval, and then send them
