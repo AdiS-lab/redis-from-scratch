@@ -19,7 +19,7 @@ var _ = os.Exit
 
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
-var queue []string
+var queue [][]string
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
@@ -31,8 +31,6 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		n, _ := reader.ReadString('\r')
 		initNum, _ := strconv.Atoi(strings.TrimSpace(n))
 		fmt.Println(initNum)
-
-
 
 		switch string(t) {
 		case "*":
@@ -50,6 +48,10 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			os.Exit(0)
 		}
 
+		if (isQueue == true && len(statement)>0){
+			queue = append(queue, statement)
+			conn.Write([]byte("+QUEUED\r\n"))
+		}else{
 		//______________________________ reading command __________________________________________
 		switch strings.ToUpper(statement[0]) {
 		case "PING":
@@ -194,6 +196,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		default:
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
+	}
 	}
 }
 
