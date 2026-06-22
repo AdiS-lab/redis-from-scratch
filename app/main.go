@@ -181,7 +181,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 
 func sendArr(array []string) (string) {
 	message := fmt.Sprintf("*d\r\n", len(array))
-	for(i:=0; i<lengthList; i++){
+	for(i:=0; i<len(array); i++){
 		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[i]), array[i])
 	}	
 	conn.Write([]byte(message))
