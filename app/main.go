@@ -69,7 +69,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			for j:=0; j<count; j++ {
 				message+=writeArr[j]
 			}
-
+			fmt.Println(message)
 			conn.Write([]byte(message))
 			queue = [][]string{}
 
