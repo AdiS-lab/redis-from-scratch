@@ -85,7 +85,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			}
 			conn.Write([]byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
 
-		case "LPUSH" :{
+		case "LPUSH" :{ // prepend list
 			listName := statement[1]	
 			_, exists := lists[listName]
 			var tempArr []string
@@ -112,14 +112,27 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			}
 			
 		case "LPOP":
-			listName := statement[1]	
+			listName := statement[1]
 			_, exists := lists[listName]
+			lengthList = len(lists[listName])
+			length := len(statement)
+			
 			if(exists == false){
 				conn.Write([]byte("$-1\r\n"))
+			}
+			else if(length > 2){
+				if(length > lengthList){
+					lists[listName] = []
+					sendArr(lists[listName])
+				}else{
+					count = statement[2]
+					lists[listName] = lists[listName][count:]
+					sendArr(lists[listName][count:])
+				}
+				
 			}else{
 				tempVal := lists[listName][0]
-				tempArr := lists[listName][1:]
-				lists[listName] = tempArr
+				lists[listName] = lists[listName][2:]
 				conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(tempVal), tempVal)))
 			}
 		
@@ -165,6 +178,18 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		}
 	}
 }
+
+
+func sendArr(array []string) (string) {
+	message := fmt.Sprintf("*d\r\n", len(array))
+	for(i:=0; i<lengthList; i++){
+		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[i]), array[i])
+	}	
+	conn.Write([]byte(message))
+}
+ 
+
+
 
 func wait(key string, ms int){
 	ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
