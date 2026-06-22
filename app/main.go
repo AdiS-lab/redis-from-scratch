@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
-	"reflect"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -18,30 +17,29 @@ var _ = os.Exit
 // buf := make([]byte, 1024)  create buffer, read stream and assign to buffer, and then do logic based on that
 // n,err := conn.Read(buf)  number of bytes
 
-
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
 var isWaiting bool
 
-//_____________ loop through client message ______________________________
-func handleConnection(conn net.Conn){ //  conn is a byte slice
-	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward 
-	for{
+// _____________ loop through client message ______________________________
+func handleConnection(conn net.Conn) { //  conn is a byte slice
+	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
+	for {
 		var statement []string
-		t,_ := reader.ReadByte()
-		n,_ := reader.ReadString('\r')
-		initNum,_ := strconv.Atoi(strings.TrimSpace(n))
+		t, _ := reader.ReadByte()
+		n, _ := reader.ReadString('\r')
+		initNum, _ := strconv.Atoi(strings.TrimSpace(n))
 		fmt.Println(initNum)
 
-		switch string(t){
-		case "*": 
-			reader.ReadString('$')// by pass the /r/n and $
-			initial,_ := reader.ReadString('\n')
-			initVal,_ := strconv.Atoi(strings.TrimSpace(initial))
+		switch string(t) {
+		case "*":
+			reader.ReadString('$') // by pass the /r/n and $
+			initial, _ := reader.ReadString('\n')
+			initVal, _ := strconv.Atoi(strings.TrimSpace(initial))
 
 			statement = handleRealConnection(reader, conn, initNum-1, initVal) // normalize number
 
-		case "$": 
+		case "$":
 			reader.ReadString('\n')
 			statement = handleRealConnection(reader, conn, 1, initNum)
 		default:
@@ -49,22 +47,22 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			os.Exit(0)
 		}
 
-
 		//______________________________ reading command __________________________________________
-		switch strings.ToUpper(statement[0]){
-		case "PING": conn.Write([]byte("+PONG\r\n")) //  have to write back as byte slice
+		switch strings.ToUpper(statement[0]) {
+		case "PING":
+			conn.Write([]byte("+PONG\r\n")) //  have to write back as byte slice
 		case "ECHO":
 			messageStr := string(statement[1])
 			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr)))
 		case "SET":
-			if len(statement) > 3 && strings.ToUpper(statement[3]) == "PX"{ //  checking if they added expiry date. 
+			if len(statement) > 3 && strings.ToUpper(statement[3]) == "PX" { //  checking if they added expiry date.
 				storage[statement[1]] = statement[2]
-				ms,_ := strconv.Atoi(statement[4])
+				ms, _ := strconv.Atoi(statement[4])
 				fmt.Println(storage)
 				go wait(statement[1], ms)
 				conn.Write([]byte("+OK\r\n"))
 
- 			}else{
+			} else {
 				storage[statement[1]] = statement[2] // use map to set pair
 				conn.Write([]byte("+OK\r\n"))
 			}
@@ -73,154 +71,154 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		case "GET":
 			fmt.Println("made it here")
 			value, exists := storage[statement[1]]
-			if exists{
+			if exists {
 				fmt.Println("made it here")
 				conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)))
-			}else{
+			} else {
 				conn.Write([]byte("$-1\r\n"))
 			}
 		case "RPUSH": // append new data to a list (a list is just a slice)
 			listName := statement[1]
-			for i:=2; i<len(statement); i++ {
+			for i := 2; i < len(statement); i++ {
 				lists[listName] = append(lists[listName], statement[i])
 				//create a list if don't exist and append and return the length of list in RESP format
 			}
-			conn.Write([]byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
-		case "LPUSH" :// prepend list
-			listName := statement[1]	
+			conn.Write([]byte(fmt.Sprintf(":%d\r\n", len(lists[listName]))))
+		case "LPUSH": // prepend list
+			listName := statement[1]
 			_, exists := lists[listName]
 			var tempArr []string
 
-			for i:=len(statement)-1; i>=2; i-- {
+			for i := len(statement) - 1; i >= 2; i-- {
 				tempArr = append(tempArr, statement[i])
 				//create a list if don't exist and append and return the length of list in RESP format
 			}
-			if exists{
-				for j:=0;j<len(lists[listName]);j++{
+			if exists {
+				for j := 0; j < len(lists[listName]); j++ {
 					tempArr = append(tempArr, lists[listName][j])
 				}
 			}
 			lists[listName] = tempArr
-			conn.Write([]byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
+			conn.Write([]byte(fmt.Sprintf(":%d\r\n", len(lists[listName]))))
 		case "LLEN": // get length of list
 			listName := statement[1]
 			_, exists := lists[listName]
 			if exists {
-				conn.Write( []byte(fmt.Sprintf(":%d\r\n", len(lists[listName]))) )
-			}else{
-				conn.Write([]byte(":0\r\n" ))
-			}	
-		case "LPOP": // to remove the first values when given something like LPOP name 2 
+				conn.Write([]byte(fmt.Sprintf(":%d\r\n", len(lists[listName]))))
+			} else {
+				conn.Write([]byte(":0\r\n"))
+			}
+		case "LPOP": // to remove the first values when given something like LPOP name 2
 			listName := statement[1]
 			_, exists := lists[listName]
-			if !exists{
+			if !exists {
 				conn.Write([]byte("$-1\r\n"))
-			}else if(len(statement)>2){
-				sliceNum,_ := strconv.Atoi(statement[2])
+			} else if len(statement) > 2 {
+				sliceNum, _ := strconv.Atoi(statement[2])
 				LPOP(listName, sliceNum, conn)
-			}else{
+			} else {
 				LPOP(listName, 0, conn)
 			}
-		case "LRANGE": //  to find the range when given smth like LRANGE 0 5 
+		case "LRANGE": //  to find the range when given smth like LRANGE 0 5
 			listName := statement[1]
 			_, exists := lists[listName]
-			start,_ := strconv.Atoi(statement[2])
-			stop,_ := strconv.Atoi(statement[3])
+			start, _ := strconv.Atoi(statement[2])
+			stop, _ := strconv.Atoi(statement[3])
 			length := len(lists[listName])
-		 	if stop>length-1{
-				stop = length-1
+			if stop > length-1 {
+				stop = length - 1
 			}
-			if start < 0{
+			if start < 0 {
 				start = length + start
-				if start <0{
-					start = 0 
+				if start < 0 {
+					start = 0
 				}
 			}
-			if stop < 0{
+			if stop < 0 {
 				stop = length + stop
-				if stop < 0{
+				if stop < 0 {
 					stop = 0
 				}
 			}
-			if !exists || start >= length || start>stop{
+			if !exists || start >= length || start > stop {
 				conn.Write([]byte("*0\r\n"))
 				continue
 			}
-		
-			message := createArr(lists[listName],start,stop+1)
+
+			message := createArr(lists[listName], start, stop+1)
 			conn.Write([]byte(message))
 		case "BLPOP":
 			listName := statement[1]
-			timeout,_ := strconv.ParseFloat(statement[2], 64)
-			if(len(lists[listName])>0){
-				LPOP(listName,0,conn)
-			}else {
+			timeout, _ := strconv.ParseFloat(statement[2], 64)
+			if len(lists[listName]) > 0 {
+				LPOP(listName, 0, conn)
+			} else {
 				go waitChange(listName, timeout, conn)
 			}
 		case "INCR":
 			storageKey := statement[1]
-			
+
 			// if !exists {
 			// 	conn.Write([]byte("+-1\r\n"))
 			// }else if(reflect.TypeOf(lists[listName]) != "int"){
 			// 	conn.Write([]byte("+-1\r\n"))
-			tempVal,_ := strconv.Atoi(storage[storageKey]) 
-			storage[storageKey] = string(tempVal +1)
+			tempVal, _ := strconv.Atoi(storage[storageKey])
+			storage[storageKey] = string(tempVal + 1)
 			conn.Write([]byte(fmt.Sprintf(":%d\r\n", tempVal+1)))
 
-		default: 
+		default:
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
 	}
 }
 
-func LPOP(listName string, sliceNum int, conn net.Conn){
+func LPOP(listName string, sliceNum int, conn net.Conn) {
 	fmt.Println("made it inside LPOP function")
 	lengthList := len(lists[listName])
 
-	if(sliceNum > 0){
-		if(sliceNum >= lengthList){ //  check if LPOP name 2, 2 > list length
+	if sliceNum > 0 {
+		if sliceNum >= lengthList { //  check if LPOP name 2, 2 > list length
 			message := createArr(lists[listName], 0, lengthList)
 			conn.Write([]byte(message))
 			lists[listName] = []string{}
-		}else{ // otherwise just POP out the first n values, and return them
+		} else { // otherwise just POP out the first n values, and return them
 			message := createArr(lists[listName], 0, sliceNum)
 			conn.Write([]byte(message))
 			lists[listName] = lists[listName][sliceNum:]
 		}
-	}else{
+	} else {
 		tempVal := lists[listName][0]
 		lists[listName] = lists[listName][1:]
 		conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(tempVal), tempVal)))
-	}	
+	}
 }
-//__________________ poll and wait to see if length updates ________________________
-func waitChange(listName string, timeout float64, conn net.Conn){
+
+// __________________ poll and wait to see if length updates ________________________
+func waitChange(listName string, timeout float64, conn net.Conn) {
 	fmt.Println(timeout)
 	fmt.Println("made it inside WaitChange")
 	ticker := time.NewTicker(10 * time.Millisecond)
 	deadline := time.Now().Add(time.Duration(timeout*1000) * time.Millisecond)
 	fmt.Println(deadline)
 
-	for range ticker.C{ // ticker.C is a channel that sends something to go every so seconds. we want to check it's range (?)
-		if(len(lists[listName]) > 0){
+	for range ticker.C { // ticker.C is a channel that sends something to go every so seconds. we want to check it's range (?)
+		if len(lists[listName]) > 0 {
 			val := lists[listName][0]
 			lists[listName] = []string{}
 			conn.Write([]byte(fmt.Sprintf("*2\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(listName), listName, len(val), val)))
 			ticker.Stop()
 			return
 		}
-		if(timeout > 0 && time.Now().After(deadline)){
+		if timeout > 0 && time.Now().After(deadline) {
 			fmt.Println(time.Now())
-			conn.Write([]byte("*-1\r\n")) // send a null array 
+			conn.Write([]byte("*-1\r\n")) // send a null array
 			ticker.Stop()
 			return
 		}
 	}
 }
 
-
-func createArr(array []string, first int, last int) (string){ // used as a template to create arrays to send back
+func createArr(array []string, first int, last int) string { // used as a template to create arrays to send back
 	fmt.Println("made it inside createArr function")
 	index := first
 	interval := last - index
@@ -229,41 +227,40 @@ func createArr(array []string, first int, last int) (string){ // used as a templ
 	for index < last {
 		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[index]), array[index])
 		index++
-	}	
-	return message 
+	}
+	return message
 }
 
-
-func wait(key string, ms int){
+func wait(key string, ms int) {
 	fmt.Println("made it inside wait function")
 	ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
-	for range ticker.C{
+	for range ticker.C {
 		delete(storage, key)
 		ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
 	}
 }
 func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initial int) []string {
 	fmt.Println("made it inside handleRealConn function")
-	var statement []string  
+	var statement []string
 
-	name := make([]byte, initial) // create a buffer to hold the new data 
+	name := make([]byte, initial) // create a buffer to hold the new data
 	reader.Read(name)
 	statement = append(statement, string(name))
 	reader.ReadString('\n')
 	fmt.Println(count)
 
-	for count > 0{
-		b,_ := reader.ReadByte() 
+	for count > 0 {
+		b, _ := reader.ReadByte()
 
-		if b != '$'{
+		if b != '$' {
 			fmt.Println("Invalid type inside")
 			os.Exit(0)
 		}
 
-		n,_ := reader.ReadString('\n')
-		size,_ := strconv.Atoi(strings.TrimSpace(n))
+		n, _ := reader.ReadString('\n')
+		size, _ := strconv.Atoi(strings.TrimSpace(n))
 
-		otherName := make([]byte, size) // create a buffer to hold the new data 
+		otherName := make([]byte, size) // create a buffer to hold the new data
 		reader.Read(otherName)
 
 		statement = append(statement, string(otherName))
@@ -283,13 +280,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	for{
+	for {
 		fmt.Println("made it to the start")
 		conn, err := listener.Accept()
-		if err!= nil{ 
+		if err != nil {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
-		go handleConnection(conn) 
+		go handleConnection(conn)
 	}
 }
