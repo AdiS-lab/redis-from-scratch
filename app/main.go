@@ -155,6 +155,10 @@ func execute(statement []string ,conn net.Conn) string{
 				return ("+OK\r\n")
 
 			} else {
+				_, exists := watchedKeys[statement[1]]
+				if(exists){
+					watchCheck = true
+				}
 				storage[statement[1]] = statement[2] // use map to set pair
 				return ("+OK\r\n")
 			}
