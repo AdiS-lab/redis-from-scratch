@@ -65,7 +65,9 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				conn.Write([]byte("-ERR DISCARD without MULTI\r\n"))
 			}
 
-		}else if (isQueue == true && len(statement)>0 && input != "EXEC"){
+		}else if (isQueue = false && input == "EXEC")
+		
+		else if (isQueue == true && len(statement)>0 && input != "EXEC"){
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
 		
@@ -88,6 +90,12 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			conn.Write([]byte(message))
 			queue = [][]string{}
 
+		}else if(input == "EXEC"){
+			if isQueue == false{
+				conn.Write([]byte("-ERR EXEC without MULTI\r\n"))
+			}else if(len(queue) == 0){ 
+				isQueue = false
+				conn.Write([]byte("*0\r\n"))
 		}else{
 			writeVal := execute(statement, conn)
 			if writeVal != ""{
@@ -234,19 +242,6 @@ func execute(statement []string ,conn net.Conn) string{
 				storage[storageKey] = strconv.Itoa(tempVal + 1)
 				return (fmt.Sprintf(":%d\r\n", tempVal+1))
 			}
-		case "EXEC":
-			fmt.Println("made it here when I wasn't supposed to")
-			if check == false{
-				return ("-ERR EXEC without MULTI\r\n") // funcify entire thing, send storage, or any arr, but it would be that 
-				//in this case we send the queue with statemetns, but we have to make sure to do it slowly, so set an interval, and then send them
-				//one by one, nah, but then they're asking for a list so expectation to append to arr, perhaps have to change
-				//all connections to returning message, and then use the messages returned from each call, to append to arr
-				//
-			}else if(len(queue) == 0){ 
-				check = false
-				return ("*0\r\n")
-			}
-			return ""
 		default:
 			return ("+messageNotFound\r\n")
 		}
