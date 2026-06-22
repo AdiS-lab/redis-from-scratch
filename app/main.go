@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 	"strconv"
+	"reflect"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -101,7 +102,6 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			}
 			lists[listName] = tempArr
 			conn.Write([]byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
-			
 		case "LLEN": // get length of list
 			listName := statement[1]
 			_, exists := lists[listName]
@@ -157,6 +157,18 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			}else {
 				go waitChange(listName, timeout, conn)
 			}
+		case "INCR":
+			storageKey := statement[1]
+			
+			// if !exists {
+			// 	conn.Write([]byte("+-1\r\n"))
+			// }else if(reflect.TypeOf(lists[listName]) != "int"){
+			// 	conn.Write([]byte("+-1\r\n"))
+			fmt.Println(reflect.TypeOf(storage[storageKey]))
+			tempVal,_ := strconv.Atoi(storage[storageKey]) 
+			storage[storageKey] = string(tempVal +1)
+			conn.Write([]byte(fmt.Sprintf(":%d\r\n", storage[storageKey])))
+
 		default: 
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
