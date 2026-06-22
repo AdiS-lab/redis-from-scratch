@@ -116,10 +116,10 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			if !exists{
 				conn.Write([]byte("$-1\r\n"))
 			}else if(len(statement)>2){
-				LPOP(listName, 0, conn)
-			}else{
 				sliceNum,_ := strconv.Atoi(statement[2])
 				LPOP(listName, sliceNum, conn)
+			}else{
+				LPOP(listName, 0, conn)
 			}
 		case "LRANGE": //  to find the range when given smth like LRANGE 0 5 
 			listName := statement[1]
