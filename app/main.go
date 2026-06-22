@@ -19,12 +19,12 @@ var _ = os.Exit
 
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
-var queue [][]string
 var check bool
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
+	var queue [][]string
 	isQueue :=  false
 	check = false
 	for {
@@ -247,13 +247,6 @@ func execute(statement []string ,conn net.Conn) string{
 				return ("*0\r\n")
 			}
 			return ""
-		case "DISCARD":
-			if check == true{
-				queue = [][]string{}
-				return "+OK\r\n"
-			}else{
-				return "-ERR DISCARD without MULTI\r\n"
-			}
 		default:
 			return ("+messageNotFound\r\n")
 		}
