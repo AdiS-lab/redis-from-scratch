@@ -40,11 +40,11 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			initial, _ := reader.ReadString('\n')
 			initVal, _ := strconv.Atoi(strings.TrimSpace(initial))
 
-			statement = handleRealConnection(reader, conn, initNum-1, initVal) // normalize number
+			statement = handleRealConnection(reader, initNum-1, initVal) // normalize number
 
 		case "$":
 			reader.ReadString('\n')
-			statement = handleRealConnection(reader, conn, 1, initNum)
+			statement = handleRealConnection(reader, 1, initNum)
 		default:
 			fmt.Println("Invalid type on first char")
 			os.Exit(0)
@@ -72,7 +72,9 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		}
 		//______________________________ reading command __________________________________________
 	
+		fmt.Println("queue")
 		fmt.Println(queue)
+
 	}
 }
 
@@ -297,7 +299,7 @@ func wait(key string, ms int) {
 		ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
 	}
 }
-func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initial int) []string {
+func handleRealConnection(reader *bufio.Reader, count int, initial int) []string {
 	fmt.Println("made it inside handleRealConn function")
 	var statement []string
 
@@ -305,7 +307,6 @@ func handleRealConnection(reader *bufio.Reader, conn net.Conn, count int, initia
 	reader.Read(name)
 	statement = append(statement, string(name))
 	reader.ReadString('\n')
-	fmt.Println(count)
 
 	for count > 0 {
 		b, _ := reader.ReadByte()
