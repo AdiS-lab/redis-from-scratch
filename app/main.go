@@ -121,11 +121,13 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				conn.Write([]byte("$-1\r\n"))
 			}else if(length > 2){
 				if(length > lengthList){
-					sendArr(lists[listName], 0, lengthList)
+					message := createArr(lists[listName], 0, lengthList)
+					conn.Write([]byte(message))
 					lists[listName] = []string{}
 				}else{
 					count,_ := strconv.Atoi(statement[2])
-					sendArr(lists[listName], 0, count)
+					message := createArr(lists[listName], 0, count)
+					conn.Write([]byte(message))
 					lists[listName] = lists[listName][0:count]
 				}
 			}else{
@@ -167,7 +169,8 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			// 	message += fmt.Sprintf("$%d\r\n%s\r\n", len(val), val) 
 			// }
 			// conn.Write([]byte(message))	
-			sendArr(lists[listName],start,stop+1)
+			message := createArr(lists[listName],start,stop+1)
+			conn.Write([]byte(message))
 			
 
 		default: 
@@ -177,14 +180,14 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 }
 
 
-func sendArr(array []string, first int, last int) {
+func createArr(array []string, first int, last int) { // used as a template to create arrays to send back
 	interval:= last - first
 	message := fmt.Sprintf("*%d\r\n", interval)
 
 	for first; first < last; first++ {
 		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[first]), array[first])
 	}	
-	conn.Write([]byte(message))
+	return message 
 }
  
 
