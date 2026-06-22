@@ -74,7 +74,9 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		}else if(input ==  "DISCARD"){
 			if isQueue == true{
 				isQueue = false
-			queue = [][]string{}
+				queue = [][]string{}
+				watchedKeys = make(map[string]string)
+				watchCheck = false
 				conn.Write([]byte("+OK\r\n"))
 			}else{
 				conn.Write([]byte("-ERR DISCARD without MULTI\r\n"))
