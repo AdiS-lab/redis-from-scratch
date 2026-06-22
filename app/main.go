@@ -189,9 +189,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				conn.Write([]byte("*0\r\n"))
 				isQueue = false
 			}else{
-				message := createArr(queue, 0, len(queue))
-				conn.Write([]byte(message))
-				isQueue = false
+				conn.Write([]byte("+OK\r\n"))
 			}
 		default:
 			conn.Write([]byte("+messageNotFound\r\n"))
