@@ -85,7 +85,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 
 		case "LPUSH" :{
 			listName := statement[1]	
-			value, exists = lists[listName]
+			_, exists = lists[listName]
 			var tempArr []string
 
 			for i:=len(statement)-1; i>=2; i-- {
@@ -93,7 +93,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				//create a list if don't exist and append and return the length of list in RESP format
 			}
 			if exists{
-				tempArr = append(tempArr, value)
+				tempArr = append(tempArr, lists[listName])
 			}
 			lists[listName] = tempArr
 			conn.Write([]byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
