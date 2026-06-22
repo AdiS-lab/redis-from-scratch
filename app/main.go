@@ -58,15 +58,20 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		}else if (isQueue == true && len(statement)>0 && strings.ToUpper(statement[0]) == "EXEC"){
 			isQueue = false
 			writeArr := []string{}
+			message := ""
 			fmt.Println(queue)
 			for i:=0; i<len(queue); i++ {
 				writeVal := execute(queue[i], conn)
 				writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
 			}
-			fmt.Println(writeArr)
-			message := createArr(writeArr, 0, len(writeArr))
-			fmt.Println(message)
+			count := len(writeArr)
+			message += fmt.Sprintf("*%d\r\n", count)
+			for j:=0; j<count; j++ {
+				message+=writeArr[j]
+			}
+
 			conn.Write([]byte(message))
+			queue = [][]string{}
 
 		}else{
 			writeVal := execute(statement, conn)
