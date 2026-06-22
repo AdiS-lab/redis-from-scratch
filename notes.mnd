@@ -1,0 +1,5 @@
+two ways to create asynchronous blockers
+time.Sleep(timeDuration) --> ch := make(chan string)
+time.Ticker(timeDuration) --> for range ticker.C()
+
+BLPOP --> when duration is 0 wait indefinitely for response, otherwise add 
