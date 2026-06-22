@@ -116,16 +116,17 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			_, exists := lists[listName]
 			lengthList := len(lists[listName])
 			length := len(statement)
+			count,_ := strconv.Atoi(statement[2])
+
 			
 			if(exists == false){
 				conn.Write([]byte("$-1\r\n"))
 			}else if(length > 2){
-				if(statement[2] >= lengthList){ //  check if LPOP name 2, 2 > list length
+				if(count >= lengthList){ //  check if LPOP name 2, 2 > list length
 					message := createArr(lists[listName], 0, lengthList)
 					conn.Write([]byte(message))
 					lists[listName] = []string{}
 				}else{ // otherwise just POP out the first n values, and return them
-					count,_ := strconv.Atoi(statement[2])
 					message := createArr(lists[listName], 0, count)
 					conn.Write([]byte(message))
 					lists[listName] = lists[listName][count:]
