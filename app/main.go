@@ -113,7 +113,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			
 		case "LPOP":
 			listName := statement[1]	
-			_, exists = lists[listName]
+			_, exists := lists[listName]
 			if(exists == nil){
 				conn.Write([]byte("$-1\r\n"))
 			}else{
