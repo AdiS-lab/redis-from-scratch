@@ -53,11 +53,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 
 		if (isQueue == true && len(statement)>0 && input != "EXEC"){
 			queue = append(queue, statement)
-			if(input == "GET"){
-				conn.Write([]byte("$-1\r\n"))
-			}else{
 			conn.Write([]byte("+QUEUED\r\n"))
-			}
 		
 		}else if (isQueue == true && len(statement)>0 && input == "EXEC"){
 			isQueue = false
