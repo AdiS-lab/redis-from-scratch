@@ -145,20 +145,14 @@ func execute(statement []string ,conn net.Conn) string{
 			if len(statement) > 3 && strings.ToUpper(statement[3]) == "PX" { //  checking if they added expiry date.
 				storage[statement[1]] = statement[2]
 				fmt.Println(statement[1])
-				_, exists := watchedKeys[statement[1]]
-				if(exists){
-					watchCheck = true
-				}
+				checkWatch(statement)
 				ms, _ := strconv.Atoi(statement[4])
 				fmt.Println(storage)
 				go wait(statement[1], ms)
 				return ("+OK\r\n")
 
 			} else {
-				_, exists := watchedKeys[statement[1]]
-				if(exists){
-					watchCheck = true
-				}
+				checkWatch(statement)
 				storage[statement[1]] = statement[2] // use map to set pair
 				return ("+OK\r\n")
 			}
@@ -267,10 +261,7 @@ func execute(statement []string ,conn net.Conn) string{
 				return ("-ERR value is not an integer or out of range\r\n")
 
 			} else {
-				_, exists := watchedKeys[statement[1]]
-				if(exists){
-					watchCheck = true
-				}
+				checkWatch(statement)
 				fmt.Println("making it here and messing after")
 				tempVal, _ := strconv.Atoi(storage[storageKey])
 				storage[storageKey] = strconv.Itoa(tempVal + 1)
@@ -301,6 +292,16 @@ func LPOP(listName string, sliceNum int, conn net.Conn)string {
 		tempVal := lists[listName][0]
 		lists[listName] = lists[listName][1:]
 		return fmt.Sprintf("$%d\r\n%s\r\n", len(tempVal), tempVal)
+	}
+}
+
+func checkWatch(statement []string){
+	_, exists := watchedKeys[statement[1]]
+	if(exists){
+		watchCheck = true
+		if watchedKeys[statement[1]] == ""{
+			watchedKeys[statement[1]] = statement[2]
+		}
 	}
 }
 
