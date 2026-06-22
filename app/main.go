@@ -277,15 +277,15 @@ func waitChange(listName string, timeout float64, conn net.Conn, ch chan string)
 		if len(lists[listName]) > 0 {
 			val := lists[listName][0]
 			lists[listName] = []string{}
-			ticker.Stop()
 			tempVal := fmt.Sprintf("*2\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(listName), listName, len(val), val)
 			ch <- tempVal
+			ticker.Stop()
 		}
 		if timeout > 0 && time.Now().After(deadline) {
 			fmt.Println(time.Now())
-			ticker.Stop()
 			tempVal := "*-1\r\n"  // send a null array
 			ch <- tempVal
+			ticker.Stop()
 		}
 	}
 }
