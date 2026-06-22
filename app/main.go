@@ -170,7 +170,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			// 	conn.Write([]byte("+-1\r\n"))
 				fmt.Println("making it here and messing after")
 				tempVal, _ := strconv.Atoi(storage[storageKey])
-				storage[storageKey] = string(tempVal + 1)
+				storage[storageKey] = strconv.Itoa(tempVal + 1)
 				conn.Write([]byte(fmt.Sprintf(":%d\r\n", tempVal+1)))
 			}
 
