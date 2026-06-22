@@ -396,7 +396,7 @@ func handleRealConnection(reader *bufio.Reader, count int, initial int) []string
 func main() {
 	//__________________________ intialize TCP connection _____________________________
 	port := "0.0.0.0:6379"
-	if(os.args[1] == "--port"){
+	if(os.Args[1] == "--port"){
 		port = os.Args[2]
 	}
 	listener, err := net.Listen("tcp", port)
