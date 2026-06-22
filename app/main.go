@@ -57,8 +57,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			isQueue = true
 			check = true
 			conn.Write([]byte("+OK\r\n"))
-		}else if input == "WATCH" {
-
+		}else if (input == "WATCH") {
 			if(isQueue == true){
 				conn.Write([]byte("-ERR WATCH inside MULTI is not allowed\r\n"))
 			}else{
@@ -129,8 +128,11 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}
 		}
 		//______________________________ reading command __________________________________________
-		fmt.Println("queue")
-		fmt.Println(queue)
+		fmt.Println("THIS IS STPRAGE \n")
+		fmt.Println(storage)
+
+		fmt.Println("THIS IS KEYS \n")
+		fmt.Println(watchedKeys)
 
 	}
 }
