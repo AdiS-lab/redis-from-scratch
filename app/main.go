@@ -20,14 +20,14 @@ var _ = os.Exit
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
 var watchedKeys = make(map[string]string)
-var check bool
+var watchCheck bool
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	var queue [][]string
 	isQueue :=  false
-	check = false
+	watchCheck = false
 	for {
 		var statement []string
 		t, _ := reader.ReadByte()
@@ -55,7 +55,6 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		if input ==  "MULTI" && isQueue == false { 
 			// but length is bad, then or isQueue = false
 			isQueue = true
-			check = true
 			conn.Write([]byte("+OK\r\n"))
 		}else if (input == "WATCH") {
 			if(isQueue == true){
@@ -70,8 +69,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		}else if(input ==  "DISCARD"){
 			if isQueue == true{
 				isQueue = false
-				check = false
-				queue = [][]string{}
+			queue = [][]string{}
 				conn.Write([]byte("+OK\r\n"))
 			}else{
 				conn.Write([]byte("-ERR DISCARD without MULTI\r\n"))
@@ -84,23 +82,18 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				conn.Write([]byte("*0\r\n"))
 			}else{
 				isQueue = false
-				check = false
-
-				watchedModified := false
-				for key, value := range watchedKeys{ 
-					fmt.Println(value) 
-					fmt.Println(storage[key])
+				}
+				if(watchCheck){
+					for key, value := range watchedKeys{ 
 					_,exists := storage[key]
-
-					if (exists && value != storage[key]){ // check if key + mod val is there in storage
+					if (exists){ // check if key is there more general constraintnow
 						storage[key] = value
-						watchedModified = true
 					}
 				}
-				if(watchedModified){
 					conn.Write([]byte("*-1\r\n"))
 					queue = [][]string{}
-				}else{
+
+					}else{
 					// find every key inside watched, and then check if that exists on storage
 					writeArr := []string{}
 					message := ""
@@ -150,6 +143,7 @@ func execute(statement []string ,conn net.Conn) string{
 			messageStr := string(statement[1])
 			return (fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr))
 		case "SET":
+			watchCheck = true
 			if len(statement) > 3 && strings.ToUpper(statement[3]) == "PX" { //  checking if they added expiry date.
 				storage[statement[1]] = statement[2]
 				ms, _ := strconv.Atoi(statement[4])
@@ -268,6 +262,7 @@ func execute(statement []string ,conn net.Conn) string{
 			} else {
 				// }else if(reflect.TypeOf(lists[listName]) != "int"){
 				// 	return ("+-1\r\n"))"
+				watchCheck = true
 				fmt.Println("making it here and messing after")
 				tempVal, _ := strconv.Atoi(storage[storageKey])
 				storage[storageKey] = strconv.Itoa(tempVal + 1)
@@ -277,7 +272,7 @@ func execute(statement []string ,conn net.Conn) string{
 			return ("+messageNotFound\r\n")
 		}
 }
-
+//  set and increment
 
 func LPOP(listName string, sliceNum int, conn net.Conn)string {
 	fmt.Println("made it inside LPOP function")
