@@ -397,11 +397,11 @@ func main() {
 	//__________________________ intialize TCP connection _____________________________
 	port := "6379"
 	fmt.Println(os.Args[1])
-	if(os.Args[1] == "--port"){
+	if(len(os.Args)>2 && os.Args[1] == "--port"){
 		port = os.Args[2]
 		fmt.Println(os.Args[2])
 	}
-	listener, err := net.Listen("tcp", port)
+	listener, err := net.Listen("tcp", "0.0.0.0:" + port)
 	if err != nil {
 		fmt.Println("Failed to bind to port")
 		os.Exit(1)
