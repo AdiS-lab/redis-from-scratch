@@ -51,7 +51,8 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		}
 		input := statement[0]
 
-		if input ==  "MULTI" && isQueue == false {
+		if input ==  "MULTI" && isQueue == false { // if MULTI and ! in queue then good. if EXEC in queue then go, if EXEC not in queue then QUEUED, if EXEC not in 
+			// but length is bad, then or isQueue = false
 			isQueue = true
 			check = true
 			conn.Write([]byte("+OK\r\n"))
@@ -64,11 +65,13 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}else{
 				conn.Write([]byte("-ERR DISCARD without MULTI\r\n"))
 			}
-		}else if (isQueue == true && len(statement)>0 && input != "EXEC"){
-			queue = append(queue, statement)
-			conn.Write([]byte("+QUEUED\r\n"))
-		
 		}else if (isQueue == true && len(statement)>0 && input == "EXEC"){
+			if isQueue == false{
+				conn.Write([]byte("-ERR EXEC without MULTI\r\n"))
+			}else if(len(queue) == 0){ 
+				isQueue = false
+				conn.Write([]byte("*0\r\n"))
+			}else{
 			isQueue = false
 			check = false
 			writeArr := []string{}
@@ -86,14 +89,13 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			fmt.Println(message)
 			conn.Write([]byte(message))
 			queue = [][]string{}
-
-		}else if(input == "EXEC"){
-			if isQueue == false{
-				conn.Write([]byte("-ERR EXEC without MULTI\r\n"))
-			}else if(len(queue) == 0){ 
-				isQueue = false
-				conn.Write([]byte("*0\r\n"))
 			}
+	
+		}else if (isQueue == true && len(statement)>0 && input != "EXEC"){
+
+			queue = append(queue, statement)
+			conn.Write([]byte("+QUEUED\r\n"))
+		
 		}else{
 			writeVal := execute(statement, conn)
 			if writeVal != ""{
@@ -239,6 +241,9 @@ func execute(statement []string ,conn net.Conn) string{
 				storage[storageKey] = strconv.Itoa(tempVal + 1)
 				return (fmt.Sprintf(":%d\r\n", tempVal+1))
 			}
+		case "WATCH":{
+			return "+OK\r\n"
+		}
 		default:
 			return ("+messageNotFound\r\n")
 		}
