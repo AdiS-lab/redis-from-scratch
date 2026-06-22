@@ -119,8 +119,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			
 			if(exists == false){
 				conn.Write([]byte("$-1\r\n"))
-			}
-			else if(length > 2){
+			}else if(length > 2){
 				if(length > lengthList){
 					lists[listName] = []
 					sendArr(lists[listName])
