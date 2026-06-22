@@ -102,7 +102,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 		}
 		case "LLEN":
 			listName := statement[1]
-			_, exists = lists[listName]
+			_, exists := lists[listName]
 			if exists {
 				conn.Write( []byte(Sprintf(":%d\r\n", len(lists[listName]))) )
 			}else{
