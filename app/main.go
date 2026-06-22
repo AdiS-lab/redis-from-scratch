@@ -19,7 +19,8 @@ var _ = os.Exit
 
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
-var isWaiting bool
+var isQueue = false
+var queue = make(map[string]string)
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
@@ -176,7 +177,14 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}
 		case "MULTI":
 			conn.Write([]byte("+OK\r\n"))
-
+			isQueue = true
+		case "EXEC":
+			if isQueue == false{
+				conn.Write([]byte("-1\r\n"))
+			}else{
+				message := createArr(queue, 0, len(queue))
+				conn.Write([]byte(message))
+			}
 		default:
 			conn.Write([]byte("+messageNotFound\r\n"))
 		}
