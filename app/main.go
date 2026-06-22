@@ -66,6 +66,11 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				conn.Write([]byte("+OK\r\n"))
 			}
 
+		}else if(input == "UNWATCH"){
+			watchedKeys = make(map[string]string)
+			watchCheck = false
+			conn.Write([]byte("+OK\r\n"))
+
 		}else if(input ==  "DISCARD"){
 			if isQueue == true{
 				isQueue = false
