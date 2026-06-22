@@ -23,7 +23,7 @@ var watchedKeys = make(map[string]string)
 var watchCheck bool
 
 // _____________ loop through client message ______________________________
-func handleConnection(conn net.Conn) { //  conn is a byte slice
+func handleConnection(conn net.Conn, data map[string]string) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	var queue [][]string
 	isQueue :=  false
@@ -106,7 +106,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 					message := ""
 					fmt.Println(queue)
 					for i:=0; i<len(queue); i++ {
-						writeVal := execute(queue[i], conn)
+						writeVal := execute(queue[i], conn, data)
 						writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
 					}
 					count := len(writeArr)
@@ -125,7 +125,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			conn.Write([]byte("+QUEUED\r\n"))
 		
 		}else{
-			writeVal := execute(statement, conn)
+			writeVal := execute(statement, conn, data)
 			if writeVal != ""{
 				conn.Write([]byte(writeVal))
 			}
@@ -141,7 +141,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 }
 
 
-func execute(statement []string ,conn net.Conn) string{
+func execute(statement []string ,conn net.Conn, data map[string]string) string{
 		switch strings.ToUpper(statement[0]) {
 		case "PING":
 			return ("+PONG\r\n") //  have to write back as byte slice
@@ -275,7 +275,8 @@ func execute(statement []string ,conn net.Conn) string{
 				return (fmt.Sprintf(":%d\r\n", tempVal+1))
 			}
 		case "INFO":	
-			return "$11\r\nrole:master\r\n"
+			inputStr := fmt.Sprintf("role:%s", data["role"])
+			return fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr), inputStr)
 		default:
 			return ("+messageNotFound\r\n")
 		}
@@ -398,9 +399,15 @@ func handleRealConnection(reader *bufio.Reader, count int, initial int) []string
 func main() {
 	//__________________________ intialize TCP connection _____________________________
 	port := "6379"
-	if(len(os.Args)>2 && os.Args[1] == "--port"){
-		port = os.Args[2]
-		fmt.Println(os.Args[2])
+	data := make(map[string]string)
+	if(len(os.Args)>2){
+		if os.Args[1] ==  "--port"{ 
+			port = os.Args[2]
+			data["role"] = "master"
+		}else if os.Args[2] == "--replicaof" {
+			port = os.Args[1]
+			data["role"] = "slave"
+		}		
 	}
 	listener, err := net.Listen("tcp", "0.0.0.0:" + port)
 	if err != nil {
@@ -415,6 +422,6 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
-		go handleConnection(conn)
+		go handleConnection(conn, data)
 	}
 }
