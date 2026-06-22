@@ -188,13 +188,14 @@ func waitChange(listName string, timeout int, conn net.Conn){
 
 	for range ticker.C{ // ticker.C is a channel that sends something to go every so seconds. we want to check it's range (?)
 		if(timeout > 0 && len(lists[listName]) > 0){
+			fmt.Println("made it to valid")
 			val := lists[listName][0]
 			lists[listName] = []string{}
 			conn.Write([]byte(fmt.Sprintf("*2\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(listName), listName, len(val), val)))
 			ticker.Stop()
 			return
 		}
-		if(timeout > 0 || time.Now().After(deadline)){
+		if(timeout > 0 && time.Now().After(deadline)){
 			conn.Write([]byte("*-1\r\n")) // send a null array 
 			ticker.Stop()
 			return
