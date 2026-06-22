@@ -202,7 +202,7 @@ func execute(statement []string ,conn net.Conn) string{
 				return message
 			} else {
 				ch1 := make(chan string)
-				waitChange(listName, timeout, conn, ch1) 
+				go waitChange(listName, timeout, conn, ch1) 
 				val := <- ch1
 				return val
 			}
