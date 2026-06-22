@@ -105,6 +105,8 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			_, exists = lists[listName]
 			if exists {
 				conn.Write( []byte(Sprintf(":%d\r\n", len(lists[listName]))) )
+			}else{
+				conn.Write([]byte(":0\r\n" ))
 			}
 			
 
