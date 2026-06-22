@@ -266,7 +266,7 @@ func LPOP(listName string, sliceNum int, conn net.Conn)string {
 }
 
 // __________________ poll and wait to see if length updates ________________________
-func waitChange(listName string, timeout float64, conn net.Conn, ch chan string) {
+func waitChange(listName string, timeout float64, conn net.Conn, ch1 chan string) {
 	fmt.Println(timeout)
 	fmt.Println("made it inside WaitChange")
 	ticker := time.NewTicker(10 * time.Millisecond)
@@ -278,13 +278,13 @@ func waitChange(listName string, timeout float64, conn net.Conn, ch chan string)
 			val := lists[listName][0]
 			lists[listName] = []string{}
 			tempVal := fmt.Sprintf("*2\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(listName), listName, len(val), val)
-			ch <- tempVal
+			ch1 <- tempVal
 			ticker.Stop()
 		}
 		if timeout > 0 && time.Now().After(deadline) {
 			fmt.Println(time.Now())
 			tempVal := "*-1\r\n"  // send a null array
-			ch <- tempVal
+			ch1 <- tempVal
 			ticker.Stop()
 		}
 	}
