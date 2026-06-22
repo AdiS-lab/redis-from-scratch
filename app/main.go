@@ -187,7 +187,7 @@ func waitChange(listName string, timeout int, conn net.Conn){
 	deadline := time.Now().Add(time.Duration(timeout) * time.Second)
 
 	for range ticker.C{ // ticker.C is a channel that sends something to go every so seconds. we want to check it's range (?)
-		if(timeout > 0 && len(lists[listName]) > 0){
+		if(len(lists[listName]) > 0){
 			fmt.Println("made it to valid")
 			val := lists[listName][0]
 			lists[listName] = []string{}
