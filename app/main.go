@@ -20,11 +20,13 @@ var _ = os.Exit
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
 var queue [][]string
+var isQueue bool
+
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
-	isQueue :=  false
+	isQueue =  false
 	for {
 		var statement []string
 		t, _ := reader.ReadByte()
@@ -48,40 +50,61 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			os.Exit(0)
 		}
 
-		if (isQueue == true && len(statement)>0 && statement[0] != "EXEC"){
+
+		if (isQueue == true && len(statement)>0 && strings.ToUpper(statement[0]) != "EXEC"){
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
+		
+		}else if (isQueue == true && len(statement)>0 && strings.ToUpper(statement[0]) == "EXEC"){
+			writeArr := []string{}
+			for i:=0; i<len(queue); i++ {
+				writeVal := execute(queue[i], conn)
+				writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
+			}
+			message := createArr(writeArr, 0, len(writeArr))
+			conn.Write([]byte(message))
+
 		}else{
+			writeVal := execute(statement, conn)
+			if writeVal != ""{
+				conn.Write([]byte(writeVal))
+			}
+		}
 		//______________________________ reading command __________________________________________
+	
+		fmt.Println(queue)
+	}
+}
+
+
+func execute(statement []string ,conn net.Conn) string{
 		switch strings.ToUpper(statement[0]) {
 		case "PING":
-			conn.Write([]byte("+PONG\r\n")) //  have to write back as byte slice
+			return ("+PONG\r\n") //  have to write back as byte slice
 		case "ECHO":
 			messageStr := string(statement[1])
-			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr)))
+			return (fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr))
 		case "SET":
 			if len(statement) > 3 && strings.ToUpper(statement[3]) == "PX" { //  checking if they added expiry date.
 				storage[statement[1]] = statement[2]
 				ms, _ := strconv.Atoi(statement[4])
 				fmt.Println(storage)
 				go wait(statement[1], ms)
-				conn.Write([]byte("+OK\r\n"))
+				return ("+OK\r\n")
 
 			} else {
 				storage[statement[1]] = statement[2] // use map to set pair
-				conn.Write([]byte("+OK\r\n"))
+				return ("+OK\r\n")
 			}
-			fmt.Println(statement)
-			fmt.Println(storage)
 		case "GET":
 			fmt.Println("made it here")
 			storageKey := statement[1]
 			value, exists := storage[storageKey]
 			if exists {
 				fmt.Println("made it here")
-				conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(value), storage[storageKey])))
+				return (fmt.Sprintf("$%d\r\n%s\r\n", len(value), storage[storageKey]))
 			} else {
-				conn.Write([]byte("$-1\r\n"))
+				return ("$-1\r\n")
 			}
 		case "RPUSH": // append new data to a list (a list is just a slice)
 			listName := statement[1]
@@ -89,7 +112,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				lists[listName] = append(lists[listName], statement[i])
 				//create a list if don't exist and append and return the length of list in RESP format
 			}
-			conn.Write([]byte(fmt.Sprintf(":%d\r\n", len(lists[listName]))))
+			return (fmt.Sprintf(":%d\r\n", len(lists[listName])))
 		case "LPUSH": // prepend list
 			listName := statement[1]
 			_, exists := lists[listName]
@@ -105,25 +128,27 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				}
 			}
 			lists[listName] = tempArr
-			conn.Write([]byte(fmt.Sprintf(":%d\r\n", len(lists[listName]))))
+			return (fmt.Sprintf(":%d\r\n", len(lists[listName])))
 		case "LLEN": // get length of list
 			listName := statement[1]
 			_, exists := lists[listName]
 			if exists {
-				conn.Write([]byte(fmt.Sprintf(":%d\r\n", len(lists[listName]))))
+				return fmt.Sprintf(":%d\r\n", len(lists[listName]))
 			} else {
-				conn.Write([]byte(":0\r\n"))
+				return (":0\r\n")
 			}
 		case "LPOP": // to remove the first values when given something like LPOP name 2
 			listName := statement[1]
 			_, exists := lists[listName]
 			if !exists {
-				conn.Write([]byte("$-1\r\n"))
+				return ("$-1\r\n")
 			} else if len(statement) > 2 {
 				sliceNum, _ := strconv.Atoi(statement[2])
 				LPOP(listName, sliceNum, conn)
+				return ""
 			} else {
 				LPOP(listName, 0, conn)
+				return ""
 			}
 		case "LRANGE": //  to find the range when given smth like LRANGE 0 5
 			listName := statement[1]
@@ -147,19 +172,21 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 				}
 			}
 			if !exists || start >= length || start > stop {
-				conn.Write([]byte("*0\r\n"))
-				continue
+				return ("*0\r\n")
+				
 			}
 
 			message := createArr(lists[listName], start, stop+1)
-			conn.Write([]byte(message))
+			return (message)
 		case "BLPOP":
 			listName := statement[1]
 			timeout, _ := strconv.ParseFloat(statement[2], 64)
 			if len(lists[listName]) > 0 {
 				LPOP(listName, 0, conn)
+				return ""
 			} else {
 				go waitChange(listName, timeout, conn)
+				return ""
 			}
 		case "INCR": // increment any numerical value inside storage by 1
 			storageKey := statement[1]
@@ -167,42 +194,37 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			_, err := strconv.Atoi(storage[storageKey])
 			if exists == false {
 				storage[storageKey] = "1"
-				conn.Write([]byte(":1\r\n"))
+				return (":1\r\n")
 			} else if err != nil {
-				conn.Write([]byte("-ERR value is not an integer or out of range\r\n"))
+				return ("-ERR value is not an integer or out of range\r\n")
 
 			} else {
 				// }else if(reflect.TypeOf(lists[listName]) != "int"){
-				// 	conn.Write([]byte("+-1\r\n"))"
+				// 	return ("+-1\r\n"))"
 				fmt.Println("making it here and messing after")
 				tempVal, _ := strconv.Atoi(storage[storageKey])
 				storage[storageKey] = strconv.Itoa(tempVal + 1)
-				conn.Write([]byte(fmt.Sprintf(":%d\r\n", tempVal+1)))
+				return (fmt.Sprintf(":%d\r\n", tempVal+1))
 			}
 		case "MULTI":
-			conn.Write([]byte("+OK\r\n"))
 			isQueue = true
+			return ("+OK\r\n")
 		case "EXEC":
 			if isQueue == false{
-				conn.Write([]byte("-ERR EXEC without MULTI\r\n")) // funcify entire thing, send storage, or any arr, but it would be that 
+				return ("-ERR EXEC without MULTI\r\n") // funcify entire thing, send storage, or any arr, but it would be that 
 				//in this case we send the queue with statemetns, but we have to make sure to do it slowly, so set an interval, and then send them
 				//one by one, nah, but then they're asking for a list so expectation to append to arr, perhaps have to change
 				//all connections to returning message, and then use the messages returned from each call, to append to arr
 				//
 			}else if(len(queue) == 0){ 
-				conn.Write([]byte("*0\r\n"))
 				isQueue = false
-			}else{
-				conn.Write([]byte("*1\r\n$2\r\nOK\r\n"))
+				return ("*0\r\n")
 			}
+			return ""
 		default:
-			conn.Write([]byte("+messageNotFound\r\n"))
+			return ("+messageNotFound\r\n")
 		}
-		fmt.Println(queue)
-	}
-	}
 }
-
 
 
 func LPOP(listName string, sliceNum int, conn net.Conn) {
