@@ -93,8 +93,8 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				//create a list if don't exist and append and return the length of list in RESP format
 			}
 			if exists{
-				for j:=1;j<len(lists[listName]);j++{
-					tempArr = append(tempArr, lists[listName])
+				for j:=0;j<len(lists[listName]);j++{
+					tempArr = append(tempArr, lists[listName][j])
 				}
 			}
 			lists[listName] = tempArr
