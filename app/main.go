@@ -90,12 +90,12 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			}else{
 				isQueue = false
 				if(watchCheck){
-					for key, value := range watchedKeys{ 
-						_,exists := storage[key]
-						if (exists){ // check if key is there then revert, more general constraint now
-							storage[key] = value
-						}
-					}
+					// for key, value := range watchedKeys{ 
+					// 	_,exists := storage[key]
+					// 	if (exists){ // check if key is there then revert, more general constraint now
+					// 		storage[key] = value
+					// 	}
+					// }
 					conn.Write([]byte("*-1\r\n"))
 					queue = [][]string{}
 					watchCheck = false
