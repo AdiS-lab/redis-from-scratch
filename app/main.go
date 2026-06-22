@@ -167,7 +167,7 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			fmt.Println(reflect.TypeOf(storage[storageKey]))
 			tempVal,_ := strconv.Atoi(storage[storageKey]) 
 			storage[storageKey] = string(tempVal +1)
-			conn.Write([]byte(fmt.Sprintf(":%d\r\n", storage[storageKey])))
+			conn.Write([]byte(fmt.Sprintf(":%d\r\n", tempVal+1)))
 
 		default: 
 			conn.Write([]byte("+messageNotFound\r\n"))
