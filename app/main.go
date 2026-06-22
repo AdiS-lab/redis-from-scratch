@@ -160,10 +160,12 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			value, exists := storage[storageKey]
 			fmt.Println(value)
 			if exists == false {
+				fmt.Println("making it here then failing")
 				conn.Write([]byte(":1\r\n"))
 			}else{
 			// }else if(reflect.TypeOf(lists[listName]) != "int"){
 			// 	conn.Write([]byte("+-1\r\n"))
+				fmt.Println("making it here and messing after")
 				tempVal, _ := strconv.Atoi(storage[storageKey])
 				storage[storageKey] = string(tempVal + 1)
 				conn.Write([]byte(fmt.Sprintf(":%d\r\n", tempVal+1)))
