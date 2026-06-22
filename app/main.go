@@ -98,10 +98,10 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 				for j:=0;j<len(lists[listName]);j++{
 					tempArr = append(tempArr, lists[listName][j])
 				}
-				lists[listName] = tempArr
-			
-				conn.Write( []byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
 			}
+			lists[listName] = tempArr
+			conn.Write([]byte( fmt.Sprintf(":%d\r\n", len(lists[listName])) ))
+			
 		case "LLEN": // get length of list
 			listName := statement[1]
 			_, exists := lists[listName]
