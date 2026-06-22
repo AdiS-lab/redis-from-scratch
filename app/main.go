@@ -25,6 +25,7 @@ var check bool
 func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	var queue [][]string
+	watchedKeys := []string{}
 	isQueue :=  false
 	check = false
 	for {
@@ -51,11 +52,22 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 		}
 		input := statement[0]
 
-		if input ==  "MULTI" && isQueue == false { // if MULTI and ! in queue then good. if EXEC in queue then go, if EXEC not in queue then QUEUED, if EXEC not in 
+		if input ==  "MULTI" && isQueue == false { 
 			// but length is bad, then or isQueue = false
 			isQueue = true
 			check = true
 			conn.Write([]byte("+OK\r\n"))
+		}else if input == "WATCH" {
+
+			if(isQueue == true){
+				conn.Write([]byte("-ERR WATCH inside MULTI is not allowed\r\n"))
+			}else{
+				for i:=1; i<len(statement); i++ {
+					watchedKeys = append(watchedKeys, statement[i])
+				}
+				conn.Write([]byte("+OK\r\n"))
+			}
+
 		}else if(input ==  "DISCARD"){
 			if isQueue == true{
 				isQueue = false
@@ -91,7 +103,7 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			queue = [][]string{}
 			}
 	
-		}else if (isQueue == true && len(statement)>0 && input != "EXEC"){
+		}else if (isQueue == true && len(statement)>0){
 
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
@@ -241,9 +253,6 @@ func execute(statement []string ,conn net.Conn) string{
 				storage[storageKey] = strconv.Itoa(tempVal + 1)
 				return (fmt.Sprintf(":%d\r\n", tempVal+1))
 			}
-		case "WATCH":{
-			return "+OK\r\n"
-		}
 		default:
 			return ("+messageNotFound\r\n")
 		}
