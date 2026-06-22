@@ -140,8 +140,6 @@ func handleConnection(conn net.Conn){ //  conn is a byte slice
 			start,_ := strconv.Atoi(statement[2])
 			stop,_ := strconv.Atoi(statement[3])
 			length := len(lists[listName])
-			var message string
-
 		 	if stop>length-1{
 				stop = length-1
 			}
