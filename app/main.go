@@ -70,10 +70,11 @@ func handleConnection(conn net.Conn) { //  conn is a byte slice
 			fmt.Println(storage)
 		case "GET":
 			fmt.Println("made it here")
-			value, exists := storage[statement[1]]
+			storageKey := statement[1]
+			value, exists := storage[storageKey]
 			if exists {
 				fmt.Println("made it here")
-				conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)))
+				conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(value), storage[storageKey])))
 			} else {
 				conn.Write([]byte("$-1\r\n"))
 			}
