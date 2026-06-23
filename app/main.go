@@ -424,8 +424,8 @@ func main() {
 		if(os.Args[3] == "--replicaof"){
 			data["role"] = "slave"
 		}
+		fmt.Println(os.Args[5])
 	}
-	fmt.Println(data)
 	listener, err := net.Listen("tcp", "0.0.0.0:" + port)
 	if err != nil {
 		fmt.Println("Failed to bind to port")
