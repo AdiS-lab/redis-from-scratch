@@ -442,6 +442,7 @@ func parser(reader *bufio.Reader) []string {
 		initial, err := reader.ReadString('\n') // handle case that it is RDB file. 
 		initVal, err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 		if err != nil {
+			fmt.Println("error here when trying to parse RDB ", err)
 			return nil
 		}
 		fmt.Println("expectingRDB inside parse is ", expectingRDB)
