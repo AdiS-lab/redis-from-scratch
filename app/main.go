@@ -471,6 +471,9 @@ func main() {
 		}
 		fmt.Println(os.Args[4]) // comes in as localhost 6479 without the :
 		//split or loop through it. or manually do it. 
+	
+	}
+	if(len(os.Args)>4){
 		host := os.Args[4][0:9]
 		port := os.Args[4][10:]
 
