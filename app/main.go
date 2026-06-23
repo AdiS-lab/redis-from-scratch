@@ -56,13 +56,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 // can we funcify this portion right here. every time we create a new connection with a new
 // IP address/port (what's difference) then we can read it and extract then use. 
 
-		// buf :=  make([]byte, 1024) 
-		// conn.Read(buf)
-		// fmt.Println(string(buf))	
-
-
-
-
 		input := statement[0]
 
 		if input ==  "MULTI" && isQueue == false { 
@@ -484,7 +477,7 @@ func main() {
 		// 	REMEMBER THE START WOWOOWOOWO, so before we changed to bufio to handle this type of stuff, but now we can here
 		// reader := bufio.NewReader(masterConn)
 		fmt.Println("Made it inside this for loop")
-		handleConnection(masterConn, fullPort)
+		go handleConnection(masterConn, fullPort)
 		// conn := listener.Accept()
 		// conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 	}
