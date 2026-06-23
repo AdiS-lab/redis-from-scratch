@@ -472,10 +472,10 @@ func main() {
 		
 		masterConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 		// 	REMEMBER THE START WOWOOWOOWO, so before we changed to bufio to handle this type of stuff, but now we can here
-		reader := bufio.NewReader(masterConn)
+		// reader := bufio.NewReader(masterConn)
 		for{
-			statement := handleRealConnection(reader)
-			fmt.Println(statement)
+			fmt.Println("Made it inside this for loop")
+			handleConnection(masterConn, fullPort)
 		}
 		// conn := listener.Accept()
 		// conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
