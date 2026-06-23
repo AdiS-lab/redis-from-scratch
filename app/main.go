@@ -433,7 +433,7 @@ func main() {
 		}	
 		
 		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
-		conn := listener.Accept()
+		// conn := listener.Accept()
 		// conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 	}
 	
