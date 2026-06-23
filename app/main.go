@@ -303,8 +303,13 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 			if firstOK == false{
 				firstOK = true
 				return ("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n")
+			}else if(firstOK == true){
+				firstOK = false
+				return "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"
 			}
-			return ""
+			return "" // case where 
+		case "PSYNC":
+
 		default:
 			return ("+messageNotFound\r\n")
 		}
@@ -494,8 +499,6 @@ func main() {
 		// reader := bufio.NewReader(masterConn)
 		fmt.Println("Made it inside this for loop")
 		go handleConnection(masterConn, fullPort)
-		// conn := listener.Accept()
-		// conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 	}
 
 	listener, err := net.Listen("tcp", "0.0.0.0:" + fullPort)

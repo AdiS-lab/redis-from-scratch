@@ -67,3 +67,10 @@ examples :
 
 1. have to take switch case for commands, (PONG, SET, BLPOP)
 2. have to make our parser agnostic to all cases (listening for connection/creating connection)
+
+basic TCP setup 
+
+
+net.Listen("tcp", port)  --> listener (this handles the 3 way connection)
+listen.Accept()
+
