@@ -347,8 +347,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			offset := data["master_repl_offset"]
 			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$%d\r\n%s\r\n", len(offset), offset)
 		}else if(len(statement)>2 && statement[1] == "ACK"){
-			fmt.Println("Recieved ACK statement ", statement[3])
-			slaveConnections[conn]["offset"] = statement[3]
+			fmt.Println("Recieved ACK statement ", statement[2])
+			slaveConnections[conn]["offset"] = statement[2]
 		}
 		return "+OK\r\n"
 	case "WAIT":
