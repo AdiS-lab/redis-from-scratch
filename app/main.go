@@ -22,6 +22,8 @@ var lists = make(map[string][]string)
 var watchedKeys = make(map[string]string)
 var data = make(map[string]string)
 var watchCheck bool
+var firstPONG bool 
+var firstOK bool 
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
@@ -29,6 +31,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	var queue [][]string
 	isQueue :=  false
 	watchCheck = false
+	firstPONG = false
+	firstOK = false
+	
 	for {
 
 		
@@ -289,10 +294,17 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 			fmt.Println(message)
 			return message
 		case "PONG":
-			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n%s\r\n", fullPort)
+			if firstPONG == false{
+				firstPONG = true
+				return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n%s\r\n", fullPort)
+			}
+			return ""
 		case "OK":
-			return ("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n")
-
+			if firstOK == false{
+				firstOK = true
+				return ("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n")
+			}
+			return ""
 		default:
 			return ("+messageNotFound\r\n")
 		}
