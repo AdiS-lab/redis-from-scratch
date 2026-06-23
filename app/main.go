@@ -430,7 +430,7 @@ func parser(reader *bufio.Reader) []string {
 		initial, _ := reader.ReadString('\n')
 		initVal, _ = strconv.Atoi(strings.TrimSpace(initial)) // this for my first word. 
 	case "$":
-		initial, _ := reader.ReadString('\r')
+		initial, _ := reader.ReadString('\n')
 		tempVal,err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 
 		if(err!=nil){
