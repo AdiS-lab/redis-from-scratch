@@ -404,10 +404,12 @@ func main() {
 		if os.Args[1] ==  "--port"{ 
 			port = os.Args[2]
 			data["role"] = "master"
-		}else if os.Args[2] == "--replicaof" {
-			port = os.Args[1]
+		}
+	}
+	if(len(os.Args) > 3){
+		if(os.Args[3] == "replicaof"){
 			data["role"] = "slave"
-		}		
+		}
 	}
 	listener, err := net.Listen("tcp", "0.0.0.0:" + port)
 	if err != nil {
