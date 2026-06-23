@@ -170,7 +170,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			} else {
 				writeVal := execute(statement, conn, fullPort)
 				if writeVal != "" {
-					continue
+					conn.Write([]byte(writeVal))
 				}
 			}
 		}
