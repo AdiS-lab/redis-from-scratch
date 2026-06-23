@@ -138,8 +138,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			data["master_replid"] = inputArr[1]
 			data["master_repl_offset"] = inputArr[2]
 			expectingRDB = true
-			masterUpdate = true
-
 		} else if input == "PSYNC" { // 3rd step for 3 way handshake
 			// base64 to binary
 			// update the data to include the port PSYNC sends. 
@@ -473,6 +471,7 @@ func parser(reader *bufio.Reader)( []string, string) {
 			buf := make([]byte, initVal) // we set a buffer
 			io.ReadFull(reader, buf)   // consume and discard
 			expectingRDB = false
+			masterUpdate = true
 			return statement, recreatedCmd
 		}
 	case "+":
