@@ -284,6 +284,7 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 			fmt.Println(message)
 			return message
 		case "PONG": // picks up from ping sent in the beginning
+			fmt.Println("made it to PONG")
 			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port %s\n6380\r\n", fullPort) // tells master which port slave is on
 			// conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 		default:
