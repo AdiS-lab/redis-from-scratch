@@ -438,6 +438,7 @@ func parser(reader *bufio.Reader) []string {
 		reader.ReadString('\n') // bypass the last /r/n
 		count--
 	}
+	fmt.Println("THIS IS STATEMENT")
 	fmt.Println(statement)
 	return statement
 }
