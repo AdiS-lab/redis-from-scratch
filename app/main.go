@@ -158,6 +158,8 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				continue
 			} else {
 				writeVal := execute(statement, conn, fullPort)
+				fmt.Println("this is masterUpdate after process ", masterUpdate)
+				fmt.Println("this is role after update ", data["role"])
 				if(masterUpdate && data["role"] == "slave"){//in case of slave + needing to update offset
 					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
 					new_offset := curr_offset + len(recreatedCmd)
