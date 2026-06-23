@@ -59,7 +59,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		}
 		// manage masterUpdate by checking when doesn't equal one of those. 
 
-		fmt.Println("before going into check statement is ", statement)
+		fmt.Println("before going into check is ", masterUpdate)
 		if masterUpdate == true && data["role"] == "master"{//after three way connection
 			fmt.Println("propogating down to slave here's statement ", statement)
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
@@ -357,6 +357,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		for connection,_ := range slaveConnections {
 			connection.Write([]byte("*3\r\n$8\r\nreplconf\r\n$6\r\ngetack\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will 
 		}
+
 		target,_:= strconv.Atoi(statement[1])
 		sleep,_ := strconv.Atoi(statement[2])
 		ch := make(chan string)
