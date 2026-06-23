@@ -37,7 +37,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	
 	for {
 
-		
+		input := ""
 		statement := parser(reader)
 		// t, _ := reader.ReadByte()
 		// n, _ := reader.ReadString('\r')
@@ -61,8 +61,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		// }
 // can we funcify this portion right here. every time we create a new connection with a new
 // IP address/port (what's difference) then we can read it and extract then use. 
-
-		input := statement[0]
+		if len(statement) != 0{
+			input = statement[0]
+		}
 		
 		if input ==  "MULTI" && isQueue == false { 
 			// but length is bad, then or isQueue = false
