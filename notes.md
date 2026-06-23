@@ -57,3 +57,13 @@ have to set a buffer to capture response
 buf := make([]byte, 1024) --> slice buffer, allocate one place in memory with 1024 bytes, will be filled
 OR
 use bufio: bufio.NewReader(conn)
+
+
+observations 
+_____________________________________________
+
+continiously have to make modular to support various different functions
+examples :
+
+1. have to take switch case for commands, (PONG, SET, BLPOP)
+2. have to make our parser agnostic to all cases (listening for connection/creating connection)

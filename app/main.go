@@ -30,27 +30,35 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	isQueue :=  false
 	watchCheck = false
 	for {
-		var statement []string
-		t, _ := reader.ReadByte()
-		n, _ := reader.ReadString('\r')
-		initNum, _ := strconv.Atoi(strings.TrimSpace(n))
-		fmt.Println(initNum)
+		statement := handleRealConnection(reader)
+		// t, _ := reader.ReadByte()
+		// n, _ := reader.ReadString('\r')
+		// initNum, _ := strconv.Atoi(strings.TrimSpace(n))
+		// fmt.Println(initNum)
 
-		switch string(t) {
-		case "*":
-			reader.ReadString('$') // by pass the /r/n and $
-			initial, _ := reader.ReadString('\n')
-			initVal, _ := strconv.Atoi(strings.TrimSpace(initial))
+		// switch string(t) {
+		// case "*":
+		// 	reader.ReadString('$') // by pass the /r/n and $
+		// 	initial, _ := reader.ReadString('\n')
+		// 	initVal, _ := strconv.Atoi(strings.TrimSpace(initial))
 
-			statement = handleRealConnection(reader, initNum-1, initVal) // normalize number
+		// 	statement = handleRealConnection(reader, initNum-1, initVal) // normalize number
 
-		case "$":
-			reader.ReadString('\n')
-			statement = handleRealConnection(reader, 1, initNum)
-		default:
-			fmt.Println("Invalid type on first char")
-			os.Exit(0)
-		}
+		// case "$":
+		// 	reader.ReadString('\n')
+		// 	statement = handleRealConnection(reader, 1, initNum)
+		// default:
+		// 	fmt.Println("Invalid type on first char")
+		// 	os.Exit(0)
+		// }
+// can we funcify this portion right here. every time we create a new connection with a new
+// IP address/port (what's difference) then we can read it and extract then use. 
+
+
+
+
+
+
 		input := statement[0]
 
 		if input ==  "MULTI" && isQueue == false { 
@@ -283,10 +291,6 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 			message = fmt.Sprintf("$%d\r\n%s\r\n", len(body), body)
 			fmt.Println(message)
 			return message
-		case "PONG": // picks up from ping sent in the beginning
-			fmt.Println("made it to PONG")
-			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port %s\n6380\r\n", fullPort) // tells master which port slave is on
-			// conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 		default:
 			return ("+messageNotFound\r\n")
 		}
@@ -372,11 +376,45 @@ func wait(key string, ms int) {
 		ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
 	}
 }
-func handleRealConnection(reader *bufio.Reader, count int, initial int) []string {
-	fmt.Println("made it inside handleRealConn function")
+
+
+func handleRealConnection(reader *bufio.Reader) []string {
+
+// 3 different versions $n \r\n         *n \r\n $b \r\n  
+	t, _ := reader.ReadByte() // read first byte
+	count :=  0
+	var initVal int
 	var statement []string
 
-	name := make([]byte, initial) // create a buffer to hold the new data
+	switch string(t) {
+	case "*":
+		n, _ := reader.ReadString('\r')
+		count,_ = strconv.Atoi(strings.TrimSpace(n)) // got the count \n $b \r\n
+		count = count - 1 // subtract 1 because we already calculating first value
+		reader.ReadString('$') // by pass the /r/n and $ 
+
+		initial, _ := reader.ReadString('\n')
+		initVal, _ = strconv.Atoi(strings.TrimSpace(initial)) // this for my first word. 
+
+	case "$":
+		initial, _ := reader.ReadString('\r')
+		initVal,_ = strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
+		reader.ReadString('\n')
+
+	case "+":
+		word,_ := reader.ReadString('\n')
+		statement = append(statement, strings.TrimSpace(word)) 
+		return statement
+
+	default:	
+		fmt.Println("Invalid type on first char")
+		os.Exit(0)
+	}
+
+
+	//____________________ let's apply the same logic, so the above is choosing arr or str __________________________
+
+	name := make([]byte, initVal) // create a buffer to hold the new data
 	reader.Read(name)
 	statement = append(statement, string(name))
 	reader.ReadString('\n')
@@ -435,7 +473,11 @@ func main() {
 		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 		buf := make([]byte, 1024)
 		conn.Read(buf) // 	REMEMBER THE START WOWOOWOOWO, so before we changed to bufio to handle this type of stuff, but now we can here
-		fmt.Println(string(buf))
+		reader := bufio.NewReader(conn)
+		for{
+			statement := handleRealConnection(reader)
+			fmt.Println(statement)
+		}
 		// conn := listener.Accept()
 		// conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 	}
