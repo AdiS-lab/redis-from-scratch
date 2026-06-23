@@ -515,6 +515,7 @@ func parser(reader *bufio.Reader)( []string, string) {
 		recreatedCmd += f
 		count--
 	}
+	fmt.Println("immediately after parsing cmd is " , recreatedCmd)
 	fmt.Println("immediately after parsing statement is ", statement)
 	return statement, recreatedCmd
 }
