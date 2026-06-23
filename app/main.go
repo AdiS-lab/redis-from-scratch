@@ -24,14 +24,14 @@ var storage = make(map[string]string)
 var lists = make(map[string][]string)
 var watchedKeys = make(map[string]string)
 var data = make(map[string]string)
-var slaveConnections []net.Conn // sync.Mutex protects concurrent access
+var slaveConnections []net.Conn // sync.Mutex protects concurrent access (whateva that means)
 
 
 var watchCheck bool
 var firstPONG bool
 var firstOK bool
 var masterUpdate bool 
-var slaveUpdate bool
+var expectingRDB bool
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
@@ -42,15 +42,15 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	firstPONG = false
 	firstOK = false
 	masterUpdate = false
-	slaveUpdate = false
+	expectingRDB = false
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
 
 	for {
 
 		input := ""
-		statement := parser(reader)
+		statement := parser(reader) // if nil break
 		if statement == nil {
-			break
+			continue
 		}
 		if len(statement) != 0 {
 			input = statement[0]
@@ -141,7 +141,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			// update the data to include the port PSYNC sends. 
 			fmt.Println("made it to PSYNC alright")
 			masterUpdate = true
-			slaveUpdate = true
+			expectingRDB = true
 			fmt.Println("slave connections ", conn)
 			slaveConnections = append(slaveConnections, conn) // sets the state right so everything goes to the slave
 
@@ -439,18 +439,17 @@ func parser(reader *bufio.Reader) []string {
 		initial, _ := reader.ReadString('\n')
 		initVal, _ = strconv.Atoi(strings.TrimSpace(initial)) // this for my first word.
 	case "$":
-		initial, err := reader.ReadString('\n')
-		tempVal, err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
-		// fmt.Println("RDB length: ", tempVal, "err:", err)
+		initial, err := reader.ReadString('\n') // handle case that it is RDB file. 
+		initVal, err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 		if err != nil {
+			return nil
+		}
+		if(expectingRDB){ //handle RDB file
+			buf := make([]byte, initVal) // we set a buffer
+			io.ReadFull(reader, buf)   // consume and discard
+			expectingRDB = false
 			return statement
 		}
-
-		buf := make([]byte, tempVal) // we set a buffer
-		io.ReadFull(reader, buf)     // consume and discard
-		reader.ReadByte()
-		return statement
-		// reader.ReadString('\n')
 	case "+":
 		word, _ := reader.ReadString('\n')
 		statement = append(statement, strings.TrimSpace(word))
