@@ -407,7 +407,7 @@ func main() {
 		}
 	}
 	if(len(os.Args) > 3){
-		if(os.Args[3] == "replicaof"){
+		if(os.Args[3] == "--replicaof"){
 			data["role"] = "slave"
 		}
 	}
