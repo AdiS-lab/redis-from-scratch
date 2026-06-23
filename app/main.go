@@ -352,8 +352,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return "+OK\r\n"
 	case "WAIT":
 		count := 0
-		sleep,_ := strconv.Atoi(statement[2])
-		time.Sleep(time.Duration(sleep)*time.Millisecond)// stops everything else, but can still run logic?
+		// sleep,_ := strconv.Atoi(statement[2])
+		// time.Sleep(time.Duration(sleep)*time.Millisecond)// stops everything else, but can still run logic?
 			for conn,_ := range slaveConnections{
 			offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
 			fmt.Println("offsetval inside wait cmd is ", offsetVal)
