@@ -31,7 +31,7 @@ var watchCheck bool
 var firstPONG bool
 var firstOK bool
 var masterUpdate bool 
-var expectingRDB bool
+var expectingRDB = false
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
