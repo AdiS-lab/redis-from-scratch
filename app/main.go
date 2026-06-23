@@ -64,13 +64,13 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			fmt.Println("propogating down to slave here's statement ", statement)
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
 				for conn, _ := range slaveConnections {
-					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
-					new_offset := curr_offset + len(recreatedCmd)
-					data["master_repl_offset"] = strconv.Itoa(new_offset)
-
 					message := createArr(statement, 0, len(statement))
 					fmt.Println("for propogation message is ", message)
 					conn.Write([]byte(message))
+
+					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
+					new_offset := curr_offset + len(recreatedCmd)
+					data["master_repl_offset"] = strconv.Itoa(new_offset)
 				}
 			}
 	
