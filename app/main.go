@@ -56,9 +56,10 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			input = statement[0]
 		}
 		// manage masterUpdate by checking when doesn't equal one of those. 
+
+		fmt.Println("before going into check statement is ", statement)
 		if masterUpdate == true && data["role"] == "master"{//after three way connection
-			fmt.Println("made it to the master update all good")
-			fmt.Println("in master ", statement)
+			fmt.Println("propogating down to slave here's statement ", statement)
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
 				for i:=0; i<len(slaveConnections); i++ {
 					message := createArr(statement, 0, len(statement))
@@ -131,7 +132,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			}
 
 		} else if strings.Split(input, " ")[0] == "FULLRESYNC" {// second step of 3 way handshake for master
-			fmt.Println("made it here")
 			inputArr := strings.Split(input, " ")
 			data["master_replid"] = inputArr[1]
 			data["master_repl_offset"] = inputArr[2]
@@ -546,7 +546,6 @@ func main() {
 	}
 
 	for {
-		fmt.Println("made it to the start")
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println("Error accepting connection: ", err.Error())
