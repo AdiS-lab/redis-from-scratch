@@ -20,10 +20,11 @@ var _ = os.Exit
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
 var watchedKeys = make(map[string]string)
+var data = make(map[string]string)
 var watchCheck bool
 
 // _____________ loop through client message ______________________________
-func handleConnection(conn net.Conn, data map[string]string) { //  conn is a byte slice
+func handleConnection(conn net.Conn) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	var queue [][]string
 	isQueue :=  false
@@ -106,7 +107,7 @@ func handleConnection(conn net.Conn, data map[string]string) { //  conn is a byt
 					message := ""
 					fmt.Println(queue)
 					for i:=0; i<len(queue); i++ {
-						writeVal := execute(queue[i], conn, data)
+						writeVal := execute(queue[i], conn)
 						writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
 					}
 					count := len(writeArr)
@@ -125,7 +126,7 @@ func handleConnection(conn net.Conn, data map[string]string) { //  conn is a byt
 			conn.Write([]byte("+QUEUED\r\n"))
 		
 		}else{
-			writeVal := execute(statement, conn, data)
+			writeVal := execute(statement, conn)
 			if writeVal != ""{
 				conn.Write([]byte(writeVal))
 			}
@@ -141,7 +142,7 @@ func handleConnection(conn net.Conn, data map[string]string) { //  conn is a byt
 }
 
 
-func execute(statement []string ,conn net.Conn, data map[string]string) string{
+func execute(statement []string ,conn net.Conn) string{
 		switch strings.ToUpper(statement[0]) {
 		case "PING":
 			return ("+PONG\r\n") //  have to write back as byte slice
@@ -424,6 +425,6 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
-		go handleConnection(conn, data)
+		go handleConnection(conn)
 	}
 }
