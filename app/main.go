@@ -158,8 +158,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				continue
 			} else {
 				writeVal := execute(statement, conn, fullPort)
-				fmt.Println("this is masterUpdate after process ", masterUpdate)
-				fmt.Println("this is role after update ", data["role"])
 				if(masterUpdate && data["role"] == "slave"){//in case of slave + needing to update offset
 					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
 					new_offset := curr_offset + len(recreatedCmd)
@@ -350,6 +348,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			offset := data["master_repl_offset"]
 			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$%d\r\n%s\r\n", len(offset), offset)
 		}else if(len(statement)>2 && statement[1] == "ACK"){
+			fmt.Println("Recieved ACK statement ", statement[3])
 			slaveConnections[conn]["offset"] = statement[3]
 		}
 		return "+OK\r\n"
