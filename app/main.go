@@ -276,6 +276,7 @@ func execute(statement []string ,conn net.Conn) string{
 				return (fmt.Sprintf(":%d\r\n", tempVal+1))
 			}
 		case "INFO":	
+			fmt.Println(data)
 			inputStr := fmt.Sprintf("role:%s", data["role"])
 			return fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr), inputStr)
 		default:
