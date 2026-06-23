@@ -548,6 +548,7 @@ func waitOnConnections(deadline time.Time, target int, ch chan string){
 	count := 0
 	for range ticker.C{
 		if(time.Now().After(deadline)){ 
+			fmt.Println("made it to the point where it overextended")
 			ch <- fmt.Sprintf(":%d\r\n", count) // go into infinite for loop wait until after deadline
 			ticker.Stop()
 		}else{ // keep resetting such can count from fresh. 
