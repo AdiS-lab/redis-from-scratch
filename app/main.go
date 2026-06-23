@@ -354,7 +354,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	case "WAIT":
 		// either after time is expired, or if completed before
 		for connection,_ := range slaveConnections {
-			connection.Write([]byte("*3\r\n$8\r\nreplconf\r\n$6\r\ngetack\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will 
+			connection.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will 
 		}
 
 		target,_:= strconv.Atoi(statement[1])
