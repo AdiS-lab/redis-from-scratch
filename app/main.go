@@ -381,6 +381,7 @@ func wait(key string, ms int) {
 
 
 func parser(reader *bufio.Reader) []string {
+	fmt.Println("made it insider paser !!!")
 
 // 3 different versions $n \r\n         *n \r\n $b \r\n  
 	t, _ := reader.ReadByte() // read first byte
@@ -388,6 +389,7 @@ func parser(reader *bufio.Reader) []string {
 	var initVal int
 	var statement []string
 	fmt.Println(string(t))
+	fmt.Println()
 
 	switch string(t) {
 	case "*":
