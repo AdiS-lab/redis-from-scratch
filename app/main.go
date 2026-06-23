@@ -124,6 +124,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					queue = [][]string{}
 				}	
 			}
+		
+		}else if(input[0:3] == "FULL") {
+			return
 		}else if (isQueue == true && len(statement)>0){
 
 			queue = append(queue, statement)
@@ -304,8 +307,8 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 				firstOK = true
 				return ("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n")
 			}
-
 			return "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"
+
 		// case "PSYNC":
 		// 	return ""
 		default:
