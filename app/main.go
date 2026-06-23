@@ -330,6 +330,8 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 		// 	return ""
 		case "REPLCONF":
 			return "+OK\r\n"
+		case "PSYNC":
+			return "+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n"
 		default:
 			return ("+messageNotFound\r\n")
 		}
