@@ -355,7 +355,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		target,_:= strconv.Atoi(statement[1])
 		sleep,_ := strconv.Atoi(statement[2])
 		deadline := time.Now().Add(time.Duration(sleep)*time.Millisecond)
-		ch = make(chan string)
+		ch := make(chan string)
 		go waitOnConnections(deadline, target, ch)
 		return <- ch
 
