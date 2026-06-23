@@ -523,7 +523,7 @@ func main() {
 	data["master_replid"] = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
 
 	if len(os.Args) > 2 {
-		if os.Args[1] == "--port" {
+		if os.Args[1] == "--port" || os.Args[1] == "-p" {
 			fullPort = os.Args[2]
 		}
 	}
