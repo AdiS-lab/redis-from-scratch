@@ -62,7 +62,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 // IP address/port (what's difference) then we can read it and extract then use. 
 
 		input := statement[0]
-
+		
 		if input ==  "MULTI" && isQueue == false { 
 			// but length is bad, then or isQueue = false
 			isQueue = true
@@ -125,7 +125,8 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				}	
 			}
 		
-		}else if(len(input) > 4 && input[0:3] == "FULL") {
+		}else if(len(input) > 4) {
+			fmt.Println(input[0:3])
 			conn.Write([]byte("+OK\r\n"))
 		}else if (isQueue == true && len(statement)>0){
 
