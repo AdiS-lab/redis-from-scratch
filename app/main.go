@@ -125,9 +125,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				}	
 			}
 		
-		}else if(strings.Split(input, " ")[0] == "FULL") {
-			fmt.Println(input[0:4])
-			strings.Split(input," ")
+		}else if(strings.Split(input, " ")[0] == "FULLRESYNC") {
+			fmt.Println("made it here")
+			inputArr := strings.Split(input," ")
+			data["master_replid"] = inputArr[1] 
+			data["master_repl_offset"] = inputArr[2]
+
 		}else if (isQueue == true && len(statement)>0){
 
 			queue = append(queue, statement)
