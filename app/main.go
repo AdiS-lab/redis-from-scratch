@@ -333,7 +333,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}
 		return "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"
 	case "REPLCONF": 
-		if(len(statement)>2 && statement[1] == "ACK"){
+		if(len(statement)>2 && statement[1] == "GETACK"){
 			return "*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"
 		}
 		return "+OK\r\n"
