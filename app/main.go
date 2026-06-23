@@ -577,7 +577,7 @@ func waitOnConnections(sleep int, target int, ch chan string){
 			masterOffset,_ := strconv.Atoi(data["master_repl_offset"])
 			for conn,_ := range slaveConnections{
 				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
-				if(offsetVal>masterOffset){
+				if(offsetVal>=masterOffset){
 					count++ 
 				}
 				if(count>=target){
