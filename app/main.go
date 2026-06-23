@@ -465,15 +465,14 @@ func main() {
 		host := os.Args[4][0:9]
 		port := os.Args[4][10:]
 
-		conn, err := net.Dial("tcp", host + ":" + port)
+		masterConn, err := net.Dial("tcp", host + ":" + port)
 		if(err != nil){
 			fmt.Println(err.Error())
 		}	
 		
-		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
-		buf := make([]byte, 1024)
-		conn.Read(buf) // 	REMEMBER THE START WOWOOWOOWO, so before we changed to bufio to handle this type of stuff, but now we can here
-		reader := bufio.NewReader(conn)
+		masterConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
+		// 	REMEMBER THE START WOWOOWOOWO, so before we changed to bufio to handle this type of stuff, but now we can here
+		reader := bufio.NewReader(masterConn)
 		for{
 			statement := handleRealConnection(reader)
 			fmt.Println(statement)
