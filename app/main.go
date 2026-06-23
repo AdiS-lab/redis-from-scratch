@@ -543,7 +543,7 @@ func writeUpdate(returnVal string) string{
 		return ""
 	}
 }
-func waitOnConnections(deadline time.Time, target int, ch chan string)string{
+func waitOnConnections(deadline time.Time, target int, ch chan string){
 	ticker := time.NewTicker(time.Duration(20) * time.Millisecond)
 	count := 0
 	for range ticker.C{
