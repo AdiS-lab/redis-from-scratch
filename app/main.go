@@ -178,6 +178,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		messageStr := string(statement[1])
 		return (fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr))
 	case "SET":
+		fmt.Println("made it to SET and command is ", statement)
 		if len(statement) > 3 && strings.ToUpper(statement[3]) == "PX" { //  checking if they added expiry date.
 			storage[statement[1]] = statement[2]
 			fmt.Println(statement[1])
