@@ -141,9 +141,13 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			conn.Write([]byte("+QUEUED\r\n"))
 		
 		}else{
-			writeVal := execute(statement, conn, fullPort)
-			if writeVal != ""{
-				conn.Write([]byte(writeVal))
+			if(input ==""){
+				conn.Write([]byte("-bAda"))
+			}else{
+				writeVal := execute(statement, conn, fullPort)
+				if writeVal != ""{
+					conn.Write([]byte(writeVal))
+				}
 			}
 		}
 		//______________________________ reading command __________________________________________
