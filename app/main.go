@@ -504,7 +504,7 @@ func parser(reader *bufio.Reader) []string {
 	return statement
 }
 func writeUpdate(returnVal string) string{
-	if slaveUpdate {
+	if data["role"] == "master" {
 		return returnVal
 	}else{
 		return ""
