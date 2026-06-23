@@ -351,17 +351,14 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}
 		return "+OK\r\n"
 	case "WAIT":
-		count := 0
-		// sleep,_ := strconv.Atoi(statement[2])
-		// time.Sleep(time.Duration(sleep)*time.Millisecond)// stops everything else, but can still run logic?
-			for conn,_ := range slaveConnections{
-			offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
-			fmt.Println("offsetval inside wait cmd is ", offsetVal)
-			count++
-			
-		} // so if written to, then should have an offsetVal greater than 1, meaning that we adjust the count
-		//accordingly and then after return that value. We have to sleep to. 
-		return fmt.Sprintf(":%d\r\n", count)
+		// either after time is expired, or if completed before 
+		target,_:= strconv.Atoi(statement[1])
+		sleep,_ := strconv.Atoi(statement[2])
+		deadline := time.Now().Add(time.Duration(sleep)*time.Millisecond)
+		ch = make(chan string)
+		go waitOnConnections(deadline, target, ch)
+		return <- ch
+
 	default:
 		return ("+messageNotFound\r\n")
 	}
@@ -544,6 +541,24 @@ func writeUpdate(returnVal string) string{
 		return returnVal
 	}else{
 		return ""
+	}
+}
+func waitOnConnections(deadline time.Time, target int, ch chan string)string{
+	count := 0
+	for{
+		if(time.Now().After(deadline)){ 
+			ch <- fmt.Sprintf(":%d\r\n", count) // go into infinite for loop wait until after deadline
+		}else{ // keep resetting such can count from fresh. 
+			count = 0
+			for conn,_ := range slaveConnections{
+				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
+				fmt.Println("offsetval inside wait cmd is ", offsetVal)
+				count++ 
+				if(count>target){
+					ch <- fmt.Sprintf(":%d\r\n", count)
+				}
+			}
+		}
 	}
 }
 
