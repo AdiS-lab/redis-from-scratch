@@ -142,7 +142,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			// base64 to binary
 			// update the data to include the port PSYNC sends. 
 			masterUpdate = true
-			slaveConnections = append(slaveConnections, conn) // sets the state right so everything goes to the slave
+			slaveConnections[conn] = map[string]string{} // sets the state right so everything goes to the slave
 			slaveConnections[conn]["offset"] = "0"
 			
 			data, _ := base64.StdEncoding.DecodeString("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==")
