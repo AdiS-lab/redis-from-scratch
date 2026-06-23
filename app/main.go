@@ -57,7 +57,8 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		}
 		// manage masterUpdate by checking when doesn't equal one of those. 
 		if masterUpdate == true && data["role"] == "master"{//after three way connection
-			fmt.Print("made it to the master update all good")
+			fmt.Println("made it to the master update all good")
+			fmt.Println("in master ", statement)
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
 				for i:=0; i<len(slaveConnections); i++ {
 					message := createArr(statement, 0, len(statement))
@@ -141,13 +142,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			fmt.Println("made it to PSYNC alright")
 			masterUpdate = true
 			slaveUpdate = true
-			fmt.Println("slave connections ",conn)
+			fmt.Println("slave connections ", conn)
 			slaveConnections = append(slaveConnections, conn) // sets the state right so everything goes to the slave
 
 			data, _ := base64.StdEncoding.DecodeString("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==")
-			fmt.Println(len(data))
-			conn.Write([]byte("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n"))
-			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s", len(data), data))) // SET, RPUSH, LPUSH, INCR, LPOP, BLPOP
+			conn.Write([]byte("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n")) // send FULL RESYNC
+			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s", len(data), data))) // send RDB file
 		}else if isQueue == true && len(statement) > 0 {// to actually put stuff inside our queue
 
 			queue = append(queue, statement)
@@ -532,7 +532,7 @@ func main() {
 			fmt.Println(err.Error())
 		}
 
-		masterConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
+		masterConn.Write([]byte("*1\r\n$4\r\nPING\r\n")) //send ping as slave
 		// reader := bufio.NewReader(masterConn)
 		fmt.Println("Made it inside this for loop")
 		go handleConnection(masterConn, fullPort)
