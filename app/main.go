@@ -50,6 +50,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		input := ""
 		statement := parser(reader) // if nil break
 		if statement == nil {
+			fmt.Println("something happened and connection disconnected")
 			break
 		}
 		if len(statement) != 0 {
