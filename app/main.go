@@ -42,6 +42,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	firstPONG = false
 	firstOK = false
 	masterUpdate = false
+	slaveUpdate = false
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
 
 	for {
@@ -55,12 +56,8 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			input = statement[0]
 		}
 
-		// if setting up a flag that means we will route, but handling stoppage is weird. When does client stop 
-		// sending and how to manage this. 
-
-		// need a way to send the correct port. We have data, maybe can include something there. 
-
-		if masterUpdate == true && data["role"] == "master"{
+		// manage masterUpdate by checking when doesn't equal one of those. 
+		if masterUpdate == true && data["role"] == "master"{//after three way connection
 			fmt.Print("made it to the master update all good")
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
 				for i:=0; i<len(slaveConnections); i++ {
@@ -68,11 +65,11 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					slaveConnections[i].Write([]byte(message))
 				}
 			}
-		} else if input == "MULTI" && isQueue == false {
+		} else if input == "MULTI" && isQueue == false {//set queue as long as no tin queue
 			// but length is bad, then or isQueue = false
 			isQueue = true
 			conn.Write([]byte("+OK\r\n"))
-		} else if input == "WATCH" {
+		} else if input == "WATCH" {// set keys that can't be changed
 			if isQueue == true {
 				conn.Write([]byte("-ERR WATCH inside MULTI is not allowed\r\n"))
 			} else {
@@ -82,12 +79,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				conn.Write([]byte("+OK\r\n"))
 			}
 
-		} else if input == "UNWATCH" {
+		} else if input == "UNWATCH" {// reset, remove all watched keys
 			watchedKeys = make(map[string]string)
 			watchCheck = false
 			conn.Write([]byte("+OK\r\n"))
 
-		} else if input == "DISCARD" {
+		} else if input == "DISCARD" {// remove all queued items reset
 			if isQueue == true {
 				isQueue = false
 				queue = [][]string{}
@@ -97,7 +94,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			} else {
 				conn.Write([]byte("-ERR DISCARD without MULTI\r\n"))
 			}
-		} else if input == "EXEC" {
+		} else if input == "EXEC" {//if queued items then start executing them 
 			if isQueue == false {
 				conn.Write([]byte("-ERR EXEC without MULTI\r\n"))
 			} else if len(queue) == 0 {
@@ -130,13 +127,13 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				}
 			}
 
-		} else if strings.Split(input, " ")[0] == "FULLRESYNC" {
+		} else if strings.Split(input, " ")[0] == "FULLRESYNC" {// second step of 3 way handshake for master
 			fmt.Println("made it here")
 			inputArr := strings.Split(input, " ")
 			data["master_replid"] = inputArr[1]
 			data["master_repl_offset"] = inputArr[2]
 
-		} else if input == "PSYNC" {
+		} else if input == "PSYNC" { // 3rd step for 3 way handshake
 			// base64 to binary
 			// update the data to include the port PSYNC sends. 
 			fmt.Println("made it to PSYNC alright")
@@ -148,9 +145,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			fmt.Println(len(data))
 			conn.Write([]byte("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n"))
 			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s", len(data), data))) // SET, RPUSH, LPUSH, INCR, LPOP, BLPOP
-		} else if len(strings.Split(input, " ")) > 2 {
-			fmt.Print("got it!")
-		} else if isQueue == true && len(statement) > 0 {
+		}else if isQueue == true && len(statement) > 0 {// to actually put stuff inside our queue
 
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
@@ -188,6 +183,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 func execute(statement []string, conn net.Conn, fullPort string) string {
 	switch strings.ToUpper(statement[0]) {
 	case "PING":
+		fmt.Println("made it inside PING at least")
 		return ("+PONG\r\n") //  have to write back as byte slice
 	case "ECHO":
 		messageStr := string(statement[1])
