@@ -439,11 +439,10 @@ func parser(reader *bufio.Reader) []string {
 		}
 
 		buf := make([]byte, tempVal)  // we set a buffer                                                                                               
-		n, err2 := io.ReadFull(reader, buf) // consume and discard
-		fmt.Println("Read", n, "bytes, err:", err2)
-		reader.ReadByte()
-		reader.ReadByte()
-		fmt.Println(n)
+		io.ReadFull(reader, buf) // consume and discard
+		next, _ := reader.Peek(1)
+     	fmt.Println("Next byte after RDB:", next[0])
+
 		return statement
 		// reader.ReadString('\n')
 	case "+":
