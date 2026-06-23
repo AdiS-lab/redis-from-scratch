@@ -39,6 +39,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 
 		input := ""
 		statement := parser(reader)
+		if statement == nil{
+			continue
+		}
 		// t, _ := reader.ReadByte()
 		// n, _ := reader.ReadString('\r')
 		// initNum, _ := strconv.Atoi(strings.TrimSpace(n))
@@ -432,15 +435,14 @@ func parser(reader *bufio.Reader) []string {
 		initial, _ := reader.ReadString('\n')
 		initVal, _ = strconv.Atoi(strings.TrimSpace(initial)) // this for my first word. 
 	case "$":
-		initial, err := reader.ReadByte()
-		reader.ReadByte()
-		// tempVal,err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
+		initial,err := reader.ReadString('\n')
+		tempVal,err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 		// fmt.Println("RDB length: ", tempVal, "err:", err)
 		if(err!=nil){
 			return statement
 		}
-		fmt.Println(initial)
-		buf := make([]byte, 88)  // we set a buffer                                                                                               
+
+		buf := make([]byte, tempVal)  // we set a buffer                                                                                               
 		io.ReadFull(reader, buf) // consume and discard
 		reader.ReadByte()
 		return statement
