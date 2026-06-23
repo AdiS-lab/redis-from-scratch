@@ -24,7 +24,7 @@ var storage = make(map[string]string)
 var lists = make(map[string][]string)
 var watchedKeys = make(map[string]string)
 var data = make(map[string]string)
-var slaveConnections []net.Conn // sync.Mutex protects concurrent access (whateva that means)
+var slaveConnections = make(map[net.Conn]map[string]string) // sync.Mutex protects concurrent access (whateva that means)
 
 
 var watchCheck bool
@@ -63,9 +63,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		if masterUpdate == true && data["role"] == "master"{//after three way connection
 			fmt.Println("propogating down to slave here's statement ", statement)
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
-				for i:=0; i<len(slaveConnections); i++ {
+				for conn, _ := range slaveConnections {
 					message := createArr(statement, 0, len(statement))
-					slaveConnections[i].Write([]byte(message))
+					conn.Write([]byte(message))
 				}
 			}
 	
@@ -141,11 +141,10 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		} else if input == "PSYNC" { // 3rd step for 3 way handshake
 			// base64 to binary
 			// update the data to include the port PSYNC sends. 
-			fmt.Println("made it to PSYNC alright")
 			masterUpdate = true
-			fmt.Println("slave connections ", conn)
 			slaveConnections = append(slaveConnections, conn) // sets the state right so everything goes to the slave
-
+			slaveConnections[conn]["offset"] = "0"
+			
 			data, _ := base64.StdEncoding.DecodeString("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==")
 			conn.Write([]byte("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n")) // send FULL RESYNC
 			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s", len(data), data))) // send RDB file
@@ -347,10 +346,19 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		if(len(statement)>2 && statement[1] == "GETACK"){
 			offset := data["master_repl_offset"]
 			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$%d\r\n%s\r\n", len(offset), offset)
+		}else if(len(statement)>2 && statement[1] == "ACK"){
+			slaveConnections[conn]["offset"] = statement[3]
 		}
 		return "+OK\r\n"
 	case "WAIT":
-		return ":0\r\n"
+		count := 0
+		for conn, _ := range slaveConnections{
+			offsetVal := strconv.Atoi(slaveConnections[conn]["offset"])
+			if offsetVal > 0{
+				count++
+			}
+		}
+		return fmt.Sprintf(":%d\r\n", count)
 	default:
 		return ("+messageNotFound\r\n")
 	}
