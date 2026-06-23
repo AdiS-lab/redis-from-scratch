@@ -438,7 +438,7 @@ func parser(reader *bufio.Reader) []string {
 			return statement
 		}
 
-		buf := make([]byte, 100)  // we set a buffer                                                                                               
+		buf := make([]byte, tempVal)  // we set a buffer                                                                                               
 		n, err2 := io.ReadFull(reader, buf) // consume and discard
 		fmt.Println("Read", n, "bytes, err:", err2)
 		fmt.Println()
@@ -450,6 +450,7 @@ func parser(reader *bufio.Reader) []string {
 		fmt.Println(statement)
 		return statement
 	default:	
+		fmt.Println("Invalid type on first char ", t)
 		fmt.Println("Invalid type on first char")
 		os.Exit(0)
 	}
