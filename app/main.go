@@ -423,7 +423,7 @@ func parser(reader *bufio.Reader) []string {
 	t, err := reader.ReadByte() // read first byte
 	count := 0
 	var initVal int
-	var statement []string
+	statement := []string{}
 	fmt.Println("starting to parse, the start char is ", string(t))
 	if err != nil {
 		return nil
