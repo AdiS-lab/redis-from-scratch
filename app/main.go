@@ -554,7 +554,7 @@ func waitOnConnections(deadline time.Time, target int, ch chan string)string{
 				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
 				fmt.Println("offsetval inside wait cmd is ", offsetVal)
 				count++ 
-				if(count>target){
+				if(count>=target){
 					ch <- fmt.Sprintf(":%d\r\n", count)
 				}
 			}
