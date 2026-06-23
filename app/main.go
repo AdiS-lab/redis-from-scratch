@@ -549,6 +549,7 @@ func writeUpdate(returnVal string) string{
 	if data["role"] == "master" {
 		return returnVal
 	}else{
+		fmt.Println("made it here as a slave to writeUpdate")
 		return ""
 	}
 }
