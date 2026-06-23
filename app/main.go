@@ -31,6 +31,7 @@ var watchCheck bool
 var firstPONG bool
 var firstOK bool
 var masterUpdate bool 
+var slaveUpdate bool
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
@@ -59,7 +60,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 
 		// need a way to send the correct port. We have data, maybe can include something there. 
 
-		if masterUpdate == true{
+		if masterUpdate == true && data["role"] == "master"{
 			fmt.Print("made it to the master update all good")
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
 				for i:=0; i<len(slaveConnections); i++ {
@@ -140,6 +141,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			// update the data to include the port PSYNC sends. 
 			fmt.Println("made it to PSYNC alright")
 			masterUpdate = true
+			slaveUpdate = true
 			slaveConnections = append(slaveConnections, conn) // sets the state right so everything goes to the slave
 
 			data, _ := base64.StdEncoding.DecodeString("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==")
@@ -169,11 +171,11 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			conn.Write([]byte(message))
 		} else {
 			if input == "" { // means nothing was sent in command, or smth happened along the way
-				break
+				continue
 			} else {
 				writeVal := execute(statement, conn, fullPort)
 				if writeVal != "" {
-					conn.Write([]byte(writeVal))
+					continue
 				}
 			}
 		}
@@ -198,12 +200,12 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			ms, _ := strconv.Atoi(statement[4])
 			fmt.Println(storage)
 			go wait(statement[1], ms)
-			return ("+OK\r\n")
+			return writeUpdate("+OK\r\n")
 
 		} else {
 			checkWatch(statement)
 			storage[statement[1]] = statement[2] // use map to set pair
-			return ("+OK\r\n")
+			return writeUpdate("+OK\r\n")
 		}
 	case "GET":
 		fmt.Println("made it here")
@@ -221,7 +223,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			lists[listName] = append(lists[listName], statement[i])
 			//create a list if don't exist and append and return the length of list in RESP format
 		}
-		return (fmt.Sprintf(":%d\r\n", len(lists[listName])))
+		return writeUpdate(fmt.Sprintf(":%d\r\n", len(lists[listName])))
 	case "LPUSH": // prepend list
 		listName := statement[1]
 		_, exists := lists[listName]
@@ -250,14 +252,14 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		listName := statement[1]
 		_, exists := lists[listName]
 		if !exists {
-			return ("$-1\r\n")
+			return writeUpdate("$-1\r\n")
 		} else if len(statement) > 2 {
 			sliceNum, _ := strconv.Atoi(statement[2])
 			message := LPOP(listName, sliceNum, conn)
-			return message
+			return writeUpdate(message)
 		} else {
 			message := LPOP(listName, 0, conn)
-			return message
+			return writeUpdate(message)
 		}
 	case "LRANGE": //  to find the range when given smth like LRANGE 0 5
 		listName := statement[1]
@@ -292,12 +294,12 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		timeout, _ := strconv.ParseFloat(statement[2], 64)
 		if len(lists[listName]) > 0 {
 			message := LPOP(listName, 0, conn)
-			return message
+			return writeUpdate(message)
 		} else {
 			ch1 := make(chan string)
 			go waitChange(listName, timeout, conn, ch1)
-			val := <-ch1
-			return val
+			val := <-ch1 // create this because we are waiting for list to be updated, so have to use channel to communicate
+			return writeUpdate(val)
 		}
 	case "INCR": // increment any numerical value inside storage by 1
 		storageKey := statement[1]
@@ -307,14 +309,14 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			storage[storageKey] = "1"
 			return (":1\r\n")
 		} else if err != nil {
-			return ("-ERR value is not an integer or out of range\r\n")
+			return writeUpdate("-ERR value is not an integer or out of range\r\n")
 
 		} else {
 			checkWatch(statement)
 			fmt.Println("making it here and messing after")
 			tempVal, _ := strconv.Atoi(storage[storageKey])
 			storage[storageKey] = strconv.Itoa(tempVal + 1)
-			return (fmt.Sprintf(":%d\r\n", tempVal+1))
+			return writeUpdate(fmt.Sprintf(":%d\r\n", tempVal+1))
 		}
 	case "INFO":
 		fmt.Println("making it to info")
@@ -504,6 +506,13 @@ func parser(reader *bufio.Reader) []string {
 	fmt.Println("THIS IS STATEMENT")
 	fmt.Println(statement)
 	return statement
+}
+func writeUpdate(returnVal string) string{
+	if slaveUpdate {
+		return returnVal
+	}else{
+		return ""
+	}
 }
 
 // want to check if key exists inside the watching storage
