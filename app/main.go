@@ -412,6 +412,8 @@ func main() {
 	//__________________________ intialize TCP connection _____________________________
 	port := "6379"
 	data["master_repl_offset"] = "0"
+	data["role"] = "master"
+	data["master_replid"] = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
 
 	if(len(os.Args)>2){
 		if os.Args[1] ==  "--port"{ 
@@ -423,8 +425,6 @@ func main() {
 			data["role"] = "slave"
 		}
 	}
-	data["role"] = "master"
-	data["master_replid"] = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
 	fmt.Println(data)
 	listener, err := net.Listen("tcp", "0.0.0.0:" + port)
 	if err != nil {
