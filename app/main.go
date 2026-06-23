@@ -192,11 +192,12 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return writeUpdate("+OK\r\n")
 		}
 	case "GET":
-		fmt.Println("made it here")
+		fmt.Println("made it to GET cmd")
+		fmt.Println(storage)
+		fmt.Println(slaveConnections)
 		storageKey := statement[1]
 		value, exists := storage[storageKey]
 		if exists {
-			fmt.Println("made it here")
 			return (fmt.Sprintf("$%d\r\n%s\r\n", len(value), storage[storageKey]))
 		} else {
 			return ("$-1\r\n")
@@ -363,7 +364,7 @@ func LPOP(listName string, sliceNum int, conn net.Conn) string {
 func checkWatch(statement []string) {
 	_, exists := watchedKeys[statement[1]]
 	if exists {
-		watchCheck = true
+		watchCheck = true // somethign was modified, this it what it means
 		if watchedKeys[statement[1]] == "" {
 			watchedKeys[statement[1]] = statement[2]
 		}
