@@ -419,7 +419,7 @@ func parser(reader *bufio.Reader) []string {
 	var statement []string
 	fmt.Println(string(t))
 	if err != nil{
-		return statement
+		return nil
 	}
 
 	switch string(t) {
@@ -432,15 +432,16 @@ func parser(reader *bufio.Reader) []string {
 		initial, _ := reader.ReadString('\n')
 		initVal, _ = strconv.Atoi(strings.TrimSpace(initial)) // this for my first word. 
 	case "$":
-		initial, _ := reader.ReadString('\n')
-		tempVal,err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
-		fmt.Println("RDB length: ", tempVal, "err:", err)
+		initial, err := reader.ReadByte()
+		reader.ReadByte()
+		// tempVal,err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
+		// fmt.Println("RDB length: ", tempVal, "err:", err)
 
 		if(err!=nil){
 			return statement
 		}
-
-		buf := make([]byte, tempVal)  // we set a buffer                                                                                               
+		fmt.Println(initial)
+		buf := make([]byte, 88)  // we set a buffer                                                                                               
 		io.ReadFull(reader, buf) // consume and discard
 		return statement
 		// reader.ReadString('\n')
