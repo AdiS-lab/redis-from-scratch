@@ -40,7 +40,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		input := ""
 		statement := parser(reader)
 		if statement == nil{
-			continue
+			break
 		}
 		// t, _ := reader.ReadByte()
 		// n, _ := reader.ReadString('\r')
