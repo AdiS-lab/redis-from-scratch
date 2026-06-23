@@ -304,12 +304,11 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 				firstOK = true
 				return ("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n")
 			}else if(firstOK == true){
-				firstOK = false
 				return "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"
 			}
 			return "" // case where 
 		case "PSYNC":
-
+			return ""
 		default:
 			return ("+messageNotFound\r\n")
 		}
