@@ -293,6 +293,8 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 			return message
 		case "PONG":
 			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n%s\r\n", fullPort)
+		case "OK":
+			return ("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n")
 
 		default:
 			return ("+messageNotFound\r\n")
