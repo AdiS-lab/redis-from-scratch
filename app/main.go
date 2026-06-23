@@ -30,7 +30,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	isQueue :=  false
 	watchCheck = false
 	for {
-		statement := handleRealConnection(reader)
+		statement := parser(reader)
 		// t, _ := reader.ReadByte()
 		// n, _ := reader.ReadString('\r')
 		// initNum, _ := strconv.Atoi(strings.TrimSpace(n))
@@ -383,7 +383,7 @@ func wait(key string, ms int) {
 }
 
 
-func handleRealConnection(reader *bufio.Reader) []string {
+func parser(reader *bufio.Reader) []string {
 
 // 3 different versions $n \r\n         *n \r\n $b \r\n  
 	t, _ := reader.ReadByte() // read first byte
@@ -478,6 +478,9 @@ func main() {
 		masterConn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 		// 	REMEMBER THE START WOWOOWOOWO, so before we changed to bufio to handle this type of stuff, but now we can here
 		// reader := bufio.NewReader(masterConn)
+		buf :=  make([]byte, 1024) 
+		masterConn.Read(buf)
+		fmt.Println(string(buf))
 		fmt.Println("Made it inside this for loop")
 		handleConnection(masterConn, fullPort)
 		// conn := listener.Accept()
