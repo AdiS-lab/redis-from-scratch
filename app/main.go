@@ -165,6 +165,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					data["master_repl_offset"] = strconv.Itoa(new_offset)
 				}
 				if writeVal != "" {
+					fmt.Println("this is writeVal ", writeVal, data["role"])
 					//after processing update offest, which mean reconvert that jawn 
 					// 1. need way to process
 					// 2. figure out where to update
