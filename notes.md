@@ -86,3 +86,10 @@ master sends back PONGS + OK + OK + FULLRESYNC + binary data (snapshot of curren
 when sending binary data, master closes but CONTINUES TO LISTEN ON PORT and when nothing is sent 
 we just continued no and on. This means continued to call execute without any starting value, creating
 an infinite loop to the point when INFO cmd is finally sent from a different place, CPU has used so many resources
+
+
+can store connections
+___________________________________________________________________
+
+able to store connections, and use flags + information to determine states
+and specify functionality

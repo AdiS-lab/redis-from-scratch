@@ -333,8 +333,9 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}
 		return "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"
 	case "REPLCONF": 
-		// if have multiple replicas there has to be a way to identify which, wait no, sending to all replicas that's the
-		// point. So maybe data is supposed to be an arr, with slave connections all there, and then just write to all of them
+		if(len(statement)>2 && statement[1] == "ACK"){
+			return "*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"
+		}
 		return "+OK\r\n"
 	default:
 		return ("+messageNotFound\r\n")
