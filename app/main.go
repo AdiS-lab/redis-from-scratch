@@ -275,7 +275,8 @@ func execute(statement []string ,conn net.Conn) string{
 				storage[storageKey] = strconv.Itoa(tempVal + 1)
 				return (fmt.Sprintf(":%d\r\n", tempVal+1))
 			}
-		case "INFO":	
+		case "INFO":
+			fmt.Println("making it to info")	
 			message := ""
 			for key, value := range data{	
 				inputStr := fmt.Sprintf("%s:%s", key, value)
