@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"io"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -428,6 +429,8 @@ func parser(reader *bufio.Reader) []string {
 		tempVal,err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 
 		if(err!=nil){
+			buf := make([]byte, tempVal)  // we set a buffer                                                                                               
+			io.ReadFull(reader, buf) // consume and discard
 			return statement
 		}
 		initVal = tempVal
