@@ -492,6 +492,7 @@ func parser(reader *bufio.Reader)( []string, string) {
 	reader.Read(name)
 	statement = append(statement, string(name))
 	e,_ := reader.ReadString('\n')
+	fmt.Println("pay attention to this value inside parser,    ", e)
 	recreatedCmd += e
 
 	for count > 0 {
