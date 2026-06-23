@@ -544,10 +544,12 @@ func writeUpdate(returnVal string) string{
 	}
 }
 func waitOnConnections(deadline time.Time, target int, ch chan string)string{
+	ticker := time.NewTicker(time.Duration(20) * time.Millisecond)
 	count := 0
-	for{
+	for range ticker.C{
 		if(time.Now().After(deadline)){ 
 			ch <- fmt.Sprintf(":%d\r\n", count) // go into infinite for loop wait until after deadline
+			ticker.Stop()
 		}else{ // keep resetting such can count from fresh. 
 			count = 0
 			for conn,_ := range slaveConnections{
@@ -556,6 +558,7 @@ func waitOnConnections(deadline time.Time, target int, ch chan string)string{
 				count++ 
 				if(count>=target){
 					ch <- fmt.Sprintf(":%d\r\n", count)
+					ticker.Stop()
 				}
 			}
 		}
