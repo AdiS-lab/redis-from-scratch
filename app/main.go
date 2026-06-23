@@ -131,6 +131,8 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			data["master_replid"] = inputArr[1] 
 			data["master_repl_offset"] = inputArr[2]
 
+		}else if(len(strings.Split(input, " "))>2){
+			fmt.Print("got it!")
 		}else if (isQueue == true && len(statement)>0){
 
 			queue = append(queue, statement)
