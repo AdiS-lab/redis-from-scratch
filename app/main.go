@@ -63,6 +63,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			fmt.Println("propogating down to slave here's statement ", statement)
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
 				for conn, _ := range slaveConnections {
+					fmt.Println("FOR PROPOGATINO HERES CONNECTION ",conn)
 					message := createArr(statement, 0, len(statement))
 					conn.Write([]byte(message))
 				}
