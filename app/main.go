@@ -53,17 +53,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		// 	initial, _ := reader.ReadString('\n')
 		// 	initVal, _ := strconv.Atoi(strings.TrimSpace(initial))
 
-		// 	statement = handleRealConnection(reader, initNum-1, initVal) // normalize number
-
-		// case "$":
-		// 	reader.ReadString('\n')
-		// 	statement = handleRealConnection(reader, 1, initNum)
-		// default:
-		// 	fmt.Println("Invalid type on first char")
-		// 	os.Exit(0)
-		// }
-// can we funcify this portion right here. every time we create a new connection with a new
-// IP address/port (what's difference) then we can read it and extract then use. 
 		if len(statement) != 0{
 			input = statement[0]
 		}
@@ -158,8 +147,8 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			fmt.Println(message)
 			conn.Write([]byte(message))
 		}else{
-			if(input ==""){
-				continue
+			if(input ==""){ // means nothing was sent in command, or smth happened along the way 
+				break
 			}else{
 				writeVal := execute(statement, conn, fullPort)
 				if writeVal != ""{
@@ -340,7 +329,7 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 		// case "PSYNC":
 		// 	return ""
 		case "REPLCONF":
-			conn.Write([]byte("+OK\r\n"))
+			return "+OK\r\n"
 		default:
 			return ("+messageNotFound\r\n")
 		}
