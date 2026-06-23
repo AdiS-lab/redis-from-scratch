@@ -352,16 +352,19 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}
 		return "+OK\r\n"
 	case "WAIT":
-		// either after time is expired, or if completed before
-		for connection,_ := range slaveConnections {
-			connection.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will 
-		}
+		if(masterUpdate && data["role"] == "master"){
+			// either after time is expired, or if completed before
+			for connection,_ := range slaveConnections {
+				connection.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will 
+			}
 
-		target,_:= strconv.Atoi(statement[1])
-		sleep,_ := strconv.Atoi(statement[2])
-		ch := make(chan string)
-		go waitOnConnections(sleep, target, ch)
-		return <- ch
+			target,_:= strconv.Atoi(statement[1])
+			sleep,_ := strconv.Atoi(statement[2])
+			ch := make(chan string)
+			go waitOnConnections(sleep, target, ch)
+			return <- ch
+		}
+		return""
 
 	default:
 		return ("+messageNotFound\r\n")
