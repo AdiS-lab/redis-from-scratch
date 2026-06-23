@@ -91,12 +91,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			}else{
 				isQueue = false
 				if(watchCheck){
-					// for key, value := range watchedKeys{ 
-					// 	_,exists := storage[key]
-					// 	if (exists){ // check if key is there then revert, more general constraint now
-					// 		storage[key] = value
-					// 	}
-					// }
 					conn.Write([]byte("*-1\r\n"))
 					queue = [][]string{}
 					watchCheck = false
@@ -289,9 +283,9 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 			message = fmt.Sprintf("$%d\r\n%s\r\n", len(body), body)
 			fmt.Println(message)
 			return message
-		// case "PONG": // picks up from ping sent in the beginning
-		// 	conn.Write([]byte(fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port %s\n6380\r\n", fullPort))) // tells master which port slave is on
-		// 	conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
+		case "PONG": // picks up from ping sent in the beginning
+			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port %s\n6380\r\n", fullPort) // tells master which port slave is on
+			// conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 		default:
 			return ("+messageNotFound\r\n")
 		}
