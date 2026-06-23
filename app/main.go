@@ -183,7 +183,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	switch strings.ToUpper(statement[0]) {
 	case "PING":
 		fmt.Println("made it inside PING at least")
-		return ("+PONG\r\n") //  have to write back as byte slice
+		return writeUpdate("+PONG\r\n") //  have to write back as byte slice
 	case "ECHO":
 		messageStr := string(statement[1])
 		return (fmt.Sprintf("$%d\r\n%s\r\n", len(messageStr), messageStr))
