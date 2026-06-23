@@ -56,9 +56,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 // can we funcify this portion right here. every time we create a new connection with a new
 // IP address/port (what's difference) then we can read it and extract then use. 
 
-		buf :=  make([]byte, 1024) 
-		conn.Read(buf)
-		fmt.Println(string(buf))	
+		// buf :=  make([]byte, 1024) 
+		// conn.Read(buf)
+		// fmt.Println(string(buf))	
 
 
 
