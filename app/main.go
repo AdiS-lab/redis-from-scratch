@@ -344,6 +344,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	case "REPLCONF": 
 		fmt.Println("made it inside ReplConf ", statement)
 		if(len(statement)>2 && statement[1] == "GETACK"){
+			fmt.Println("made it to GETACK")
 			offset := data["master_repl_offset"]
 			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$%d\r\n%s\r\n", len(offset), offset)
 		}else if(len(statement)>2 && statement[1] == "ACK"){
