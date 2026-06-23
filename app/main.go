@@ -443,8 +443,7 @@ func parser(reader *bufio.Reader) []string {
 		fmt.Println("Read", n, "bytes, err:", err2)
 		reader.ReadByte()
 		reader.ReadByte()
-
-		fmt.Println()
+		fmt.Println(n)
 		return statement
 		// reader.ReadString('\n')
 	case "+":
