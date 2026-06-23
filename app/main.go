@@ -141,6 +141,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			fmt.Println("made it to PSYNC alright")
 			masterUpdate = true
 			slaveUpdate = true
+			fmt.Println("slave connections ",conn)
 			slaveConnections = append(slaveConnections, conn) // sets the state right so everything goes to the slave
 
 			data, _ := base64.StdEncoding.DecodeString("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==")
