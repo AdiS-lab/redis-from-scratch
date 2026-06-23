@@ -65,6 +65,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				for conn, _ := range slaveConnections {
 					fmt.Println("FOR PROPOGATINO HERES CONNECTION ",conn)
 					message := createArr(statement, 0, len(statement))
+					fmt.Println("for propogation message is ", message)
 					conn.Write([]byte(message))
 				}
 			}
