@@ -574,7 +574,7 @@ func waitOnConnections(sleep int, target int, ch chan string){
 			for conn,_ := range slaveConnections{
 				// fmt.Println("each connection is ", conn)
 				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
-				fmt.Println("offsetval inside wait cmd is ", offsetVal)
+				// fmt.Println("offsetval inside wait cmd is ", offsetVal)
 				if(offsetVal>0){
 					count++ 
 				}
