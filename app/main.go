@@ -47,8 +47,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 
 	for {
 
+
 		input := ""
-		statement := parser(reader) // if nil break
+		statement, recreatedCmd := parser(reader) // if nil break
 		if statement == nil {
 			fmt.Println("something happened and connection disconnected")
 			break
@@ -160,6 +161,14 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			} else {
 				writeVal := execute(statement, conn, fullPort)
 				if writeVal != "" {
+					//after processing update offest, which mean reconvert that jawn 
+					// 1. need way to process
+					// 2. figure out where to update
+					if(masterUpdate && data["role"] == "slave"){
+						curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
+						new_offset := curr_offset + len(recreatedCmd)
+						data["master_repl_offset"] = strconv.Itoa(new_offset)
+					}
 					conn.Write([]byte(writeVal))
 				}
 			}
@@ -419,32 +428,40 @@ func wait(key string, ms int) {
 		ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
 	}
 }
-func parser(reader *bufio.Reader) []string {
+func parser(reader *bufio.Reader)( []string, string) {
 	// 3 different versions $n \r\n         *n \r\n $b \r\n
 	t, err := reader.ReadByte() // read first byte
 	count := 0
+	recreatedCmd := string(t)
 	var initVal int
 	statement := []string{}
 	fmt.Println("starting to parse, the start char is ", string(t))
 	if err != nil {
-		return nil
+		return nil, ""
 	}
 
 	switch string(t) {
 	case "*":
 		n, _ := reader.ReadString('\r')
+		recreatedCmd += n
+
 		count, _ = strconv.Atoi(strings.TrimSpace(n)) // got the count \n $b \r\n
 		count = count - 1                             // subtract 1 because we already calculating first value
-		reader.ReadString('$')                        // by pass the /r/n and $
+		r,_ := reader.ReadString('$')                        // by pass the /r/n and $
+		recreatedCmd += r
 
 		initial, _ := reader.ReadString('\n')
+		recreatedCmd += initial
+
 		initVal, _ = strconv.Atoi(strings.TrimSpace(initial)) // this for my first word.
 	case "$":
-		initial, err := reader.ReadString('\n') // handle case that it is RDB file. 
+		initial, err := reader.ReadString('\n') // handle case that it is RDB file.
+		recreatedCmd += initial
+
 		initVal, err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 		if err != nil {
 			fmt.Println("error here when trying to parse RDB ", err)
-			return nil
+			return nil,""
 		}
 		fmt.Println("expectingRDB inside parse is ", expectingRDB)
 		if(expectingRDB){ //handle RDB file
@@ -452,13 +469,15 @@ func parser(reader *bufio.Reader) []string {
 			buf := make([]byte, initVal) // we set a buffer
 			io.ReadFull(reader, buf)   // consume and discard
 			expectingRDB = false
-			return statement
+			return statement, recreatedCmd
 		}
 	case "+":
 		word, _ := reader.ReadString('\n')
+		recreatedCmd += word
+
 		statement = append(statement, strings.TrimSpace(word))
 		fmt.Println(statement)
-		return statement
+		return statement, recreatedCmd
 	default:
 		fmt.Println("Invalid type on first char ", t)
 		fmt.Println("Invalid type on first char")
@@ -471,7 +490,8 @@ func parser(reader *bufio.Reader) []string {
 	name := make([]byte, initVal) // create a buffer to hold the new data
 	reader.Read(name)
 	statement = append(statement, string(name))
-	reader.ReadString('\n')
+	e,_ := reader.ReadString('\n')
+	recreatedCmd += e
 
 	for count > 0 {
 		b, _ := reader.ReadByte()
@@ -482,6 +502,7 @@ func parser(reader *bufio.Reader) []string {
 		}
 
 		n, _ := reader.ReadString('\n')
+		recreatedCmd += n
 		size, _ := strconv.Atoi(strings.TrimSpace(n))
 
 		otherName := make([]byte, size) // create a buffer to hold the new data
@@ -489,11 +510,12 @@ func parser(reader *bufio.Reader) []string {
 
 		statement = append(statement, string(otherName))
 
-		reader.ReadString('\n') // bypass the last /r/n
+		f, _ := reader.ReadString('\n') // bypass the last /r/n
+		recreatedCmd += f
 		count--
 	}
 	fmt.Println("immediately after parsing statement is ", statement)
-	return statement
+	return statement, recreatedCmd
 }
 func writeUpdate(returnVal string) string{
 	if data["role"] == "master" {

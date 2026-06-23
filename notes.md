@@ -93,3 +93,5 @@ ___________________________________________________________________
 
 able to store connections, and use flags + information to determine states
 and specify functionality
+
+SYNC by bytes. The replica LITERALLY just stores every cmd as bytes which is crazy to me
