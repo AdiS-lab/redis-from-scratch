@@ -437,6 +437,7 @@ func parser(reader *bufio.Reader)( []string, string) {
 	var initVal int
 	statement := []string{}
 	fmt.Println("starting to parse, the start char is ", string(t))
+
 	if err != nil {
 		return nil, ""
 	}
@@ -491,12 +492,14 @@ func parser(reader *bufio.Reader)( []string, string) {
 	name := make([]byte, initVal) // create a buffer to hold the new data
 	reader.Read(name)
 	statement = append(statement, string(name))
+	recreatedCmd += string(name)
+
 	e,_ := reader.ReadString('\n')
-	fmt.Println("pay attention to this value inside parser,    ", e)
 	recreatedCmd += e
 
 	for count > 0 {
 		b, _ := reader.ReadByte()
+		recreatedCmd += string(b)
 
 		if b != '$' {
 			fmt.Println("Invalid type inside")
@@ -507,10 +510,10 @@ func parser(reader *bufio.Reader)( []string, string) {
 		recreatedCmd += n
 		size, _ := strconv.Atoi(strings.TrimSpace(n))
 
-		otherName := make([]byte, size) // create a buffer to hold the new data
+		otherName := make([]byte, size) // create a buffer to hold the new data, bc don't know where ends
 		reader.Read(otherName)
-
 		statement = append(statement, string(otherName))
+		recreatedCmd += string(otherName)
 
 		f, _ := reader.ReadString('\n') // bypass the last /r/n
 		recreatedCmd += f
