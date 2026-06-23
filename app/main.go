@@ -353,7 +353,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	case "WAIT":
 		count := 0
 		for conn, _ := range slaveConnections{
-			offsetVal := strconv.Atoi(slaveConnections[conn]["offset"])
+			offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
 			if offsetVal > 0{
 				count++
 			}
