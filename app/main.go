@@ -434,6 +434,7 @@ func parser(reader *bufio.Reader) []string {
 		return statement
 	default:	
 		fmt.Println("Invalid type on first char")
+		os.Exit(0)
 	}
 
 
