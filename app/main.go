@@ -406,8 +406,6 @@ func handleRealConnection(reader *bufio.Reader, count int, initial int) []string
 func main() {
 	//__________________________ intialize TCP connection _____________________________
 	port := "6379"
-	data["role"] = "master"
-	data["master_replid"] = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
 	data["master_repl_offset"] = "0"
 
 	if(len(os.Args)>2){
@@ -420,7 +418,9 @@ func main() {
 			data["role"] = "slave"
 		}
 	}
-
+	data["role"] = "master"
+	data["master_replid"] = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
+	fmt.Println(data)
 	listener, err := net.Listen("tcp", "0.0.0.0:" + port)
 	if err != nil {
 		fmt.Println("Failed to bind to port")
