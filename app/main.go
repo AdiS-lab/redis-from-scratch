@@ -24,7 +24,7 @@ var storage = make(map[string]string)
 var lists = make(map[string][]string)
 var watchedKeys = make(map[string]string)
 var data = make(map[string]string)
-var slaveConnections []net.Conn
+var slaveConnections []net.Conn // sync.Mutex protects concurrent access
 
 
 var watchCheck bool
