@@ -407,6 +407,7 @@ func parser(reader *bufio.Reader) []string {
 	case "+":
 		word,_ := reader.ReadString('\n')
 		statement = append(statement, strings.TrimSpace(word)) 
+		fmt.Println(statement)
 		return statement
 	default:	
 		fmt.Println("Invalid type on first char")
