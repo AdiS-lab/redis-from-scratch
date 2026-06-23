@@ -432,14 +432,16 @@ func parser(reader *bufio.Reader) []string {
 	case "$":
 		initial, _ := reader.ReadString('\n')
 		tempVal,err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
-		fmt.Println("RDB legnthL: ", tempVal, "err:", err)
+		fmt.Println("RDB length: ", tempVal, "err:", err)
 
 		if(err!=nil){
 			return statement
 		}
+
 		buf := make([]byte, tempVal)  // we set a buffer                                                                                               
 		n, err2 := io.ReadFull(reader, buf) // consume and discard
 		fmt.Println("Read", n, "bytes, err:", err2)
+		fmt.Println()
 		return statement
 		// reader.ReadString('\n')
 	case "+":
