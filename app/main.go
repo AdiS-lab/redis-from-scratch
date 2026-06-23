@@ -436,13 +436,13 @@ func parser(reader *bufio.Reader) []string {
 		reader.ReadByte()
 		// tempVal,err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 		// fmt.Println("RDB length: ", tempVal, "err:", err)
-
 		if(err!=nil){
 			return statement
 		}
 		fmt.Println(initial)
 		buf := make([]byte, 88)  // we set a buffer                                                                                               
 		io.ReadFull(reader, buf) // consume and discard
+		reader.ReadByte()
 		return statement
 		// reader.ReadString('\n')
 	case "+":
