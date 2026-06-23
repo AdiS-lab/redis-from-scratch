@@ -349,6 +349,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$%d\r\n%s\r\n", len(offset), offset)
 		}
 		return "+OK\r\n"
+	case "WAIT":
+		return ":0\r\n"
 	default:
 		return ("+messageNotFound\r\n")
 	}
