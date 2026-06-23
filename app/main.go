@@ -201,6 +201,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		} else {
 			checkWatch(statement)
 			storage[statement[1]] = statement[2] // use map to set pair
+			fmt.Println("this is storage after setting ", storage)
 			return writeUpdate("+OK\r\n")
 		}
 	case "GET":
@@ -552,7 +553,7 @@ func waitOnConnections(deadline time.Time, target int, ch chan string){
 			ch <- fmt.Sprintf(":%d\r\n", count) // go into infinite for loop wait until after deadline
 			ticker.Stop()
 		}else{ // keep resetting such can count from fresh. 
-			fmt.Println("made it to the constant checking ", time.Now())
+			fmt.Println("made it to the constant checking ", time.Now(), deadline)
 			count = 0
 			for conn,_ := range slaveConnections{
 				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
