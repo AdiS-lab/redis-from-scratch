@@ -429,12 +429,12 @@ func parser(reader *bufio.Reader) []string {
 		tempVal,err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 
 		if(err!=nil){
-			buf := make([]byte, tempVal)  // we set a buffer                                                                                               
-			io.ReadFull(reader, buf) // consume and discard
 			return statement
 		}
-		initVal = tempVal
-		reader.ReadString('\n')
+		buf := make([]byte, tempVal)  // we set a buffer                                                                                               
+		io.ReadFull(reader, buf) // consume and discard
+		return nil
+		// reader.ReadString('\n')
 	case "+":
 		word,_ := reader.ReadString('\n')
 		statement = append(statement, strings.TrimSpace(word)) 
