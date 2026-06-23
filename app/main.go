@@ -425,6 +425,11 @@ func main() {
 			data["role"] = "slave"
 		}
 		fmt.Println(os.Args[4])
+		conn, err := net.Dial("tcp", os.Args[4])
+		if(err != nil){
+			fmt.Println(err.Error())
+		}	
+		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 	}
 	listener, err := net.Listen("tcp", "0.0.0.0:" + port)
 	if err != nil {

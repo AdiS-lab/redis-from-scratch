@@ -23,3 +23,13 @@ ________________________________________
 
 slaves are just replicas of masters specified by some command like /file --port 6380 --replicaof localhost:6379 
                                                                     notice that these are just tags
+
+
+masters have info about them, some of which includes master replication id meaning, the current history id of
+the master. Also master replication offset meaning the data sent to the replciation, and also just the state
+so if it is a slave or a master. Each database has this: 
+
+for replciation have to have to establish a connection through a handshake, 
+to do this dial first after parsing the host and port: etc. net.Dial("tcp", localhost:6279)
+
+here we can send our handshake if all is well. 
