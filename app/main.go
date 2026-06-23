@@ -425,6 +425,7 @@ func parser(reader *bufio.Reader) []string {
 		initVal, _ = strconv.Atoi(strings.TrimSpace(initial)) // this for my first word. 
 	case "$":
 		initial, _ := reader.ReadString('\r')
+		fmt.Println(initial)
 		initVal,_ = strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 		reader.ReadString('\n')
 	case "+":
@@ -436,7 +437,7 @@ func parser(reader *bufio.Reader) []string {
 		fmt.Println("Invalid type on first char")
 		os.Exit(0)
 	}
-
+// redis-cli -p 6380 INFO replication
 
 	//____________________ let's apply the same logic, so the above is choosing arr or str __________________________
 
