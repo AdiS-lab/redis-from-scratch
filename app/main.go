@@ -125,8 +125,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				}	
 			}
 		
-		}else if(len(input) > 4 && input[0:4] == "FULL") {
+		}else if(strings.Split(input, " ")[0] == "FULL") {
 			fmt.Println(input[0:4])
+			strings.Split(input," ")
 		}else if (isQueue == true && len(statement)>0){
 
 			queue = append(queue, statement)
@@ -139,10 +140,10 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			}
 		}
 		//______________________________ reading command __________________________________________
-		fmt.Println("THIS IS Storage n")
+		fmt.Println("Storage")
 		fmt.Println(storage)
 
-		fmt.Println("THIS IS Keys n")
+		fmt.Println("watchKeys")
 		fmt.Println(watchedKeys)
 
 	}
@@ -308,7 +309,6 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 				return ("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n")
 			}
 			return "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"
-
 		// case "PSYNC":
 		// 	return ""
 		default:

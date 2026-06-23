@@ -74,3 +74,5 @@ basic TCP setup
 net.Listen("tcp", port)  --> listener (this handles the 3 way connection)
 listen.Accept()
 
+when parsing out a string, we use a reader to go through, is there a way to 
+split by space
