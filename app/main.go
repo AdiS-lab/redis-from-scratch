@@ -55,7 +55,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		if len(statement) != 0 {
 			input = statement[0]
 		}
-
 		// manage masterUpdate by checking when doesn't equal one of those. 
 		if masterUpdate == true && data["role"] == "master"{//after three way connection
 			fmt.Print("made it to the master update all good")
@@ -65,7 +64,10 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					slaveConnections[i].Write([]byte(message))
 				}
 			}
-		} else if input == "MULTI" && isQueue == false {//set queue as long as no tin queue
+	
+		} 
+
+		if input == "MULTI" && isQueue == false {//set queue as long as no tin queue
 			// but length is bad, then or isQueue = false
 			isQueue = true
 			conn.Write([]byte("+OK\r\n"))
