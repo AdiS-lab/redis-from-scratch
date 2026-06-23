@@ -107,7 +107,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					message := ""
 					fmt.Println(queue)
 					for i:=0; i<len(queue); i++ {
-						writeVal := execute(queue[i], conn)
+						writeVal := execute(queue[i], conn, fullPort)
 						writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
 					}
 					count := len(writeArr)
@@ -126,7 +126,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			conn.Write([]byte("+QUEUED\r\n"))
 		
 		}else{
-			writeVal := execute(statement, conn)
+			writeVal := execute(statement, conn,fullPort)
 			if writeVal != ""{
 				conn.Write([]byte(writeVal))
 			}
@@ -142,7 +142,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 }
 
 
-func execute(statement []string ,conn net.Conn) string{
+func execute(statement []string ,conn net.Conn, fullPort string) string{
 		switch strings.ToUpper(statement[0]) {
 		case "PING":
 			return ("+PONG\r\n") //  have to write back as byte slice
