@@ -417,14 +417,12 @@ func wait(key string, ms int) {
 	}
 }
 func parser(reader *bufio.Reader) []string {
-	fmt.Println("made it insider paser !!!")
-
 	// 3 different versions $n \r\n         *n \r\n $b \r\n
 	t, err := reader.ReadByte() // read first byte
 	count := 0
 	var initVal int
 	var statement []string
-	fmt.Println(string(t))
+	fmt.Println("starting to parse, the start char is ", string(t))
 	if err != nil {
 		return nil
 	}
@@ -488,8 +486,7 @@ func parser(reader *bufio.Reader) []string {
 		reader.ReadString('\n') // bypass the last /r/n
 		count--
 	}
-	fmt.Println("THIS IS STATEMENT")
-	fmt.Println(statement)
+	fmt.Println("immediately after parsing statement is ", statement)
 	return statement
 }
 func writeUpdate(returnVal string) string{
