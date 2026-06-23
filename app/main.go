@@ -433,7 +433,7 @@ func parser(reader *bufio.Reader) []string {
 		}
 		buf := make([]byte, tempVal)  // we set a buffer                                                                                               
 		io.ReadFull(reader, buf) // consume and discard
-		return nil
+		return statement
 		// reader.ReadString('\n')
 	case "+":
 		word,_ := reader.ReadString('\n')
