@@ -41,7 +41,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	watchCheck = false
 	firstPONG = false
 	firstOK = false
-	masterUpdate = false
 	expectingRDB = false
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
 
