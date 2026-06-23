@@ -361,7 +361,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}
 		return "+OK\r\n"
 	case "WAIT":
-		if(masterUpdate && data["role"] == "master"){
+		if(data["role"] == "master"){
+		
 			// either after time is expired, or if completed before
 			for connection,_ := range slaveConnections {
 				connection.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will 
