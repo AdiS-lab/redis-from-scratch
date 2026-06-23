@@ -394,6 +394,7 @@ func parser(reader *bufio.Reader) []string {
 	count :=  0
 	var initVal int
 	var statement []string
+	fmt.Println(string(t))
 
 	switch string(t) {
 	case "*":
@@ -404,17 +405,14 @@ func parser(reader *bufio.Reader) []string {
 
 		initial, _ := reader.ReadString('\n')
 		initVal, _ = strconv.Atoi(strings.TrimSpace(initial)) // this for my first word. 
-
 	case "$":
 		initial, _ := reader.ReadString('\r')
 		initVal,_ = strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 		reader.ReadString('\n')
-
 	case "+":
 		word,_ := reader.ReadString('\n')
 		statement = append(statement, strings.TrimSpace(word)) 
 		return statement
-
 	default:	
 		fmt.Println("Invalid type on first char")
 		os.Exit(0)
@@ -490,7 +488,7 @@ func main() {
 		// conn := listener.Accept()
 		// conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 	}
-	
+
 	listener, err := net.Listen("tcp", "0.0.0.0:" + fullPort)
 	fmt.Println(listener)
 	if err != nil {
