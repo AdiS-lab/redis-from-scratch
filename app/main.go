@@ -142,7 +142,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		
 		}else{
 			if(input ==""){
-				conn.Write([]byte("-bAda"))
+				continue
 			}else{
 				writeVal := execute(statement, conn, fullPort)
 				if writeVal != ""{
