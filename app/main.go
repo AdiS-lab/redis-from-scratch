@@ -413,12 +413,14 @@ func parser(reader *bufio.Reader) []string {
 	fmt.Println("made it insider paser !!!")
 
 // 3 different versions $n \r\n         *n \r\n $b \r\n  
-	t, _ := reader.ReadByte() // read first byte
+	t, err:= reader.ReadByte() // read first byte
 	count :=  0
 	var initVal int
 	var statement []string
 	fmt.Println(string(t))
-	fmt.Println()
+	if err != nil{
+		return statement
+	}
 
 	switch string(t) {
 	case "*":
@@ -442,7 +444,6 @@ func parser(reader *bufio.Reader) []string {
 		io.ReadFull(reader, buf) // consume and discard
 		next, _ := reader.Peek(1)
      	fmt.Println("Next byte after RDB:", next[0])
-
 		return statement
 		// reader.ReadString('\n')
 	case "+":
