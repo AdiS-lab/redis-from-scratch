@@ -15,3 +15,11 @@ for key, value range object{
 
 }
 obj[] = val
+
+
+
+replication and master/slave relationship 
+________________________________________
+
+slaves are just replicas of masters specified by some command like /file --port 6380 --replicaof localhost:6379 
+                                                                    notice that these are just tags

@@ -276,9 +276,12 @@ func execute(statement []string ,conn net.Conn) string{
 				return (fmt.Sprintf(":%d\r\n", tempVal+1))
 			}
 		case "INFO":	
-			fmt.Println(data)
-			inputStr := fmt.Sprintf("role:%s", data["role"])
-			return fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr), inputStr)
+			message := ""
+			for key, value := range data{	
+				inputStr := fmt.Sprintf("%s:%s", key, value)
+				message = fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr), inputStr)
+			}
+			return message
 		default:
 			return ("+messageNotFound\r\n")
 		}
@@ -402,6 +405,9 @@ func main() {
 	//__________________________ intialize TCP connection _____________________________
 	port := "6379"
 	data["role"] = "master"
+	data["master_replid"] = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
+	data["master_repl_offset"] = "0"
+
 	if(len(os.Args)>2){
 		if os.Args[1] ==  "--port"{ 
 			port = os.Args[2]
