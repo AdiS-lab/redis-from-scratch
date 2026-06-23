@@ -138,6 +138,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			data["master_replid"] = inputArr[1]
 			data["master_repl_offset"] = inputArr[2]
 			expectingRDB = true
+			masterUpdate = true
 
 		} else if input == "PSYNC" { // 3rd step for 3 way handshake
 			// base64 to binary
