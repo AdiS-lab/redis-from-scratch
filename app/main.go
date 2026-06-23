@@ -424,13 +424,19 @@ func main() {
 		if(os.Args[3] == "--replicaof"){
 			data["role"] = "slave"
 		}
-		fmt.Println(os.Args[4])
+		fmt.Println(os.Args[4]) // comes in as localhost 6479 without the :
+		//split or loop through it. or manually do it. 
+
 		conn, err := net.Dial("tcp", os.Args[4])
 		if(err != nil){
 			fmt.Println(err.Error())
 		}	
+		fmt.Println(os.Args[4]) 
+		fmt.Println(os.Args[4][0:8])
+		fmt.Println(os.Args[4][9:])
 		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 	}
+
 	listener, err := net.Listen("tcp", "0.0.0.0:" + port)
 	if err != nil {
 		fmt.Println("Failed to bind to port")

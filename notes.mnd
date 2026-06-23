@@ -33,3 +33,13 @@ for replciation have to have to establish a connection through a handshake,
 to do this dial first after parsing the host and port: etc. net.Dial("tcp", localhost:6279)
 
 here we can send our handshake if all is well. 
+
+
+
+error handling 
+____________________________________________
+
+so many edge cases, but conditionals get messy, so they use a 
+
+COMMAND TABLE
+(no idea what this is maybe check out later)
