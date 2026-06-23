@@ -143,6 +143,20 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
 		
+		}else if(input == "-p"){
+			fmt.Println("making it to info")	
+			message := ""
+			body := ""
+			inputStr := fmt.Sprintf("role:%s",data["role"])
+			inputStr1 := fmt.Sprintf("master_replid:%s",data["master_replid"])
+			inputStr2 := fmt.Sprintf("master_repl_offset:%s",data["master_repl_offset"])
+
+			body+= inputStr
+			body+= inputStr1
+			body += inputStr2
+			message = fmt.Sprintf("$%d\r\n%s\r\n", len(body), body)
+			fmt.Println(message)
+			conn.Write([]byte(message))
 		}else{
 			if(input ==""){
 				continue
