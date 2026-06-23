@@ -433,10 +433,13 @@ func main() {
 		}	
 		
 		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
+		conn := listener.Accept()
 		// conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 	}
 	
 	listener, err := net.Listen("tcp", "0.0.0.0:" + fullPort)
+	fmt.Println(" this is listener ")
+	fmt.Println(listener)
 	if err != nil {
 		fmt.Println("Failed to bind to port")
 		os.Exit(1)
