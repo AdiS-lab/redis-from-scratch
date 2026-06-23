@@ -76,3 +76,13 @@ listen.Accept()
 
 when parsing out a string, we use a reader to go through, is there a way to 
 split by space
+
+terrible freaking error. 
+_________________________________________________________________
+
+so when trying to establish connection with master db as a replica, have to send PINGS + REPLCONF + REPLPSYNC
+master sends back PONGS + OK + OK + FULLRESYNC + binary data (snapshot of current db), 
+
+when sending binary data, master closes but CONTINUES TO LISTEN ON PORT and when nothing is sent 
+we just continued no and on. This means continued to call execute without any starting value, creating
+an infinite loop to the point when INFO cmd is finally sent from a different place, CPU has used so many resources
