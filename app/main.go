@@ -125,8 +125,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				}	
 			}
 		
-		}else if(len(input) > 4) {
-			fmt.Println(input[0:3])
+		}else if(len(input) > 4 && input[0:4] == "FULL") {
 			conn.Write([]byte("+OK\r\n"))
 		}else if (isQueue == true && len(statement)>0){
 
