@@ -24,7 +24,7 @@ var data = make(map[string]string)
 var watchCheck bool
 
 // _____________ loop through client message ______________________________
-func handleConnection(conn net.Conn) { //  conn is a byte slice
+func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	var queue [][]string
 	isQueue :=  false
@@ -289,6 +289,9 @@ func execute(statement []string ,conn net.Conn) string{
 			message = fmt.Sprintf("$%d\r\n%s\r\n", len(body), body)
 			fmt.Println(message)
 			return message
+		case "PONG": // picks up from ping sent in the beginning
+			conn.Write([]byte(fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port %s\n6380\r\n", fullPort))) // tells master which port slave is on
+			conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 		default:
 			return ("+messageNotFound\r\n")
 		}
@@ -410,14 +413,14 @@ func handleRealConnection(reader *bufio.Reader, count int, initial int) []string
 
 func main() {
 	//__________________________ intialize TCP connection _____________________________
-	port := "6379"
+	fullPort := "6379"
 	data["master_repl_offset"] = "0"
 	data["role"] = "master"
 	data["master_replid"] = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
 
 	if(len(os.Args)>2){
 		if os.Args[1] ==  "--port"{ 
-			port = os.Args[2]
+			fullPort = os.Args[2]
 		}
 	}
 	if(len(os.Args) > 3){
@@ -435,12 +438,9 @@ func main() {
 		}	
 		
 		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
-		conn.Write(byte[](fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\n%s\n6380\r\n", listening port))) // tells master which port slave is on
-		conn.Write(byte[]("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 	}
 	
-
-	listener, err := net.Listen("tcp", "0.0.0.0:" + port)
+	listener, err := net.Listen("tcp", "0.0.0.0:" + fullPort)
 	if err != nil {
 		fmt.Println("Failed to bind to port")
 		os.Exit(1)
@@ -453,7 +453,7 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			os.Exit(1)
 		}
-		go handleConnection(conn)
+		go handleConnection(conn, fullPort) //  connection made, this is used to parse everything now. 
 	}
 }
 
