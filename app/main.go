@@ -58,6 +58,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		}
 		// manage masterUpdate by checking when doesn't equal one of those. 
 
+
 		fmt.Println("before going into check is ", masterUpdate)
 		if masterUpdate == true && data["role"] == "master"{//after three way connection
 			fmt.Println("propogating down to slave here's statement ", statement)
@@ -353,6 +354,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}else if(len(statement)>2 && statement[1] == "ACK"){
 			fmt.Println("Recieved ACK statement ", statement[2])
 			slaveConnections[conn]["offset"] = statement[2]
+			return ""
 		}
 		return "+OK\r\n"
 	case "WAIT":
