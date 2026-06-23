@@ -128,7 +128,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			conn.Write([]byte("+QUEUED\r\n"))
 		
 		}else{
-			writeVal := execute(statement, conn,fullPort)
+			writeVal := execute(statement, conn, fullPort)
 			if writeVal != ""{
 				conn.Write([]byte(writeVal))
 			}
@@ -291,6 +291,9 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 			message = fmt.Sprintf("$%d\r\n%s\r\n", len(body), body)
 			fmt.Println(message)
 			return message
+		case "PONG":
+			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port %s\r\n$4\r\n6380\r\n", fullPort)
+
 		default:
 			return ("+messageNotFound\r\n")
 		}
