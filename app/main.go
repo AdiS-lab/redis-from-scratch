@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"io"
+	"encoding/base64"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -125,6 +126,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			data["master_replid"] = inputArr[1] 
 			data["master_repl_offset"] = inputArr[2]
 
+		}else if (input == "PSYNC") {
+			// base64 to binary
+			data, _ := base64.StdEncoding.DecodeString("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==")
+			fmt.Println(len(data))
+			conn.Write([]byte("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n")) 
+			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s", len(data), data)))
 		}else if(len(strings.Split(input, " "))>2){
 			fmt.Print("got it!")
 		}else if (isQueue == true && len(statement)>0){
@@ -330,8 +337,6 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 		// 	return ""
 		case "REPLCONF":
 			return "+OK\r\n"
-		case "PSYNC":
-			return "+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n"
 		default:
 			return ("+messageNotFound\r\n")
 		}
