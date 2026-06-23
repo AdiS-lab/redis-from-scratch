@@ -435,7 +435,10 @@ func main() {
 		}	
 		
 		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
+		conn.Write(byte[](fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\n%s\n6380\r\n", listening port))) // tells master which port slave is on
+		conn.Write(byte[]("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 	}
+	
 
 	listener, err := net.Listen("tcp", "0.0.0.0:" + port)
 	if err != nil {
@@ -453,3 +456,4 @@ func main() {
 		go handleConnection(conn)
 	}
 }
+
