@@ -356,9 +356,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		// either after time is expired, or if completed before
 		target,_:= strconv.Atoi(statement[1])
 		sleep,_ := strconv.Atoi(statement[2])
-		deadline := time.Now().Add(time.Duration(sleep)*time.Millisecond)
 		ch := make(chan string)
-		go waitOnConnections(deadline, target, ch)
+		go waitOnConnections(sleep, target, ch)
 		return <- ch
 
 	default:
@@ -545,7 +544,8 @@ func writeUpdate(returnVal string) string{
 		return ""
 	}
 }
-func waitOnConnections(deadline time.Time, target int, ch chan string){
+func waitOnConnections(sleep int, target int, ch chan string){
+	deadline := time.Now().Add(time.Duration(sleep)*time.Millisecond)
 	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
 	count := 0
 	// need to send REPLGEETACK
@@ -560,6 +560,7 @@ func waitOnConnections(deadline time.Time, target int, ch chan string){
 			fmt.Println("made it to the constant checking ", time.Now(), deadline)
 			count = 0
 			for conn,_ := range slaveConnections{
+				fmt.Println("each connection is ", conn)
 				conn.Write([]byte("*3\r\n$8\r\nreplconf\r\n$6\r\ngetack\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will 
 				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
 				fmt.Println("offsetval inside wait cmd is ", offsetVal)
