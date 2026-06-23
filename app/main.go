@@ -164,13 +164,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					//after processing update offest, which mean reconvert that jawn 
 					// 1. need way to process
 					// 2. figure out where to update
-					if(masterUpdate && data["role"] == "slave"){
-						curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
-						new_offset := curr_offset + len(recreatedCmd)
-						fmt.Println("made it inside to the update offset ",curr_offset)
-						data["master_repl_offset"] = strconv.Itoa(new_offset)
-					}
 					conn.Write([]byte(writeVal))
+				}else if(masterUpdate && data["role"] == "slave"){//in case of slave + needing to update offset
+					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
+					new_offset := curr_offset + len(recreatedCmd)
+					fmt.Println("made it inside to the update offset ",curr_offset)
+					data["master_repl_offset"] = strconv.Itoa(new_offset)
 				}
 			}
 		}
