@@ -426,14 +426,14 @@ func main() {
 		}
 		fmt.Println(os.Args[4]) // comes in as localhost 6479 without the :
 		//split or loop through it. or manually do it. 
+		host := os.Args[4][0:9]
+		port := os.Args[4][10:]
 
-		conn, err := net.Dial("tcp", os.Args[4])
+		conn, err := net.Dial("tcp", host + ":" + port)
 		if(err != nil){
 			fmt.Println(err.Error())
 		}	
-		fmt.Println(os.Args[4]) 
-		fmt.Println(os.Args[4][0:8])
-		fmt.Println(os.Args[4][9:])
+		
 		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
 	}
 
