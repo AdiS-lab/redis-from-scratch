@@ -280,7 +280,7 @@ func execute(statement []string ,conn net.Conn) string{
 			message := ""
 			for key, value := range data{	
 				inputStr := fmt.Sprintf("%s:%s", key, value)
-				message = fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr), inputStr)
+				message += fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr), inputStr)
 			}
 			fmt.Println(message)
 			return message
