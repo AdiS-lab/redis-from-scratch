@@ -278,14 +278,15 @@ func execute(statement []string ,conn net.Conn) string{
 		case "INFO":
 			fmt.Println("making it to info")	
 			message := ""
+			body := ""
 			inputStr := fmt.Sprintf("role:%s",data["role"])
 			inputStr1 := fmt.Sprintf("master_replid:%s",data["master_replid"])
 			inputStr2 := fmt.Sprintf("master_repl_offset:%s",data["master_repl_offset"])
 
-			message += fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr), inputStr)
-			message += fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr1), inputStr1)
-			message += fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr2), inputStr2)
-
+			body+= inputStr
+			body+= inputStr1
+			body += inputStr2
+			message = fmt.Sprintf("$%d\r\n%s\r\n", len(body), body)
 			fmt.Println(message)
 			return message
 		default:
