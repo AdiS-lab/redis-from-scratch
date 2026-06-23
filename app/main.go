@@ -352,12 +352,16 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return "+OK\r\n"
 	case "WAIT":
 		count := 0
-		for conn, _ := range slaveConnections{
+		sleep,_ := strconv.Atoi(statement[2])
+		time.Sleep(time.Duration(sleep)*time.Millisecond)
+		for conn,_ := range slaveConnections{
 			offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
+			fmt.Println("offsetval inside wait cmd is ", offsetVal)
 			if offsetVal > 0{
 				count++
 			}
-		}
+		} // so if written to, then should have an offsetVal greater than 1, meaning that we adjust the count
+		//accordingly and then after return that value. We have to sleep to. 
 		return fmt.Sprintf(":%d\r\n", count)
 	default:
 		return ("+messageNotFound\r\n")
