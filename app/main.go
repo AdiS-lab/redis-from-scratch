@@ -60,6 +60,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		// need a way to send the correct port. We have data, maybe can include something there. 
 
 		if masterUpdate == true{
+			fmt.Print("made it to the master update all good")
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
 				for i:=0; i<len(slaveConnections); i++ {
 					message := createArr(statement, 0, len(statement))
@@ -137,6 +138,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		} else if input == "PSYNC" {
 			// base64 to binary
 			// update the data to include the port PSYNC sends. 
+			fmt.Println("made it to PSYNC alright")
 			masterUpdate = true
 			slaveConnections = append(slaveConnections, conn) // sets the state right so everything goes to the slave
 
