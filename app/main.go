@@ -441,6 +441,7 @@ func parser(reader *bufio.Reader) []string {
 		buf := make([]byte, tempVal)  // we set a buffer                                                                                               
 		n, err2 := io.ReadFull(reader, buf) // consume and discard
 		fmt.Println("Read", n, "bytes, err:", err2)
+		reader.ReadByte()
 		fmt.Println()
 		return statement
 		// reader.ReadString('\n')
