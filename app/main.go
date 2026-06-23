@@ -135,13 +135,13 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			inputArr := strings.Split(input, " ")
 			data["master_replid"] = inputArr[1]
 			data["master_repl_offset"] = inputArr[2]
+			expectingRDB = true
 
 		} else if input == "PSYNC" { // 3rd step for 3 way handshake
 			// base64 to binary
 			// update the data to include the port PSYNC sends. 
 			fmt.Println("made it to PSYNC alright")
 			masterUpdate = true
-			expectingRDB = true
 			fmt.Println("slave connections ", conn)
 			slaveConnections = append(slaveConnections, conn) // sets the state right so everything goes to the slave
 
