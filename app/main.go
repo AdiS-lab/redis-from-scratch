@@ -564,11 +564,11 @@ func waitOnConnections(sleep int, target int, ch chan string){
 	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
 	count := 0
 	masterOffset,_ := strconv.Atoi(data["master_repl_offset"])
-	fmt.Println("this is masterOffset", masterOffset)
 
 	// need to send REPLGEETACK
 	
 	for range ticker.C{
+		fmt.Println("this is masterOffset", masterOffset)
 		if(time.Now().After(deadline)){ 
 			fmt.Println("made it to the point where it overextended")
 			ch <- fmt.Sprintf(":%d\r\n", count) // go into infinite for loop wait until after deadline
