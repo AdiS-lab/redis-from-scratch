@@ -447,6 +447,7 @@ func parser(reader *bufio.Reader) []string {
 		}
 		fmt.Println("expectingRDB inside parse is ", expectingRDB)
 		if(expectingRDB){ //handle RDB file
+			fmt.Println("this is initVal ", initVal)
 			buf := make([]byte, initVal) // we set a buffer
 			io.ReadFull(reader, buf)   // consume and discard
 			expectingRDB = false
