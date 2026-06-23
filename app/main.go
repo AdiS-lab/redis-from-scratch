@@ -360,9 +360,6 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	case "WAIT":
 		if(masterUpdate && data["role"] == "master"){
 			// either after time is expired, or if completed before
-			for connection,_ := range slaveConnections {
-				connection.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will 
-			}
 
 			target,_:= strconv.Atoi(statement[1])
 			sleep,_ := strconv.Atoi(statement[2])
@@ -571,12 +568,15 @@ func waitOnConnections(sleep int, target int, ch chan string){
 			break
 		}else{ // keep resetting such can count from fresh. 
 			fmt.Println("made it to the constant checking ", time.Now(), deadline)
+			for connection,_ := range slaveConnections {
+				connection.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will 
+			}
 			count = 0
 			for conn,_ := range slaveConnections{
 				fmt.Println("each connection is ", conn)
 				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
 				fmt.Println("offsetval inside wait cmd is ", offsetVal)
-				if(offsetVal>=0){
+				if(offsetVal>0){
 					count++ 
 				}
 				if(count>=target){
