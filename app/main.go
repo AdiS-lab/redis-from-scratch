@@ -574,11 +574,10 @@ func waitOnConnections(sleep int, target int, ch chan string){
 		}else{ // keep resetting such can count from fresh. 
 			fmt.Println("made it to the constant checking ", time.Now(), deadline)
 			count = 0
+			masterOffset,_ := strconv.Atoi(data["master_repl_offset"])
 			for conn,_ := range slaveConnections{
-				// fmt.Println("each connection is ", conn)
 				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
-				// fmt.Println("offsetval inside wait cmd is ", offsetVal)
-				if(offsetVal>0){
+				if(offsetVal>masterOffset){
 					count++ 
 				}
 				if(count>=target){
