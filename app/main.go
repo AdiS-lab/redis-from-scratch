@@ -563,6 +563,8 @@ func waitOnConnections(sleep int, target int, ch chan string){
 	deadline := time.Now().Add(time.Duration(sleep)*time.Millisecond)
 	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
 	count := 0
+	masterOffset,_ := strconv.Atoi(data["master_repl_offset"])
+
 	// need to send REPLGEETACK
 	
 	for range ticker.C{
@@ -572,19 +574,17 @@ func waitOnConnections(sleep int, target int, ch chan string){
 			ticker.Stop()
 			break
 		}else{ // keep resetting such can count from fresh. 
-			fmt.Println("made it to the constant checking ", time.Now(), deadline)
 			count = 0
-			masterOffset,_ := strconv.Atoi(data["master_repl_offset"])
 			for conn,_ := range slaveConnections{
 				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
 				if(offsetVal>=masterOffset){
 					count++ 
 				}
-				if(count>=target){
-					ch <- fmt.Sprintf(":%d\r\n", count)
-					ticker.Stop()
-					break
-				}
+			}
+			if(count>=target){
+				ch <- fmt.Sprintf(":%d\r\n", count)
+				ticker.Stop()
+				break
 			}
 		}
 	}
