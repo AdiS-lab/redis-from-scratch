@@ -8,6 +8,7 @@ Questions:
 what does ticker.C mean?
 
 traversing objects
+___________________________
 
 var objName = make(map[string]string) --> map[key]val
 delete(obj, key)
@@ -43,3 +44,16 @@ so many edge cases, but conditionals get messy, so they use a
 
 COMMAND TABLE
 (no idea what this is maybe check out later)
+
+
+tcp connections 
+_______________________________________________
+
+when establishing a connection with someone,
+1. sending and them establishing on their backend
+2. or listening and you accepting and establishing 
+ 
+have to set a buffer to capture response 
+buf := make([]byte, 1024) --> slice buffer, allocate one place in memory with 1024 bytes, will be filled
+OR
+use bufio: bufio.NewReader(conn)
