@@ -279,8 +279,8 @@ func execute(statement []string ,conn net.Conn) string{
 			fmt.Println("making it to info")	
 			message := ""
 			inputStr := fmt.Sprintf("role:%s",data["role"])
-			inputStr1 := fmt.Sprintf("master_repl:%s",data["master_replid"])
-			inputStr2 := fmt.Sprintf("role:%s",data["master_repl_offset"])
+			inputStr1 := fmt.Sprintf("master_replid:%s",data["master_replid"])
+			inputStr2 := fmt.Sprintf("master_repl_offset:%s",data["master_repl_offset"])
 
 			message += fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr), inputStr)
 			message += fmt.Sprintf("$%d\r\n%s\r\n", len(inputStr1), inputStr1)
