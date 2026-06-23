@@ -553,16 +553,20 @@ func waitOnConnections(deadline time.Time, target int, ch chan string){
 			fmt.Println("made it to the point where it overextended")
 			ch <- fmt.Sprintf(":%d\r\n", count) // go into infinite for loop wait until after deadline
 			ticker.Stop()
+			break
 		}else{ // keep resetting such can count from fresh. 
 			fmt.Println("made it to the constant checking ", time.Now(), deadline)
 			count = 0
 			for conn,_ := range slaveConnections{
 				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
 				fmt.Println("offsetval inside wait cmd is ", offsetVal)
-				count++ 
+				if(offsetVal> 0){
+					count++ 
+				}
 				if(count>=target){
 					ch <- fmt.Sprintf(":%d\r\n", count)
 					ticker.Stop()
+					break
 				}
 			}
 		}
