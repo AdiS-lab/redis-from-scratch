@@ -167,6 +167,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					if(masterUpdate && data["role"] == "slave"){
 						curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
 						new_offset := curr_offset + len(recreatedCmd)
+						fmt.Println("made it inside to the update offset ",curr_offset)
 						data["master_repl_offset"] = strconv.Itoa(new_offset)
 					}
 					conn.Write([]byte(writeVal))
