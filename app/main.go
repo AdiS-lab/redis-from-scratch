@@ -289,9 +289,9 @@ func execute(statement []string ,conn net.Conn, fullPort string) string{
 			message = fmt.Sprintf("$%d\r\n%s\r\n", len(body), body)
 			fmt.Println(message)
 			return message
-		case "PONG": // picks up from ping sent in the beginning
-			conn.Write([]byte(fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port %s\n6380\r\n", fullPort))) // tells master which port slave is on
-			conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
+		// case "PONG": // picks up from ping sent in the beginning
+		// 	conn.Write([]byte(fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port %s\n6380\r\n", fullPort))) // tells master which port slave is on
+		// 	conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 		default:
 			return ("+messageNotFound\r\n")
 		}
@@ -438,6 +438,8 @@ func main() {
 		}	
 		
 		conn.Write([]byte("*1\r\n$4\r\nPING\r\n"))
+		conn.Write([]byte(fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port %s\n6380\r\n", fullPort))) // tells master which port slave is on
+		conn.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n"))
 	}
 	
 	listener, err := net.Listen("tcp", "0.0.0.0:" + fullPort)
