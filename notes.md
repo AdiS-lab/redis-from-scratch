@@ -101,3 +101,9 @@ Each char represents a byte, so this gives it.
 The master tracks bytes on their own end. To sync at first, master has 
 to send RDB file which is a binary snapshot, and then somehow determines 
 sending write commands etc. 
+
+
+reading cli commands 
+______________________________________________________________________
+
+os.Args to parse it

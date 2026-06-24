@@ -25,7 +25,7 @@ var lists = make(map[string][]string)
 var watchedKeys = make(map[string]string)
 var data = make(map[string]string)
 var slaveConnections = make(map[net.Conn]map[string]string) // sync.Mutex protects concurrent access (whateva that means)
-
+var configs = make(map[string]string)
 
 var watchCheck bool
 var firstPONG bool
@@ -376,12 +376,15 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return""
     case "CONFIG": 
 		files := statement[2]
+		directory := configs["dir"] 
+		filePath := configs["dbfilename"]
+
 		if files == "dir" {
 			result, _ := os.Stat(files)
 			fmt.Println("this is result after CONFIG ", result)
-			return "*2\r\n$3\r\ndir\r\n$16\r\n/tmp/redis-files\r\n"
+			return fmt.Sprintf("*2\r\n$3\r\ndir\r\n$16\r\n%s\r\n",directory )
 		}else if files == "dbfilename"{
-			return "*2\r\n$3\r\ndbfilename\r\n$16\r\ndump.rdb\r\n"
+			return fmt.Sprintf("*2\r\n$3\r\ndbfilename\r\n$16\r\n%s\r\n", filePath)
 		}	
 		return ""
 
@@ -615,6 +618,10 @@ func main() {
 	if len(os.Args) > 2 {
 		if os.Args[1] == "--port" || os.Args[1] == "-p" {
 			fullPort = os.Args[2]
+		}else if(os.Args[1]=="--dir"){
+			configs["dir"] = os.Args[2]
+		}else if(os.Args[1]=="--dbfilename"){
+			configs["dbfilename"] = os.Args[2]
 		}
 	}
 	if len(os.Args) > 3 {
