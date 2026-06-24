@@ -778,6 +778,7 @@ func main() {
 				fmt.Println("this is my filepath ", configs["appendfilename"])
 				filePath := filepath.Join(fullPath, configs["appendfilename"])
 				fmt.Println("this is my fullPath ",  fullPath)
+				fmt.Println("this is my full filepath ", filePath)
 				os.MkdirAll(fullPath, 0755) //create a directory 0755 is just permission logic
 				os.Create(filePath)
 			}
