@@ -382,9 +382,9 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		if files == "dir" {
 			result, _ := os.Stat(files)
 			fmt.Println("this is result after CONFIG ", result)
-			return fmt.Sprintf("*2\r\n$3\r\ndir\r\n$16\r\n%s\r\n",directory )
+			return fmt.Sprintf("*2\r\n$3\r\ndir\r\n$%d\r\n%s\r\n",len(directory),directory)
 		}else if files == "dbfilename"{
-			return fmt.Sprintf("*2\r\n$3\r\ndbfilename\r\n$16\r\n%s\r\n", filePath)
+			return fmt.Sprintf("*2\r\n$3\r\ndbfilename\r\n$%d\r\n%s\r\n", len(filePath), filePath)
 		}	
 		return ""
 
