@@ -375,13 +375,13 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}
 		return""
     case "CONFIG": 
-		filePath := statement[2]
+		// filePath := statement[2]
+		// fmt.Println(statement[2])
+		// result,_:= os.ReadDir(filePath)
+		// fmt.Println("result of read dir = ", result)
 
-		result,_:= os.ReadDir(filePath)
-		fmt.Println("result of read dir = ", result)
-
-		result2,_ := os.Stat(filePath)
-		fmt.Println("result2 of getting file info ",result2)
+		// result2,_ := os.Stat(filePath)
+		// fmt.Println("result2 of getting file info ",result2)
 		return ""
 
 	default:
