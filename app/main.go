@@ -648,8 +648,7 @@ func main() {
 			fullPort = os.Args[2]
 		}else if(os.Args[1]=="--dir"){
 			configs["dir"] = os.Args[2]
-		}else if(os.Args[1]=="--dbfilename"){
-			configs["dbfilename"] = os.Args[2]
+			configs["dbfilename"] = os.Args[4]
 		}
 	}
 	if len(os.Args) > 3 {
