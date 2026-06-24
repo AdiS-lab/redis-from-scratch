@@ -387,13 +387,13 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return ""
 	
 		case "KEYS":	
-			directory := configs["dir"] 
+			// directory := configs["dir"] 
 			filePath := configs["dbfilename"]
-			info,_ := os.ReadFile(directory + filePath)
+			info,_ := os.ReadFile(filePath)
 			readRDB(info)
 			fmt.Println(os.Stat("badFilePath"))
 			// fullPath,_ := filepath.Join(directory, filePath)
-			fmt.Println(info)
+			fmt.Println(string(info))
 			if info == nil{
 				return ""
 			}else{
