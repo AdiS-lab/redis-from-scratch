@@ -53,6 +53,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	if info == nil{
 	}
 	allKeys, allVals, allExp  := readRDB(info)
+	fmt.Println("this is allkeys again ", allKeys) 
+	fmt.Println("this is allVals ", allVals) 
+	fmt.Println("this is allExp ", allExp)
 	for i:=0; i<len(allKeys); i++{
 		storage[allKeys[i]] = allVals[i]
 		if (allExp[i] != ""){
