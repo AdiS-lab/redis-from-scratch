@@ -423,7 +423,7 @@ func readRDB(info []byte)[]string{
 			fmt.Println("this is the length of the hash ", int(info[i+1]))
 			fmt.Println("this is the length of the key  ", int(info[i+4]))
 			length := int(info[i+4]) // length of key val
-			keys := info[i+4:i+4+length-1] // first key val to last 
+			keys := info[i+5:i+5+length-1] // first key val to last 
 			allKeys = append(allKeys, string(keys)) // capture the key
 		}
 		i++
