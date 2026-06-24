@@ -83,8 +83,10 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		}else{
 			// result, _ := os.ReadFile(configs["manifest"]) //  use manifest to identify 
 			fmt.Println("made it to the append stage ")
-			targetFile := filepath.Join(configs["appenddirname"], fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"])) // find targetFile string 
+			fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
+			targetFile := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"])) // find targetFile string 
 			fmt.Println("this is target file ", targetFile)
+			
 			file, _ := os.OpenFile(targetFile, os.O_APPEND, 0644)
 			file.WriteString(recreatedCmd)
 			file.Close()
