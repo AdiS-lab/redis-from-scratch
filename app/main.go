@@ -430,6 +430,7 @@ func readRDB(info []byte){
 			length := info[i+1]
 			fmt.Println("we reached the keyval store ", length)
 		}
+		i++
 	}
 }
 //  set and increment
