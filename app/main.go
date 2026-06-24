@@ -457,12 +457,12 @@ func readRDB(info []byte)([]string, []string, []string){
 					allExp[count] = expiry
 					i = i + 10
 				} // at this point at 0x00
-				length := int(info[i+1])
-				keyLen := i+2+length
+				realLen := int(info[i+1])
+				keyLen := i+2+realLen
 				keys := info[i+2:keyLen]
 
-				length2 := int(info[keyLen])
-				vals := info[keyLen+1: keyLen+1 + length2]
+				realLen2 := int(info[keyLen])
+				vals := info[keyLen+1: keyLen+1 + realLen2]
 
 				fmt.Println("this is key ", string(keys))
 				fmt.Println("this is value ", string(vals))
@@ -470,7 +470,7 @@ func readRDB(info []byte)([]string, []string, []string){
 				allKeys = append(allKeys, string(keys))
 				allVals = append(allVals, string(vals))
 				count ++ 
-				i =  i + 3 + length + length2
+				i =  i + 3 + realLen + realLen2
 			}
 		}else{
 			i++
