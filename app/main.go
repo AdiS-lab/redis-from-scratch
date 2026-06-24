@@ -433,6 +433,9 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 func readRDB(info []byte)([]string, []string, []string){
 	i:= 0
 	count:=0
+	target := -1
+
+	keyReach := false
 	keyBool := false
 	allKeys := []string{}
 	allVals := []string{}
@@ -447,14 +450,15 @@ func readRDB(info []byte)([]string, []string, []string){
 			length := int(info[i+1])
 			allExp = make([]string, length)
 			keyBool = true
+			keyReach = true
 		}
-		if info[i] == 0xFC{
+		if info[i] == 0xFC && keyBool && keyReach{
 			tempExp := binary.LittleEndian.Uint64(info[i+1:i+9])
 			expiry := strconv.FormatUint(tempExp, 10)
 			allExp[count] = expiry
  		}
 
-		if info[i] == 0x00 && int(info[i+1]) > int(info[i]) && keyBool{
+		if info[i] == 0x00 && int(info[i+1]) > int(info[i]) && keyBool && keyReach{
 			length := int(info[i+1])
 			keyLen := i+2+length
 			keys := info[i+2:keyLen]
@@ -467,6 +471,9 @@ func readRDB(info []byte)([]string, []string, []string){
 
 			count ++ 
 		}	
+		if count == target{
+			keyReach = false
+		}
 		i++
 	}
 	return allKeys, allVals, allExp
