@@ -420,6 +420,7 @@ func readRDB(info []byte)[]string{
 		 // find the length of the key value store, then we have to find a 00 
 		 // then we can create a slice
 		if info[i] == 0x00{ 
+			fmt.Println("this is the length of str ", int(info[i+1]))
 			length := int(info[i+1]) // length of key val
 			keys := info[i+2:i+length-1] // first key val to last 
 			allKeys = append(allKeys, string(keys)) // capture the key
