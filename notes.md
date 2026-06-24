@@ -107,3 +107,14 @@ reading cli commands
 ______________________________________________________________________
 
 os.Args to parse it
+
+
+
+
+
+things to change
+__________________________________________________________________
+
+1. when parsing out commands, make sure to use a for loop because right now cmds
+are kind of just hardcoded on this jawn
+2. what is uint8 uint16 etc. 

@@ -420,6 +420,17 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 func readRDB(info []byte){
 	fmt.Println("this is the byte arr ", info)
 	fmt.Println("this is an attempt to convert it ", string(info[0]))
+	fmt.Println(len(info))
+	i:= 0
+
+	for i<len(info){
+		 // different ways to parse. Have to find where key value store starts, and then 
+		 // find the length of the key value store, and 
+		if info[i] == 0xFB{
+			length := info[i+1]
+			fmt.Println("we reached the keyval store ", length)
+		}
+	}
 }
 //  set and increment
 
