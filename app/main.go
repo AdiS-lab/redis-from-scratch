@@ -399,9 +399,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			decide := statement[1]
 			switch decide{
 			case "*": 
-				fmt.Println(allKeys)
+				fmt.Println("here are all the keys ", allKeys)
 				keyList := []string{}
-				fmt.Println(allKeys)
 				for key,value := range allKeys{
 					keyList = append(keyList, key)
 					storage[key] = value
