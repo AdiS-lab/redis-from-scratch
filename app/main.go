@@ -389,10 +389,10 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return ""
 	
 		case "KEYS":	
-			// directory := configs["dir"] 
+			directory := configs["dir"] 
 			filePath := configs["dbfilename"]
 			// fullPath,_ := filepath.Join(directory, filePath)
-			fmt.Println(os.Stat(filePath))
+			fmt.Println(os.Stat(directory + filePath))
 			decide := statement[1]
 			switch decide{
 			case "*": 
