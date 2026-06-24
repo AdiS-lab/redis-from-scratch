@@ -745,8 +745,21 @@ func main() {
 		if os.Args[1] == "--port" || os.Args[1] == "-p" {
 			fullPort = os.Args[2]
 		}else if(os.Args[1]=="--dir"){
-			configs["dir"] = os.Args[2] // dir is supposed to be the directory where it is found
-			configs["dbfilename"] = os.Args[4]
+			for i:=0; i<len(os.Args); i++{
+				if(os.Args[i] == "dir"){
+					configs["dir"] = os.Args[i+1]
+				}else if(os.Args[i] == "dbfilename"){
+					configs["dbfilename"] = os.Args[i+1]
+				}else if(os.Args[i] == "appendonly"){		
+						configs["appendonly"] = os.Args[i+1]
+				}else if(os.Args[i] == "appenddirname"){
+					configs["appenddirname"] = os.Args[i+1]
+				}else if(os.Args[i] == "appendfilename"){
+					configs["appendfilename"] = os.Args[i+1]
+				}else if(os.Args[i] == "appendfsync"){
+					configs["appendfsync"] = os.Args[i+1]
+				}	
+			}
 		}
 	}
 
