@@ -410,14 +410,14 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return fmt.Sprintf("*2\r\n$10\r\ndbfilename\r\n$%d\r\n%s\r\n", len(filePath), filePath)
 
 		case "appendonly":
-			return fmt.Sprintf("*2\r\n$10\r\nappendonly\r\n$%d\r\n%s\r\n",len("no"),  "no") // appendonly, no
+			return fmt.Sprintf("*2\r\n$10\r\nappendonly\r\n$%d\r\n%s\r\n",len(configs["appendonly"]),  configs["appendonly"]) // appendonly, no
 		case "appenddirname":
-			return fmt.Sprintf("*2\r\n$13\r\appenddirname\r\n$%d\r\n%s\r\n", len("appendonlydir"),  "appendonlydir")// appenddirname, appendonlydir
+			return fmt.Sprintf("*2\r\n$13\r\appenddirname\r\n$%d\r\n%s\r\n", len(configs["appenddirname"]),  configs["appenddirname"])// appenddirname, appendonlydir
 
 		case "appendfilename":
-			return fmt.Sprintf("*2\r\n$14\r\appendfilename\r\n$%d\r\n%s\r\n", len("appendonly.aof"), "appendonly.aof") // appendfilename, appendonly.aof
+			return fmt.Sprintf("*2\r\n$14\r\appendfilename\r\n$%d\r\n%s\r\n", len(configs["appendfilename"]), configs["appendfilename"]) // appendfilename, appendonly.aof
 		case "appendfsync":
-			return fmt.Sprintf("*2\r\n$11\r\appendfsync\r\n$%d\r\n%s\r\n", len("everysec"), "everysec")// everysec
+			return fmt.Sprintf("*2\r\n$11\r\appendfsync\r\n$%d\r\n%s\r\n", len(configs["appendfsync"]), configs["appendfsync"])// everysec
 		default:
 			return ""
 		}
@@ -733,14 +733,23 @@ func main() {
 	data["role"] = "master"
 	data["master_replid"] = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
 
+	curr_dir, _ := os.Getwd()
+	fmt.Println("this is the current direcotry " , curr_dir)
+	configs["dir"] = curr_dir
+	configs["appendonly"] = "no"
+	configs["appenddirname"] = "appendonlydir"
+	configs["appendfilename"] = "appendonly.aof"
+	configs["appendfsync"] = "everysec"
+
 	if len(os.Args) > 2 {
 		if os.Args[1] == "--port" || os.Args[1] == "-p" {
 			fullPort = os.Args[2]
 		}else if(os.Args[1]=="--dir"){
-			configs["dir"] = os.Args[2]
+			configs["dir"] = os.Args[2] // dir is supposed to be the directory where it is found
 			configs["dbfilename"] = os.Args[4]
 		}
 	}
+
 	if len(os.Args) > 3 {
 		if os.Args[3] == "--replicaof" {
 			data["role"] = "slave"
