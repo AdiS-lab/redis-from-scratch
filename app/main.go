@@ -378,10 +378,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		files := statement[2]
 		directory := configs["dir"] 
 		filePath := configs["dbfilename"]
-
+		
 		if files == "dir" {
-			result, _ := os.Stat(files)
-			fmt.Println("this is result after CONFIG ", result)
 			return fmt.Sprintf("*2\r\n$3\r\ndir\r\n$%d\r\n%s\r\n",len(directory),directory)
 		}else if files == "dbfilename"{
 			return fmt.Sprintf("*2\r\n$3\r\ndbfilename\r\n$%d\r\n%s\r\n", len(filePath), filePath)
@@ -391,27 +389,35 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		case "KEYS":	
 			directory := configs["dir"] 
 			filePath := configs["dbfilename"]
-			info,_ := os.Stat(directory + filePath)
+			info,_ := os.ReadFile(directory + filePath)
+			readRDB(info)
 			fmt.Println(os.Stat("badFilePath"))
 			// fullPath,_ := filepath.Join(directory, filePath)
 			fmt.Println(info)
-			decide := statement[1]
-			switch decide{
-			case "*": 
-				allKeys := []string{}
-				for key,_ := range storage{
-					allKeys = append(allKeys, key)
-				}
-				message := createArr(allKeys, 0, len(allKeys))
-				return message
-			default: 
+			if info == nil{
 				return ""
+			}else{
+				decide := statement[1]
+				switch decide{
+				case "*": 
+					allKeys := []string{}
+					for key,_ := range storage{
+						allKeys = append(allKeys, key)
+					}
+					message := createArr(allKeys, 0, len(allKeys))
+					return message
+				default: 
+					return ""
+				}
 			}
 	default:
 		return ("+messageNotFound\r\n")
 	}
 }
-
+func readRDB(info []byte){
+	fmt.Println("this is the byte arr ", info)
+	fmt.Println("this is an attempt to convert it ", string(info[0]))
+}
 //  set and increment
 
 func LPOP(listName string, sliceNum int, conn net.Conn) string {
