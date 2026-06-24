@@ -28,7 +28,7 @@ var watchedKeys = make(map[string]string)
 var data = make(map[string]string)
 var slaveConnections = make(map[net.Conn]map[string]string) // sync.Mutex protects concurrent access (whateva that means)
 var configs = make(map[string]string)
-var expired = make(map[string]string)
+var expired = make(map[string]int)
 
 var watchCheck bool
 var firstPONG bool
@@ -59,11 +59,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	fmt.Println("this is allVals ", allVals) 
 	fmt.Println("this is allExp ", allExp)
 	for i:=0; i<len(allKeys); i++{
-		storage[allKeys[i]] = allVals[i]
+		storage[allKeys[i]] = allVals[i] // set storage 
 		if (allExp[i] != ""){
 			fmt.Println("have made it inside the expiry handler ")
 			ms,_ := strconv.Atoi(allExp[i])
-			go waitKey(allKeys[i], ms)
+			expired[allKeys[i]] = ms
+			// go waitKey(allKeys[i], ms)
 		}
 	}
 
@@ -88,7 +89,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		if masterUpdate == true && data["role"] == "master"{//after three way connection
 			fmt.Println("propogating down to slave here's statement ", statement)
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
-				curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
+				curr_offset,_ := strconv.Atoi(data["master_repl_offset"])  // track master offset 
 				new_offset := curr_offset + len(recreatedCmd)
 				data["master_repl_offset"] = strconv.Itoa(new_offset)
 				for conn, _ := range slaveConnections {
@@ -237,9 +238,18 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}
 	case "GET":
 		fmt.Println("made it to GET cmd")
-		fmt.Println(storage)
-		fmt.Println(slaveConnections)
+		fmt.Println("this is storage: ", storage)
+		fmt.Println("these are slave connections: ", slaveConnections)
 		storageKey := statement[1]
+		ms,_ := expired[storageKey]
+		if(ms != 0){
+			expiryTime := time.UnixMilli(int64(ms))
+			if(time.Now().After(expiryTime)){
+				delete(storage, storageKey) 
+				delete(expired, storageKey)
+			}
+		} // check if assigned expiry is there to delete 
+
 		value, exists := storage[storageKey]
 		if exists {
 			return (fmt.Sprintf("$%d\r\n%s\r\n", len(value), storage[storageKey]))
@@ -568,17 +578,17 @@ func createArr(array []string, first int, last int) string { // used as a templa
 	return message
 }
 // could make list and use for loop or just a map and use that to lookup strings etc. 
-func waitKey(key string, ms int) {
-	fmt.Println("HJELLLLOOOO INSIDE WAITKEY ")
-	expiryTime := time.UnixMilli(int64(ms))
-	fmt.Println(time.Now())
-	fmt.Println(expiryTime)
-	fmt.Println(time.Now().After(expiryTime))
-	if(time.Now().After(expiryTime)){
-			fmt.Println("these are the keys supposed to be expired ", key)
-			delete(storage, key)
-	} // in the case that it is in unix
-}
+// func waitKey(key string, ms int) {
+// 	fmt.Println("HJELLLLOOOO INSIDE WAITKEY ")
+// 	expiryTime := time.UnixMilli(int64(ms))
+// 	fmt.Println(time.Now())
+// 	fmt.Println(expiryTime)
+// 	fmt.Println(time.Now().After(expiryTime))
+// 	if(time.Now().After(expiryTime)){
+// 			fmt.Println("these are the keys supposed to be expired ", key)
+// 			delete(storage, key)
+// 	} // in the case that it is in unix
+// }
 
 func wait(key string, ms int){
 	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
