@@ -87,7 +87,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			targetFile := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"])) // find targetFile string 
 			fmt.Println("this is target file ", targetFile)
 			
-			file, _ := os.OpenFile(targetFile, os.O_APPEND, 0644)
+			file, _ := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
 			file.WriteString(recreatedCmd)
 			file.Close()
 			//write the cmd to target file
