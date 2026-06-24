@@ -83,7 +83,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		 }
 		 for _,value := range fullPathArr{
 			result,_ := os.ReadFile(value)
-			fmt.Println("this is what is inside each file ", result)
+			stringArr := strings.Split(string(result), "\r\n")
+			fmt.Println("this is what is inside each file ", stringArr)
+			
 		 }
 
 		// targetFile := filepath.Join(fullPath, fileName) // find targetFile string 
