@@ -375,10 +375,11 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}
 		return""
     case "CONFIG": 
-		filePath := statement[2]
-		if filePath == "dir" {
+		files := statement[2]
+		if files == "dir" {
+			os.ReadDir(files)
 			return "*2\r\n$3\r\ndir\r\n$16\r\n/tmp/redis-files\r\n"
-		}else if filePath == "dbfilename"{
+		}else if files == "dbfilename"{
 			return "*2\r\n$3\r\ndbfilename\r\n$16\r\ndump.rdb\r\n"
 		}	
 		return ""
