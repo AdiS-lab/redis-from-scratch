@@ -412,7 +412,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		case "appendonly":
 			return fmt.Sprintf("*2\r\n$10\r\nappendonly\r\n$%d\r\n%s\r\n",len(configs["appendonly"]),  configs["appendonly"]) // appendonly, no
 		case "appenddirname":
-			return fmt.Sprintf("*2\r\n$13\r\appenddirname\r\n$%d\r\n%s\r\n", len(configs["appenddirname"]),  configs["appenddirname"])// appenddirname, appendonlydir
+			return fmt.Sprintf("*2\r\n$13\r\nappenddirname\r\n$%d\r\n%s\r\n", len(configs["appenddirname"]),  configs["appenddirname"])// appenddirname, appendonlydir
 
 		case "appendfilename":
 			return fmt.Sprintf("*2\r\n$14\r\appendfilename\r\n$%d\r\n%s\r\n", len(configs["appendfilename"]), configs["appendfilename"]) // appendfilename, appendonly.aof
