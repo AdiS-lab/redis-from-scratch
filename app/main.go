@@ -745,6 +745,7 @@ func main() {
 		if os.Args[1] == "--port" || os.Args[1] == "-p" {
 			fullPort = os.Args[2]
 		}else if(os.Args[1]=="--dir"){
+			fmt.Println("made it inside the dir function check ")
 			for i:=0; i<len(os.Args); i++{
 				if(os.Args[i] == "dir"){
 					fmt.Println("made it inside directory check  ", os.Args[i+1])
