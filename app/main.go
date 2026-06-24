@@ -806,7 +806,7 @@ func main() {
 
 				inside,_ := os.ReadFile(manifestFile)
 				fmt.Println("inside instruction file is  ", string(inside))
-				configs["manifestfile"] = manifestFile
+				configs["manifest"] = manifestFile
 			}	
 		}
 	}
