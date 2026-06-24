@@ -94,4 +94,10 @@ ___________________________________________________________________
 able to store connections, and use flags + information to determine states
 and specify functionality
 
-SYNC by bytes. The replica LITERALLY just stores every cmd as bytes which is crazy to me
+SYNC by bytes. The replica LITERALLY just stores every cmd as bytes. This is 
+done by tracking every cmd, in the form of chars, and finding the length. 
+Each char represents a byte, so this gives it. 
+
+The master tracks bytes on their own end. To sync at first, master has 
+to send RDB file which is a binary snapshot, and then somehow determines 
+sending write commands etc. 
