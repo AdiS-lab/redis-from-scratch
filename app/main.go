@@ -413,13 +413,17 @@ func readRDB(info []byte)[]string{
 	fmt.Println("this is an attempt to convert it ", string(info[0]))
 	fmt.Println(len(info))
 	i:= 0
+	keyBool:= false
 	allKeys := []string{}
 
 	for i<len(info){
 		 // different ways to parse. Have to find where key value store starts, and then 
 		 // find the length of the key value store, then we have to find a 00 
 		 // then we can create a slice
-		if info[i] == 0x00{ 
+		if info[i] == 0xFB{
+			keyBool = true
+		}
+		if info[i] == 0x00 && keyBool{ 
 			fmt.Println("this is the length of str ", int(info[i+1]))
 			length := int(info[i+1]) // length of key val
 			keys := info[i+2:i+length-1] // first key val to last 
