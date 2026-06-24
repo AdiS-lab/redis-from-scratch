@@ -434,8 +434,6 @@ func readRDB(info []byte)([]string, []string, []string){
 	i:= 0
 	count:=0
 
-	keyReach := false
-	keyBool := false
 	allKeys := []string{}
 	allVals := []string{}
 	allExp := []string{}
@@ -450,7 +448,8 @@ func readRDB(info []byte)([]string, []string, []string){
 			allExp = make([]string, length)
 			i = i+3
 			for j:=0; j<length;j++{
-				if info[i] == 0xFC && keyBool && keyReach{
+				fmt.Println("this is where we are ", i, len(info))
+				if info[i] == 0xFC{
 					fmt.Println("")
 					tempExp := binary.LittleEndian.Uint64(info[i+1:i+9])
 					expiry := strconv.FormatUint(tempExp, 10)
