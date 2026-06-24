@@ -569,8 +569,10 @@ func createArr(array []string, first int, last int) string { // used as a templa
 // could make list and use for loop or just a map and use that to lookup strings etc. 
 func waitKey(key string, ms int) {
 	expiryTime := time.UnixMilli(int64(ms))
+	fmt.Println(expiryTime)
+	fmt.Println(time.Now())
 	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
-	for range ticker.C{
+	for range ticker.C{	
 		if(time.Now().After(expiryTime)){
 			fmt.Println("these are the keys supposed to be expired ", key)
 			delete(storage, key)
