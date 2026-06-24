@@ -445,6 +445,7 @@ func readRDB(info []byte)([]string, []string, []string){
 		 // then we can create a slice
 		if info[i] == 0xFB{
 			length := int(info[i+1])
+			fmt.Println("this is the length given by oxfb ", length)
 			allExp = make([]string, length)
 			i = i+3
 			for j:=0; j<length;j++{
