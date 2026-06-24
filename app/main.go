@@ -59,6 +59,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	for i:=0; i<len(allKeys); i++{
 		storage[allKeys[i]] = allVals[i]
 		if (allExp[i] != ""){
+			fmt.Println("have made it inside the expiry handler ")
 			ms,_ := strconv.Atoi(allExp[i])
 			go wait(allKeys[i], ms)
 		}
@@ -455,7 +456,9 @@ func readRDB(info []byte)([]string, []string, []string){
 				fmt.Println("this is where we are ", i, len(info))
 				if info[i] == 0xFC{
 					fmt.Println("")
-					tempExp := binary.LittleEndian.Uint64(info[i+1:i+9])
+
+					// unix timestamp uses little endian, so backwards by size of bytes. 
+					tempExp := binary.LittleEndian.Uint64(info[i+1:i+9]) 
 					expiry := strconv.FormatUint(tempExp, 10)
 					allExp[count] = expiry
 					i = i + 9
