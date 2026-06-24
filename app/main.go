@@ -453,6 +453,7 @@ func readRDB(info []byte)([]string, []string, []string){
 			keyReach = true
 		}
 		if info[i] == 0xFC && keyBool && keyReach{
+			fmt.Println("")
 			tempExp := binary.LittleEndian.Uint64(info[i+1:i+9])
 			expiry := strconv.FormatUint(tempExp, 10)
 			allExp[count] = expiry
@@ -466,6 +467,9 @@ func readRDB(info []byte)([]string, []string, []string){
 			length2 := int(info[keyLen])
 			vals := info[keyLen+1: keyLen+1 + length2]
 
+			fmt.Println("this is key ", string(keys))
+			fmt.Println("this is value ", string(vals))
+
 			allKeys = append(allKeys, string(keys))
 			allVals = append(allVals, string(vals))
 
@@ -476,6 +480,8 @@ func readRDB(info []byte)([]string, []string, []string){
 		}
 		i++
 	}
+
+	fmt.Println("this is all Keys ", allKeys)
 	return allKeys, allVals, allExp
 }
 //  set and increment
