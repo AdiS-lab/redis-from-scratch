@@ -455,7 +455,7 @@ func readRDB(info []byte)([]string, []string, []string){
 					tempExp := binary.LittleEndian.Uint64(info[i+1:i+9])
 					expiry := strconv.FormatUint(tempExp, 10)
 					allExp[count] = expiry
-					i = i + 10
+					i = i + 9
 				} // at this point at 0x00
 				realLen := int(info[i+1])
 				keyLen := i+2+realLen
