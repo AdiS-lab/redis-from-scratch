@@ -747,18 +747,17 @@ func main() {
 		}else if(os.Args[1]=="--dir"){
 			fmt.Println("made it inside the dir function check ")
 			for i:=0; i<len(os.Args); i++{
-				if(os.Args[i] == "dir"){
-					fmt.Println("made it inside directory check  ", os.Args[i+1])
+				if(os.Args[i] == "--dir"){
 					configs["dir"] = os.Args[i+1]
-				}else if(os.Args[i] == "dbfilename"){
+				}else if(os.Args[i] == "--dbfilename"){
 					configs["dbfilename"] = os.Args[i+1]
-				}else if(os.Args[i] == "appendonly"){		
+				}else if(os.Args[i] == "--appendonly"){		
 						configs["appendonly"] = os.Args[i+1]
-				}else if(os.Args[i] == "appenddirname"){
+				}else if(os.Args[i] == "--appenddirname"){
 					configs["appenddirname"] = os.Args[i+1]
-				}else if(os.Args[i] == "appendfilename"){
+				}else if(os.Args[i] == "--appendfilename"){
 					configs["appendfilename"] = os.Args[i+1]
-				}else if(os.Args[i] == "appendfsync"){
+				}else if(os.Args[i] == "--appendfsync"){
 					configs["appendfsync"] = os.Args[i+1]
 				}	
 			}
