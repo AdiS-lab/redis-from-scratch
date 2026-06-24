@@ -77,6 +77,8 @@ listen.Accept()
 when parsing out a string, we use a reader to go through, is there a way to 
 split by space
 
+mkdir is for creating an directory
+
 terrible freaking error. 
 _________________________________________________________________
 

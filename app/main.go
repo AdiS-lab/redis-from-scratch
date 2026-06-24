@@ -775,6 +775,10 @@ func main() {
 					configs["appendfsync"] = os.Args[i+1]
 				}	
 			}
+			if configs["appendonly"] == "yes"{
+				fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
+				os.MkdirAll(fullPath, 0755)
+			}
 		}
 	}
 
