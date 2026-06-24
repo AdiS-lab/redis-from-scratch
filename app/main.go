@@ -789,7 +789,10 @@ func main() {
 				instructionFile, _ := os.Create(manifestFile)
 				instructionFile.WriteString(manifestMessage)
 				instructionFile.Close()
-			}
+
+				inside,_ := os.ReadFile(manifestFile)
+				fmt.Println("inside instruction file is  ", inside)
+			}	
 		}
 	}
 
