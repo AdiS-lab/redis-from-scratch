@@ -431,7 +431,7 @@ func readRDB(info []byte){
 			key := info[i+4]
 			fmt.Println("we reached the keyval store ", length)
 			fmt.Println("and here is the length of key ", key)
-			fmt.Println("here is the string " , info[i+5])
+			fmt.Println("here is the string " , string(info[i+5]))
 		}
 		i++
 	}
