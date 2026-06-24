@@ -78,9 +78,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			break
 		}	
 		_, exists := configs["manifest"]
-		if !exists{
-			continue
-		}else{
+		if exists{
 			// result, _ := os.ReadFile(configs["manifest"]) //  use manifest to identify 
 			fmt.Println("made it to the append stage ")
 			fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
