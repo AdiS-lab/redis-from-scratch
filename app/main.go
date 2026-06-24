@@ -460,7 +460,7 @@ func readRDB(info []byte)([]string, []string, []string){
 			allExp[count] = expiry
  		}
 
-		if info[i] == 0x00 && int(info[i+1]) > int(info[i]) && keyBool && keyReach{
+		if info[i] == 0x00 && int(info[i+1]) > int(info[i]) && keyBool{
 			fmt.Println("this is after index ", info[i+1])
 
 			length := int(info[i+1])
