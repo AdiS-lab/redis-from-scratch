@@ -568,6 +568,7 @@ func createArr(array []string, first int, last int) string { // used as a templa
 }
 // could make list and use for loop or just a map and use that to lookup strings etc. 
 func waitKey(key string, ms int) {
+	fmt.Println("HJELLLLOOOO INSIDE WAITKEY ")
 	expiryTime := time.UnixMilli(int64(ms))
 	fmt.Println(expiryTime)
 	fmt.Println(time.Now())
