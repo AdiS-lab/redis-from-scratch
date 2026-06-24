@@ -573,13 +573,10 @@ func waitKey(key string, ms int) {
 	fmt.Println(time.Now())
 	fmt.Println(expiryTime)
 	fmt.Println(time.Now().After(expiryTime))
-	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
-	for range ticker.C{	
-		if(time.Now().After(expiryTime)){
+	if(time.Now().After(expiryTime)){
 			fmt.Println("these are the keys supposed to be expired ", key)
 			delete(storage, key)
-		} // in the case that it is in unix
-	}
+	} // in the case that it is in unix
 }
 
 func wait(key string, ms int){
