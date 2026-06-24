@@ -455,8 +455,6 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	}
 }
 
-// we have different cases, and are reading the beginning of the string
-// this means that
 
 func readRDB(info []byte)([]string, []string, []string){
 	fmt.Println("made it inside RDB check ")
@@ -468,7 +466,7 @@ func readRDB(info []byte)([]string, []string, []string){
 	allVals := []string{}
 	allExp := []string{}
 
-
+	//_________________________ have to still handle FD and convert to seconds ______________________
 	for i<len(info){
 		if info[i] == 0xFB{
 			length := int(info[i+1])
@@ -777,7 +775,9 @@ func main() {
 			}
 			if configs["appendonly"] == "yes"{
 				fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
-				os.MkdirAll(fullPath, 0755)
+				filePath := filepath.Join(fullPath, configs["appendfilename"])
+				os.MkdirAll(fullPath, 0755) //create a directory 0755 is just permission logic
+				os.Create(filePath)
 			}
 		}
 	}
