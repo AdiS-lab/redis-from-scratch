@@ -619,26 +619,25 @@ func main() {
 	if len(os.Args) > 3 {
 		if os.Args[3] == "--replicaof" {
 			data["role"] = "slave"
+			if len(os.Args) > 4 {
+				host := os.Args[4][0:9]
+				port := os.Args[4][10:]
+
+				masterConn, err := net.Dial("tcp", host+":"+port)
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+
+				masterConn.Write([]byte("*1\r\n$4\r\nPING\r\n")) //send ping as slave
+				// reader := bufio.NewReader(masterConn)
+				fmt.Println("Made it inside this for loop")
+				go handleConnection(masterConn, fullPort)
+				// so we establish our master connection assuming this is a replica here. 
+				// master gets port based on message sente
+			}
 		}
 		fmt.Println(os.Args[4]) // comes in as localhost 6479 without the :
 		//split or loop through it. or manually do it.
-		if len(os.Args) > 4 {
-		host := os.Args[4][0:9]
-		port := os.Args[4][10:]
-
-		masterConn, err := net.Dial("tcp", host+":"+port)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-
-		masterConn.Write([]byte("*1\r\n$4\r\nPING\r\n")) //send ping as slave
-		// reader := bufio.NewReader(masterConn)
-		fmt.Println("Made it inside this for loop")
-		go handleConnection(masterConn, fullPort)
-		// so we establish our master connection assuming this is a replica here. 
-		// master gets port based on message sente
-	}
-
 	}
 
 	listener, err := net.Listen("tcp", "0.0.0.0:"+fullPort)
