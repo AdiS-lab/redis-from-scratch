@@ -422,7 +422,7 @@ func readRDB(info []byte)[]string{
 		 // then we can create a slice
 		if info[i] == 0xFB{
 			fmt.Println("this is the length of the hash ", int(info[i+1]))
-			fmt.Println("this is the length of the key  ", int(info[i+2]))
+			fmt.Println("this is the length of the key  ", int(info[i+4]))
 
 			keyBool = true
 		}
