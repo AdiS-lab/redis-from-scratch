@@ -791,7 +791,7 @@ func main() {
 				instructionFile.Close()
 
 				inside,_ := os.ReadFile(manifestFile)
-				fmt.Println("inside instruction file is  ", inside)
+				fmt.Println("inside instruction file is  ", string(inside))
 			}	
 		}
 	}
