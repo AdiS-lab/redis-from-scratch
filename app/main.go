@@ -387,7 +387,20 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return fmt.Sprintf("*2\r\n$3\r\ndbfilename\r\n$%d\r\n%s\r\n", len(filePath), filePath)
 		}	
 		return ""
-
+	
+		case "KEYS":	
+			decide := statement[1]
+			switch decide{
+			case "*": 
+				allKeys := []string{}
+				for key,_ := range storage{
+					allKeys = append(allKeys, key)
+				}
+				message := createArr(allKeys, 0, len(allKeys))
+				return message
+			default: 
+				return ""
+			}
 	default:
 		return ("+messageNotFound\r\n")
 	}
