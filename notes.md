@@ -70,14 +70,14 @@ examples :
 
 basic TCP setup 
 
-
 net.Listen("tcp", port)  --> listener (this handles the 3 way connection)
 listen.Accept()
 
-when parsing out a string, we use a reader to go through, is there a way to 
-split by space
+mkdir is for creating an directory, os.Create(filePath, 0755) is for creating a file, 
+os.Write(file, 0644) to write/create need to specify various cmds
 
-mkdir is for creating an directory
+
+
 
 terrible freaking error. 
 _________________________________________________________________
@@ -118,7 +118,7 @@ things to change
 __________________________________________________________________
 
 1. when parsing out commands, make sure to use a for loop because right now cmds
-are kind of just hardcoded on this jawn
+are kind of just hardcoded on this jawn --> lines 800 onwards !!!!!
 2. what is uint8 uint16 etc. 
 3. unix times. fuck these. basically represent ms since a certain point in time, so have to 
 be able to convert them into something comparable. 

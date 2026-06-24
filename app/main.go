@@ -74,9 +74,21 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		input := ""
 		statement, recreatedCmd := parser(reader) // if nil break
 		if statement == nil {
-			fmt.Println("something happened and connection disconnected")
+			fmt.Println("something happened when parsing and connection disconnected")
 			break
+		}	
+		_, exists := configs["manifest"]
+		if !exists{
+			continue
+		}else{
+			// result, _ := os.ReadFile(configs["manifest"]) //  use manifest to identify 
+			targetFile,_ := configs["incrfile"] // find targetFile string 
+			file, _ := os.OpenFile(targetFile, os.O_APPEND, 0644)
+			file.WriteString(recreatedCmd)
+			//write the cmd to target file
 		}
+
+
 		if len(statement) != 0 {
 			input = statement[0]
 		}
@@ -186,7 +198,8 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			if input == "" { // means nothing was sent in command, or smth happened along the way
 				continue
 			} else {
-				writeVal := execute(statement, conn, fullPort)
+				writeVal := execute(statement, conn, fullPort) 
+				// we've created manifest file + appenddirname + appendfilename
 				if(masterUpdate && data["role"] == "slave"){//in case of slave + needing to update offset
 					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
 					new_offset := curr_offset + len(recreatedCmd)
@@ -778,7 +791,7 @@ func main() {
 				fmt.Println("this is my filepath ", configs["appendfilename"])
 				filePath := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"]))
 				manifestFile := filepath.Join(fullPath, fmt.Sprintf("%s.manifest", configs["appendfilename"]))
-				manifestMessage := fmt.Sprintf("file %s.1.incr.aof seq 1 type i", configs["appendfilename"])
+				manifestMessage := fmt.Sprintf("file %s.1.incr.aof seq 1 type i", configs["appendfilename"]) // type incremental file
 				fmt.Println("this is manifest message ")
 				fmt.Println(manifestMessage)
 
@@ -792,10 +805,11 @@ func main() {
 
 				inside,_ := os.ReadFile(manifestFile)
 				fmt.Println("inside instruction file is  ", string(inside))
-			
+				configs["manifestfile"] = manifestFile
 			}	
 		}
 	}
+	// 1. read manifest file by recreating if dirname is yes
 
 	if len(os.Args) > 3 {
 		if os.Args[3] == "--replicaof" {
