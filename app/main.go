@@ -747,6 +747,7 @@ func main() {
 		}else if(os.Args[1]=="--dir"){
 			for i:=0; i<len(os.Args); i++{
 				if(os.Args[i] == "dir"){
+					fmt.Println("made it inside directory check  ", os.Args[i+1])
 					configs["dir"] = os.Args[i+1]
 				}else if(os.Args[i] == "dbfilename"){
 					configs["dbfilename"] = os.Args[i+1]
