@@ -86,6 +86,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			targetFile,_ := configs["incrfile"] // find targetFile string 
 			file, _ := os.OpenFile(targetFile, os.O_APPEND, 0644)
 			file.WriteString(recreatedCmd)
+			file.Close()
 			//write the cmd to target file
 		}
 
