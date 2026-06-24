@@ -421,6 +421,9 @@ func readRDB(info []byte)[]string{
 		 // find the length of the key value store, then we have to find a 00 
 		 // then we can create a slice
 		if info[i] == 0xFB{
+			fmt.Println("this is the length of the hash ", int(info[i+1]))
+			fmt.Println("this is the length of the key  ", int(info[i+2]))
+
 			keyBool = true
 		}
 		if info[i] == 0x00 && keyBool{ 
