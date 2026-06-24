@@ -776,9 +776,8 @@ func main() {
 			if configs["appendonly"] == "yes"{
 				fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
 				fmt.Println("this is my filepath ", configs["appendfilename"])
-				filePath := filepath.Join(fullPath, configs["appendfilename"])
+				filePath := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"]))
 				fmt.Println("this is my fullPath ",  fullPath)
-				fmt.Println("this is my full filepath ", filePath)
 				os.MkdirAll(fullPath, 0755) //create a directory 0755 is just permission logic
 				file, _ := os.Create(filePath)
 				file.Close()
