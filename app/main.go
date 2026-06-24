@@ -72,8 +72,20 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	if exists{ 
 		 info,_ = os.ReadFile(configs["manifest"])
 		 fmt.Println(string(info))
+		 fullPathArr := []string{}
+		 fullDir := filepath.Dir(configs["manifest"])
 
-		// fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
+		 allPaths := strings.Split(string(info), " ")
+		 for i:=0; i<len(allPaths); i++{
+			if(allPaths[i] == "file"){
+				fullPathArr = append(fullPathArr, filepath.Join(fullDir, allPaths[i+1]))
+			}
+		 }
+		 for _,value := range fullPathArr{
+			result,_ := os.ReadFile(value)
+			fmt.Println("this is what is inside each file ", result)
+		 }
+
 		// targetFile := filepath.Join(fullPath, fileName) // find targetFile string 
 		
 		// accStuff, _ := os.ReadFile(targetFile) 
