@@ -68,6 +68,13 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		}
 	}
 
+	_, exists := configs["manifest"]
+	if exists{
+		accStuff, err := os.ReadFile(configs["incr"]) 
+		if(err == nil){
+			fmt.Println("this is the split sequence ", strings.Split(string(accStuff), "\r\n") )
+		}
+	}
 
 
 	for {

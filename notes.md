@@ -124,3 +124,5 @@ are kind of just hardcoded on this jawn --> lines 800 onwards !!!!!
 be able to convert them into something comparable. 
 using time.UnixMilli(int64(ms)) assuming they are ms, allows for comparing against time.Now()
 4. for expiry, only delete when get is called. 
+5. Lines 51-75, lines 81-99, remove hardcoded AOF and see if this rewritten code can be
+turned into a func that is general purpose
