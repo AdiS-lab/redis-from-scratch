@@ -570,8 +570,7 @@ func createArr(array []string, first int, last int) string { // used as a templa
 func waitKey(key string, ms int) {
 	fmt.Println("HJELLLLOOOO INSIDE WAITKEY ")
 	expiryTime := time.UnixMilli(int64(ms))
-	fmt.Println(expiryTime)
-	fmt.Println(time.Now())
+	fmt.Println(time.Now().After(expiryTime))
 	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
 	for range ticker.C{	
 		if(time.Now().After(expiryTime)){
