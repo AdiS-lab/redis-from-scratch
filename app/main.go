@@ -12,6 +12,7 @@ import (
 	"time"
 	"slices"
 	"path/filepath"
+	"encoding/binary"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -51,10 +52,14 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	info,_ := os.ReadFile(fullPath) //create byte arr
 	if info == nil{
 	}
-	allKeys := readRDB(info)
-	for key,value := range allKeys{
-		storage[key] = value
- 	}
+	allKeys, allVals, allExp  := readRDB(info)
+	for i:=0; i<len(allKeys); i++{
+		storage[allKeys[i]] = allVals[i]
+		if (allExp[i] != ""){
+			ms,_ := strconv.Atoi(allExp[i])
+			go wait(allKeys[i], ms)
+		}
+	}
 
 
 
@@ -408,18 +413,12 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			if info == nil{
 				return ""
 			}
-			allKeys := readRDB(info)
+			allKeys, _ , _ := readRDB(info)
 			decide := statement[1]
 			switch decide{
 			case "*": 
 				fmt.Println("here are all the keys ", allKeys)
-				keyList := []string{}
-				for key,value := range allKeys{
-					keyList = append(keyList, key)
-					storage[key] = value
- 				}
-				// have to add key val pairs to storage
-				message := createArr(keyList, 0, len(allKeys))
+				message := createArr(allKeys, 0, len(allKeys))
 				return message
 			}
 			return ""
@@ -431,18 +430,30 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 // we have different cases, and are reading the beginning of the string
 // this means that
 
-func readRDB(info []byte)map[string]string{
+func readRDB(info []byte)([]string, []string, []string){
 	i:= 0
+	count:=0
 	keyBool := false
-	allKeys := make(map[string]string)
+	allKeys := []string{}
+	allVals := []string{}
+	allExp := []string{}
+
 
 	for i<len(info){
 		 // different ways to parse. Have to find where key value store starts, and then 
 		 // find the length of the key value store, then we have to find a 00 
 		 // then we can create a slice
 		if info[i] == 0xFB{
+			length := int(info[i+1])
+			allExp = make([]string, length)
 			keyBool = true
 		}
+		if info[i] == 0xFC{
+			tempExp := binary.LittleEndian.Uint64(info[i+1:i+9])
+			expiry := strconv.FormatUint(tempExp, 10)
+			allExp[count] = expiry
+ 		}
+
 		if info[i] == 0x00 && int(info[i+1]) > int(info[i]) && keyBool{
 			length := int(info[i+1])
 			keyLen := i+2+length
@@ -451,11 +462,14 @@ func readRDB(info []byte)map[string]string{
 			length2 := int(info[keyLen])
 			vals := info[keyLen+1: keyLen+1 + length2]
 
-			allKeys[string(keys)] = string(vals) 
+			allKeys = append(allKeys, string(keys))
+			allVals = append(allVals, string(vals))
+
+			count ++ 
 		}	
 		i++
 	}
-	return allKeys
+	return allKeys, allVals, allExp
 }
 //  set and increment
 
