@@ -44,6 +44,19 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	firstOK = false
 	expectingRDB = false
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
+	
+	directory := configs["dir"] 
+	filePath := configs["dbfilename"]
+	fullPath := filepath.Join(directory, filePath)
+	info,_ := os.ReadFile(fullPath) //create byte arr
+	if info == nil{
+	}
+	allKeys := readRDB(info)
+	for key,value := range allKeys{
+		storage[key] = value
+ 	}
+
+
 
 	for {
 
@@ -414,6 +427,10 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return ("+messageNotFound\r\n")
 	}
 }
+func getAllKeys{
+	
+}
+
 func readRDB(info []byte)map[string]string{
 	fmt.Println("this is the byte arr ", info)
 	fmt.Println("this is an attempt to convert it ", string(info[0]))
