@@ -423,11 +423,12 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return ""
 		}
 	
-		case "KEYS":	
+	case "KEYS":	
 			directory := configs["dir"] 
 			filePath := configs["dbfilename"]
 			fullPath := filepath.Join(directory, filePath)
 			info,_ := os.ReadFile(fullPath) //create byte arr
+			fmt.Println("this is supposed to be RDB ", info)
 			if info == nil{
 				return ""
 			}
