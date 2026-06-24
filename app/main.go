@@ -427,9 +427,9 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return ("+messageNotFound\r\n")
 	}
 }
-func getAllKeys{
-	
-}
+
+// we have different cases, and are reading the beginning of the string
+// this means that
 
 func readRDB(info []byte)map[string]string{
 	fmt.Println("this is the byte arr ", info)
