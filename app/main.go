@@ -433,7 +433,6 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 func readRDB(info []byte)([]string, []string, []string){
 	i:= 0
 	count:=0
-	target := -1
 
 	keyReach := false
 	keyBool := false
@@ -449,40 +448,33 @@ func readRDB(info []byte)([]string, []string, []string){
 		if info[i] == 0xFB{
 			length := int(info[i+1])
 			allExp = make([]string, length)
-			keyBool = true
-			keyReach = true
+			i = i+3
+			for j:=0; j<length;j++{
+				if info[i] == 0xFC && keyBool && keyReach{
+					fmt.Println("")
+					tempExp := binary.LittleEndian.Uint64(info[i+1:i+9])
+					expiry := strconv.FormatUint(tempExp, 10)
+					allExp[count] = expiry
+					i = i + 10
+				} // at this point at 0x00
+				length := int(info[i+1])
+				keyLen := i+2+length
+				keys := info[i+2:keyLen]
+
+				length2 := int(info[keyLen])
+				vals := info[keyLen+1: keyLen+1 + length2]
+
+				fmt.Println("this is key ", string(keys))
+				fmt.Println("this is value ", string(vals))
+
+				allKeys = append(allKeys, string(keys))
+				allVals = append(allVals, string(vals))
+				count ++ 
+				i =  i + 3 + length + length2
+			}
+		}else{
+			i++
 		}
-		if info[i] == 0xFC && keyBool && keyReach{
-			fmt.Println("")
-			tempExp := binary.LittleEndian.Uint64(info[i+1:i+9])
-			expiry := strconv.FormatUint(tempExp, 10)
-			fmt.Println("this  is expiry ", expiry)
-			allExp[count] = expiry
- 		}
-
-		if info[i] == 0x00 && int(info[i+1]) > int(info[i]) && keyBool{
-			fmt.Println("this is after index ", info[i+1])
-
-			length := int(info[i+1])
-			keyLen := i+2+length
-			keys := info[i+2:keyLen]
-
-			length2 := int(info[keyLen])
-			vals := info[keyLen+1: keyLen+1 + length2]
-
-			fmt.Println("this is key ", string(keys))
-			fmt.Println("this is value ", string(vals))
-
-			allKeys = append(allKeys, string(keys))
-			allVals = append(allVals, string(vals))
-
-			fmt.Println("this is all the keys ", allKeys)
-			count ++ 
-		}	
-		if count == target{
-			keyReach = false
-		}
-		i++
 	}
 
 	fmt.Println("this is all Keys ", allKeys)
