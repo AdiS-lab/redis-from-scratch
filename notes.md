@@ -75,7 +75,7 @@ listen.Accept()
 
 mkdir is for creating an directory, os.Create(filePath, 0755) is for creating a file, 
 os.Write(file, 0644) to write/create need to specify various cmds
-
+os.ReadDir("/path/to/dir")     
 
 
 

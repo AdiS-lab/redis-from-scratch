@@ -71,17 +71,17 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	_, exists := configs["manifest"]
 	if exists{ 
 		 info,_ = os.ReadFile(configs["manifest"])
-		 fileName := strings.Split(string(info), " ")[1]
+		 fmt.Println(string(info))
 
-		fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
-		targetFile := filepath.Join(fullPath, fileName) // find targetFile string 
+		// fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
+		// targetFile := filepath.Join(fullPath, fileName) // find targetFile string 
 		
-		accStuff, _ := os.ReadFile(targetFile) 
-		fmt.Println("this is accStuff file ", targetFile)
-		fmt.Println("this is accStuff ", string(accStuff))
-		if(accStuff != nil){
-			fmt.Println("this is the split sequence ", strings.Split(string(accStuff), "\r\n") )
-		}
+		// accStuff, _ := os.ReadFile(targetFile) 
+		// fmt.Println("this is accStuff file ", targetFile)
+		// fmt.Println("this is accStuff ", string(accStuff))
+		// if(accStuff != nil){
+		// 	fmt.Println("this is the split sequence ", strings.Split(string(accStuff), "\r\n") )
+		// }
 	}
 
 
@@ -809,20 +809,35 @@ func main() {
 			}
 			if configs["appendonly"] == "yes"{
 				fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
-				fmt.Println("this is my filepath ", configs["appendfilename"])
-				filePath := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"]))
+				fileArr,_ := os.ReadDir(fullPath)
+				incrCount := 0
 				manifestFile := filepath.Join(fullPath, fmt.Sprintf("%s.manifest", configs["appendfilename"]))
-				manifestMessage := fmt.Sprintf("file %s.1.incr.aof seq 1 type i", configs["appendfilename"]) // type incremental file
-				fmt.Println("this is manifest message ")
-				fmt.Println(manifestMessage)
 
-				os.MkdirAll(fullPath, 0755) //create a directory 0755 is just permission logic
-				file, _ := os.Create(filePath)
-				file.Close()
 
-				instructionFile, _ := os.Create(manifestFile)
+				if(len(fileArr)>0){
+					for i:=0; i<len(fileArr); i++ {
+						fileParts := strings.Split(fileArr[i].Name(), ".")
+						if(slices.Contains(fileParts,"incr")){
+							incrCount ++ 
+						}
+						if(slices.Contains(fileParts, "manifest")){
+							manifestFile = filepath.Join(fullPath, fileArr[i].Name())
+						}
+					}
+				}else{
+					os.MkdirAll(fullPath, 0755) //create a directory 0755 is just permission logic
+				}
+
+
+				filePath := filepath.Join(fullPath, fmt.Sprintf("%s.%d.incr.aof", configs["appendfilename"], incrCount+1))
+				manifestMessage := fmt.Sprintf("file %s.%d.incr.aof seq %d type i", configs["appendfilename"], incrCount+1, incrCount+1) // type incremental file
+				
+				file, _ := os.Create(filePath)// this is our aof, creates on file path
+				file.Close() 
+			
+				instructionFile, _ := os.OpenFile(manifestFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 				instructionFile.WriteString(manifestMessage)
-				instructionFile.Close()
+				instructionFile.Close() // to append
 
 				inside,_ := os.ReadFile(manifestFile)
 				fmt.Println("inside instruction file is  ", string(inside))
