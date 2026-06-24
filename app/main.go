@@ -391,8 +391,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			directory := configs["dir"] 
 			filePath := configs["dbfilename"]
 			fmt.Println("this is filePath ", filePath)
-			info,_ := os.ReadFile(filePath)
 			fullPath := filepath.Join(directory, filePath)
+			info,_ := os.ReadFile(fullPath)
 			fmt.Println("this the entire path " + fullPath)
 			readRDB(info)
 			// fullPath,_ := filepath.Join(directory, filePath)
