@@ -376,12 +376,11 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return""
     case "CONFIG": 
 		filePath := statement[2]
-		fmt.Println(filePath)
-		result,_:= os.ReadDir(filePath)
-		fmt.Println("result of read dir = ", result)
-
-		// result2,_ := os.Stat(filePath)
-		// fmt.Println("result2 of getting file info ",result2)
+		if filePath == "dir" {
+			return "*2\r\n$3\r\ndir\r\n$16\r\n/tmp/redis-files\r\n"
+		}else if filePath == "dbfilename"{
+			return "*2\r\n$3\r\ndbfilename\r\n$16\r\ndump.rdb\r\n"
+		}	
 		return ""
 
 	default:
