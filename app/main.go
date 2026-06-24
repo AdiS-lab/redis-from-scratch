@@ -461,6 +461,8 @@ func readRDB(info []byte)([]string, []string, []string){
  		}
 
 		if info[i] == 0x00 && int(info[i+1]) > int(info[i]) && keyBool && keyReach{
+			fmt.Println("this is after index ", info[i+1])
+
 			length := int(info[i+1])
 			keyLen := i+2+length
 			keys := info[i+2:keyLen]
