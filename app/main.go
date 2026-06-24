@@ -377,7 +377,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
     case "CONFIG": 
 		files := statement[2]
 		if files == "dir" {
-			result, _ := os.ReadDir(files)
+			result, _ := os.Stat(files)
 			fmt.Println("this is result after CONFIG ", result)
 			return "*2\r\n$3\r\ndir\r\n$16\r\n/tmp/redis-files\r\n"
 		}else if files == "dbfilename"{
