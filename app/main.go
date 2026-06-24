@@ -400,8 +400,13 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			switch decide{
 			case "*": 
 				fmt.Println(allKeys)
+				keyList := []string{}
+				for key,value := range allKeys{
+					keyList = append(keyList, key)
+					storage[key] = value
+ 				}
 				// have to add key val pairs to storage
-				message := createArr(allKeys, 0, len(allKeys))
+				message := createArr(keyList, 0, len(allKeys))
 				return message
 			}
 			return ""
@@ -409,24 +414,31 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return ("+messageNotFound\r\n")
 	}
 }
-func readRDB(info []byte)[]string{
+func readRDB(info []byte)map[string]string{
 	fmt.Println("this is the byte arr ", info)
 	fmt.Println("this is an attempt to convert it ", string(info[0]))
 	fmt.Println(len(info))
 	i:= 0
-	allKeys := []string{}
+	keyBool := false
+	allKeys := make(map[string]string)
 
 	for i<len(info){
 		 // different ways to parse. Have to find where key value store starts, and then 
 		 // find the length of the key value store, then we have to find a 00 
 		 // then we can create a slice
 		if info[i] == 0xFB{
-			fmt.Println("this is the length of the hash ", int(info[i+1]))
-			fmt.Println("this is the length of the key  ", int(info[i+4]))
-			length := int(info[i+4]) // length of key val
-			keys := info[i+5:i+5+length] // first key val to last 
-			allKeys = append(allKeys, string(keys)) // capture the key
+			keyBool = true
 		}
+		if info[i] == 0x00 && int(info[i+1]) > int(info[i]) && keyBool{
+			length := int(info[i+1])
+			keyLen := i+2+length
+			keys := info[i+2:keyLen]
+
+			length2 := int(info[keyLen])
+			vals := info[keyLen: keyLen + length2]
+
+			allKeys[string(keys)] = string(vals) 
+		}	
 		i++
 	}
 	return allKeys
