@@ -390,39 +390,29 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		case "KEYS":	
 			directory := configs["dir"] 
 			filePath := configs["dbfilename"]
-			fmt.Println("this is filePath ", filePath)
 			fullPath := filepath.Join(directory, filePath)
-			info,_ := os.ReadFile(fullPath)
-			fmt.Println("this the entire path " + fullPath)
-			readRDB(info)
-			// fullPath,_ := filepath.Join(directory, filePath)
-			fmt.Println(string(info))
+			info,_ := os.ReadFile(fullPath) //create byte arr
 			if info == nil{
 				return ""
-			}else{
-				decide := statement[1]
-				switch decide{
-				case "*": 
-					allKeys := []string{}
-					for key,_ := range storage{
-						allKeys = append(allKeys, key)
-					}
-					message := createArr(allKeys, 0, len(allKeys))
-					return message
-				default: 
-					return ""
-				}
+			}
+			allKeys := readRDB(info)
+			decide := statement[1]
+			switch decide{
+			case "*": 
+				// have to add key val pairs to storage
+				message := createArr(allKeys, 0, len(allKeys))
+				return message
 			}
 	default:
 		return ("+messageNotFound\r\n")
 	}
 }
-func readRDB(info []byte){
+func readRDB(info []byte)[]string{
 	fmt.Println("this is the byte arr ", info)
 	fmt.Println("this is an attempt to convert it ", string(info[0]))
 	fmt.Println(len(info))
 	i:= 0
-	allKeys := []string
+	allKeys := []string{}
 
 	for i<len(info){
 		 // different ways to parse. Have to find where key value store starts, and then 
@@ -435,6 +425,7 @@ func readRDB(info []byte){
 		}
 		i++
 	}
+	return allKeys
 }
 //  set and increment
 
