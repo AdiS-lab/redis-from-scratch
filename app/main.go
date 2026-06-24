@@ -428,9 +428,9 @@ func readRDB(info []byte){
 		 // find the length of the key value store, and 
 		if info[i] == 0xFB{
 			length := info[i+1]
-			key := info[i+2]
+			key := info[i+4]
 			fmt.Println("we reached the keyval store ", length)
-			fmt.Println("and here is the key ", key)
+			fmt.Println("and here is the length of key ", key)
 
 		}
 		i++
