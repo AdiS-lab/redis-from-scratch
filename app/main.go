@@ -452,7 +452,7 @@ func readRDB(info []byte)map[string]string{
 			keys := info[i+2:keyLen]
 
 			length2 := int(info[keyLen])
-			vals := info[keyLen: keyLen + length2]
+			vals := info[keyLen+1: keyLen+1 + length2]
 
 			allKeys[string(keys)] = string(vals) 
 		}	
