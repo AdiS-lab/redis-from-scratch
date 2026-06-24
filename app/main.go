@@ -82,6 +82,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			continue
 		}else{
 			// result, _ := os.ReadFile(configs["manifest"]) //  use manifest to identify 
+			fmt.Println("made it to the append stage ")
 			targetFile,_ := configs["incrfile"] // find targetFile string 
 			file, _ := os.OpenFile(targetFile, os.O_APPEND, 0644)
 			file.WriteString(recreatedCmd)
