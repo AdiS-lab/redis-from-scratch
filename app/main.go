@@ -566,11 +566,15 @@ func waitKey(key string, ms int) {
 
 func wait(key string, ms int){
 	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
-	if time.Now().After(deadline){
-		delete(storage, key)
-		// ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
-	}
+	ticker := time.NewTicker(time.Duration(10) *( time.Millisecond))
 	fmt.Println(" here are the keys to be deleted ", key)
+	
+	for range ticker.C{
+		if time.Now().After(deadline){
+			delete(storage, key)
+			// ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
+		}
+	}
 }
 func parser(reader *bufio.Reader)( []string, string) {
 	// 3 different versions $n \r\n         *n \r\n $b \r\n
