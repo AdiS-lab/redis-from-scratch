@@ -779,6 +779,7 @@ func main() {
 				filePath := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"]))
 				manifestFile := filepath.Join(fullPath, fmt.Sprintf("%s.manifest", configs["appendfilename"]))
 				manifestMessage := fmt.Sprintf("file %s seq 1 type i", filePath)
+				fmt.Println("this is manifest message ", manifestMessage)
 
 				os.MkdirAll(fullPath, 0755) //create a directory 0755 is just permission logic
 				file, _ := os.Create(filePath)
