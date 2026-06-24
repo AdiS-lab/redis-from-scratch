@@ -415,9 +415,9 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return fmt.Sprintf("*2\r\n$13\r\nappenddirname\r\n$%d\r\n%s\r\n", len(configs["appenddirname"]),  configs["appenddirname"])// appenddirname, appendonlydir
 
 		case "appendfilename":
-			return fmt.Sprintf("*2\r\n$14\r\appendfilename\r\n$%d\r\n%s\r\n", len(configs["appendfilename"]), configs["appendfilename"]) // appendfilename, appendonly.aof
+			return fmt.Sprintf("*2\r\n$14\r\nappendfilename\r\n$%d\r\n%s\r\n", len(configs["appendfilename"]), configs["appendfilename"]) // appendfilename, appendonly.aof
 		case "appendfsync":
-			return fmt.Sprintf("*2\r\n$11\r\appendfsync\r\n$%d\r\n%s\r\n", len(configs["appendfsync"]), configs["appendfsync"])// everysec
+			return fmt.Sprintf("*2\r\n$11\r\nappendfsync\r\n$%d\r\n%s\r\n", len(configs["appendfsync"]), configs["appendfsync"])// everysec
 		default:
 			return ""
 		}
