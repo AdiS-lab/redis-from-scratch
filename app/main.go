@@ -559,6 +559,7 @@ func wait(key string, ms int) {
 	fmt.Println("made it inside wait function")
 	ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
 	for range ticker.C {
+		fmt.Println(" here are the keys to be deleted ", key)
 		delete(storage, key)
 		ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
 	}
