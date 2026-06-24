@@ -69,9 +69,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	}
 
 	_, exists := configs["manifest"]
-	if exists{
+	if exists{ 
+		 info,_ = os.ReadFile(configs["manifest"])
+		 fileName := strings.Split(string(info), " ")[1]
+
 		fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
-		targetFile := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"])) // find targetFile string 
+		targetFile := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", fileName)) // find targetFile string 
 		
 		accStuff, _ := os.ReadFile(targetFile) 
 		fmt.Println("this is accStuff file ", targetFile)
