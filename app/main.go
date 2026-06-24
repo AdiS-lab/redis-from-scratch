@@ -403,6 +403,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 				message := createArr(allKeys, 0, len(allKeys))
 				return message
 			}
+			return ""
 	default:
 		return ("+messageNotFound\r\n")
 	}
