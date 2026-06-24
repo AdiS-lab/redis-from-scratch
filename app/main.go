@@ -778,7 +778,7 @@ func main() {
 				fmt.Println("this is my filepath ", configs["appendfilename"])
 				filePath := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"]))
 				manifestFile := filepath.Join(fullPath, fmt.Sprintf("%s.manifest", configs["appendfilename"]))
-				manifestMessage := fmt.Sprintf("file %s.incr.aof seq 1 type i", configs["appendfilename"])
+				manifestMessage := fmt.Sprintf("file %s.1.incr.aof seq 1 type i", configs["appendfilename"])
 				fmt.Println("this is manifest message ")
 				fmt.Println(manifestMessage)
 
@@ -792,6 +792,7 @@ func main() {
 
 				inside,_ := os.ReadFile(manifestFile)
 				fmt.Println("inside instruction file is  ", string(inside))
+			
 			}	
 		}
 	}
