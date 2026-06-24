@@ -52,8 +52,8 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	filePath := configs["dbfilename"]
 	fullPath := filepath.Join(directory, filePath)
 	info,_ := os.ReadFile(fullPath) //create byte arr
-	if info == nil{
-	}
+
+
 	allKeys, allVals, allExp  := readRDB(info)
 	fmt.Println("this is allkeys again ", allKeys) 
 	fmt.Println("this is allVals ", allVals) 
@@ -71,8 +71,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 
 
 	for {
-
-
 		input := ""
 		statement, recreatedCmd := parser(reader) // if nil break
 		if statement == nil {
@@ -433,7 +431,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return ""
 		}
 	
-	case "KEYS":	
+	case "KEYS":
+			fmt.Println("made it inside Keys ", configs["dbfilename"])	
 			directory := configs["dir"] 
 			filePath := configs["dbfilename"]
 			fullPath := filepath.Join(directory, filePath)
@@ -460,6 +459,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 // this means that
 
 func readRDB(info []byte)([]string, []string, []string){
+	fmt.Println("made it inside RDB check ")
+
 	i:= 0
 	count:=0
 
@@ -476,15 +477,14 @@ func readRDB(info []byte)([]string, []string, []string){
 			i = i+3
 			for j:=0; j<length;j++{
 				// fmt.Println("this is where we are ", i, len(info))
-				if info[i] == 0xFC{
-					fmt.Println("")
-
+				if info[i] == 0xFC{// at this point at 0xFC
 					// unix timestamp uses little endian, so backwards by size of bytes. 
 					tempExp := binary.LittleEndian.Uint64(info[i+1:i+9]) 
 					expiry := strconv.FormatUint(tempExp, 10)
 					allExp[count] = expiry
 					i = i + 9
 				} // at this point at 0x00
+				fmt.Println("this is supposed to be before kv ", info[i])
 				realLen := int(info[i+1])
 				keyLen := i+2+realLen
 				keys := info[i+2:keyLen]
