@@ -28,6 +28,7 @@ var watchedKeys = make(map[string]string)
 var data = make(map[string]string)
 var slaveConnections = make(map[net.Conn]map[string]string) // sync.Mutex protects concurrent access (whateva that means)
 var configs = make(map[string]string)
+var expired = make(map[string]string)
 
 var watchCheck bool
 var firstPONG bool
@@ -457,16 +458,13 @@ func readRDB(info []byte)([]string, []string, []string){
 
 
 	for i<len(info){
-		 // different ways to parse. Have to find where key value store starts, and then 
-		 // find the length of the key value store, then we have to find a 00 
-		 // then we can create a slice
 		if info[i] == 0xFB{
 			length := int(info[i+1])
-			fmt.Println("this is the length given by oxfb ", length)
+			// fmt.Println("this is the length given by oxfb ", length)
 			allExp = make([]string, length)
 			i = i+3
 			for j:=0; j<length;j++{
-				fmt.Println("this is where we are ", i, len(info))
+				// fmt.Println("this is where we are ", i, len(info))
 				if info[i] == 0xFC{
 					fmt.Println("")
 
@@ -496,7 +494,7 @@ func readRDB(info []byte)([]string, []string, []string){
 		}
 	}
 
-	fmt.Println("this is all Keys ", allKeys)
+	// fmt.Println("this is all Keys ", allKeys)
 	return allKeys, allVals, allExp
 }
 //  set and increment
@@ -568,12 +566,15 @@ func createArr(array []string, first int, last int) string { // used as a templa
 	}
 	return message
 }
+// could make list and use for loop or just a map and use that to lookup strings etc. 
 func waitKey(key string, ms int) {
-	fmt.Println("made it inside wait function")
 	expiryTime := time.UnixMilli(int64(ms))
-	if(time.Now().After(expiryTime)){
-		delete(storage, key)
-	} // in the case that it is in unix
+	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
+	for range ticker.C{
+		if(time.Now().After(expiryTime)){
+			delete(storage, key)
+		} // in the case that it is in unix
+	}
 }
 
 func wait(key string, ms int){
