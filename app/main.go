@@ -46,6 +46,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	expectingRDB = false
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
 	
+	
 	directory := configs["dir"] 
 	filePath := configs["dbfilename"]
 	fullPath := filepath.Join(directory, filePath)
@@ -61,7 +62,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		if (allExp[i] != ""){
 			fmt.Println("have made it inside the expiry handler ")
 			ms,_ := strconv.Atoi(allExp[i])
-			go wait(allKeys[i], ms)
+			go waitKey(allKeys[i], ms)
 		}
 	}
 
@@ -555,14 +556,21 @@ func createArr(array []string, first int, last int) string { // used as a templa
 	}
 	return message
 }
-func wait(key string, ms int) {
+func waitKey(key string, ms int) {
 	fmt.Println("made it inside wait function")
-	ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
-	for range ticker.C {
-		fmt.Println(" here are the keys to be deleted ", key)
+	expiryTime := time.UnixMilli(int64(ms))
+	if(time.Now().After(expiryTime)){
 		delete(storage, key)
-		ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
+	} // in the case that it is in unix
+}
+
+func wait(key string, ms int){
+	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
+	if time.Now().After(deadline){
+		delete(storage, key)
+		// ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
 	}
+	fmt.Println(" here are the keys to be deleted ", key)
 }
 func parser(reader *bufio.Reader)( []string, string) {
 	// 3 different versions $n \r\n         *n \r\n $b \r\n
