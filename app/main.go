@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 	"slices"
+	"path/filepath"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -390,7 +391,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			directory := configs["dir"] 
 			filePath := configs["dbfilename"]
 			info,_ := os.ReadFile(filePath)
-			fullPath := directory + filePath
+			fullPath := filepath.Join(directory, filePath)
 			fmt.Println("this the entire path " + fullPath)
 			readRDB(info)
 			// fullPath,_ := filepath.Join(directory, filePath)
