@@ -481,8 +481,8 @@ func readRDB(info []byte)([]string, []string, []string){
 				realLen2 := int(info[keyLen])
 				vals := info[keyLen+1: keyLen+1 + realLen2]
 
-				fmt.Println("this is key ", string(keys))
-				fmt.Println("this is value ", string(vals))
+				// fmt.Println("this is key ", string(keys))
+				// fmt.Println("this is value ", string(vals))
 
 				allKeys = append(allKeys, string(keys))
 				allVals = append(allVals, string(vals))
