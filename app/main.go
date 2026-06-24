@@ -48,9 +48,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
 	
 	
-	directory := configs["dir"] 
+	otherDir := configs["dir"] 
 	filePath := configs["dbfilename"]
-	fullPath := filepath.Join(directory, filePath)
+	fullPath := filepath.Join(otherDir, filePath)
 	info,_ := os.ReadFile(fullPath) //create byte arr
 
 
@@ -429,6 +429,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		files := statement[2]
 		directory := configs["dir"] 
 		filePath := configs["dbfilename"]
+		fmt.Println("this is dir ", directory)
 		
 		switch files{
 		case "dir":  
