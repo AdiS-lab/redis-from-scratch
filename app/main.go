@@ -622,9 +622,7 @@ func main() {
 		}
 		fmt.Println(os.Args[4]) // comes in as localhost 6479 without the :
 		//split or loop through it. or manually do it.
-
-	}
-	if len(os.Args) > 4 {
+		if len(os.Args) > 4 {
 		host := os.Args[4][0:9]
 		port := os.Args[4][10:]
 
@@ -639,6 +637,8 @@ func main() {
 		go handleConnection(masterConn, fullPort)
 		// so we establish our master connection assuming this is a replica here. 
 		// master gets port based on message sente
+	}
+
 	}
 
 	listener, err := net.Listen("tcp", "0.0.0.0:"+fullPort)
