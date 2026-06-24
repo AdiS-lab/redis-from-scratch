@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 	"slices"
+	"filepath"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -389,6 +390,10 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return ""
 	
 		case "KEYS":	
+			directory := configs["dir"] 
+			filePath := configs["dbfilename"]
+			fullPath,_ := filepath.Join(directory, filePath)
+			fmt.Println(os.Stat(fullPath))
 			decide := statement[1]
 			switch decide{
 			case "*": 
