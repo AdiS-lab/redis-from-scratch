@@ -390,6 +390,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		case "KEYS":	
 			directory := configs["dir"] 
 			filePath := configs["dbfilename"]
+			fmt.Println("this is filePath ", filePath)
 			info,_ := os.ReadFile(filePath)
 			fullPath := filepath.Join(directory, filePath)
 			fmt.Println("this the entire path " + fullPath)
