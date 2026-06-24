@@ -432,9 +432,6 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 // this means that
 
 func readRDB(info []byte)map[string]string{
-	fmt.Println("this is the byte arr ", info)
-	fmt.Println("this is an attempt to convert it ", string(info[0]))
-	fmt.Println(len(info))
 	i:= 0
 	keyBool := false
 	allKeys := make(map[string]string)
