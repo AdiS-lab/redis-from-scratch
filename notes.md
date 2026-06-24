@@ -121,3 +121,4 @@ are kind of just hardcoded on this jawn
 3. unix times. fuck these. basically represent ms since a certain point in time, so have to 
 be able to convert them into something comparable. 
 using time.UnixMilli(int64(ms)) assuming they are ms, allows for comparing against time.Now()
+4. for expiry, only delete when get is called. 

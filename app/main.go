@@ -403,12 +403,24 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		directory := configs["dir"] 
 		filePath := configs["dbfilename"]
 		
-		if files == "dir" {
+		switch files{
+		case "dir":  
 			return fmt.Sprintf("*2\r\n$3\r\ndir\r\n$%d\r\n%s\r\n",len(directory),directory)
-		}else if files == "dbfilename"{
-			return fmt.Sprintf("*2\r\n$3\r\ndbfilename\r\n$%d\r\n%s\r\n", len(filePath), filePath)
-		}	
-		return ""
+		case "dbfilename":
+			return fmt.Sprintf("*2\r\n$10\r\ndbfilename\r\n$%d\r\n%s\r\n", len(filePath), filePath)
+
+		case "appendonly":
+			return fmt.Sprintf("*2\r\n$10\r\nappendonly\r\n$%d\r\n%s\r\n",len("no"),  "no") // appendonly, no
+		case "appenddirname":
+			return fmt.Sprintf("*2\r\n$13\r\appenddirname\r\n$%d\r\n%s\r\n", len("appendonlydir"),  "appendonlydir")// appenddirname, appendonlydir
+
+		case "appendfilename":
+			return fmt.Sprintf("*2\r\n$14\r\appendfilename\r\n$%d\r\n%s\r\n", len("appendonly.aof"), "appendonly.aof") // appendfilename, appendonly.aof
+		case "appendfsync":
+			return fmt.Sprintf("*2\r\n$11\r\appendfsync\r\n$%d\r\n%s\r\n", len("everysec"), "everysec")// everysec
+		default:
+			return ""
+		}
 	
 		case "KEYS":	
 			directory := configs["dir"] 
@@ -568,7 +580,7 @@ func wait(key string, ms int){
 	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
 	ticker := time.NewTicker(time.Duration(10) *( time.Millisecond))
 	fmt.Println(" here are the keys to be deleted ", key)
-	
+
 	for range ticker.C{
 		if time.Now().After(deadline){
 			delete(storage, key)
