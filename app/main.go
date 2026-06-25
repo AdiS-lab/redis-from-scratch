@@ -502,11 +502,12 @@ func execute(statement []string, conn net.Conn, fullPort string, channelArr []st
 	case "SUBSCRIBE":
 		numChannels := 0
 		channel := statement[1]
+		
 		if (slices.Contains(channelArr, channel)){
 			numChannels = len(channelArr)
 		}else{
-			numChannels = len(channelArr) + 1
 			channelArr = append(channelArr, channel)
+			numChannels = len(channelArr) + 1
 		}
 		return fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n",len("subscribe"), "subscribe", len(channel), channel, numChannels)
 	default:
