@@ -225,6 +225,19 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			data, _ := base64.StdEncoding.DecodeString("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==")
 			conn.Write([]byte("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n")) // send FULL RESYNC
 			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s", len(data), data))) // send RDB file
+		}else if input == "SUBSCRIBE"{
+			numChannels := 0
+			channel := statement[1]
+			fmt.Println("this is our channel array ", channelArr)
+			if (slices.Contains(channelArr, channel)){
+				numChannels = len(channelArr)
+			}else{
+				fmt.Println("was not found in channel so updated ")
+				channelArr = append(channelArr, channel)
+				numChannels = len(channelArr)
+				fmt.Println("channel updated ? " , channelArr)
+			}
+			conn.Write([]byte(fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n",len("subscribe"), "subscribe", len(channel), channel, numChannels)))
 		}else if isQueue == true && len(statement) > 0 {// to actually put stuff inside our queue
 
 			queue = append(queue, statement)
@@ -499,19 +512,6 @@ func execute(statement []string, conn net.Conn, fullPort string, channelArr []st
 				return message
 			}
 			return ""
-	case "SUBSCRIBE":
-		numChannels := 0
-		channel := statement[1]
-		fmt.Println("this is our channel array ", channelArr)
-		if (slices.Contains(channelArr, channel)){
-			numChannels = len(channelArr)
-		}else{
-			fmt.Println("was not found in channel so updated ")
-			channelArr = append(channelArr, channel)
-			numChannels = len(channelArr)
-			fmt.Println("channel updated ? " , channelArr)
-		}
-		return fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n",len("subscribe"), "subscribe", len(channel), channel, numChannels)
 	default:
 		return ("+messageNotFound\r\n")
 	}
