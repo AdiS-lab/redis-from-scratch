@@ -698,6 +698,7 @@ func shiftedVals(num int) int{ //splitting bits by 0 such that are 0s between ev
 }
 
 func reverseGeoScore(geocode int)(float64, float64){ 
+	fmt.Println("made it inside reverse Geoscore ", geocode)
 	y := geocode >> 1 & 0x55555555
 	x := geocode & 0x55555555
 	new_x := shiftBackVals(y)
