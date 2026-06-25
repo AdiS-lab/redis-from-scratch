@@ -153,7 +153,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		} 
 		//____________________________ subscribe mode ________________________________________
 		if subscribeMode && !slices.Contains(subStatements, input){
-			if input == "PONG"{
+			if input == "PING"{
 				conn.Write([]byte("*2\r\n$4\r\npong\r\n$0\r\n\r\n"))
 			}else{
 				conn.Write([]byte(fmt.Sprintf("-ERR can't execute '%s' when one or more subscriptions exist\r\n", input)))
