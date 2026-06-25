@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"encoding/binary"
 	"bytes"
+	"math"
 )
 
 
@@ -632,14 +633,48 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		if !(longitude >= -180 && longitude <= 180) || !(latitude >= -85.05112878 && latitude <= 85.05112878){
 			return fmt.Sprintf("-ERR invalid longitude,latitude pair %f, %f\r\n", longitude, latitude)
 		}
+		score := calcGeoScore(longitude, latitude)
 		
-		e := Entry{Member: memberName, Score: 0}
+		e := Entry{Member: memberName, Score: float64(score)}
 		sortedSets[setName] = append(sortedSets[setName], e)
 		return ":1\r\n"
 	default:
 		return ("+messageNotFound\r\n")
 	}
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
+
+func calcGeoScore(x float64, y float64)int{
+	MIN_Y := -180.00
+	MAX_Y := 180.00
+	MIN_X := 85.05112878
+	MAX_X := -85.05112878
+	x = (x - MIN_X / (MAX_X - MIN_X) ) * math.Pow(2, 26)
+	y = (y - MIN_X / (MAX_Y - MIN_Y)) * math.Pow(2,26) 
+
+	norm_x := int(x) 
+	norm_y := int(y) 
+
+	norm_x = shiftedVals(norm_x)
+	norm_y = shiftedVals(norm_y)
+
+	interleaved_val := norm_y << 1 | norm_x
+	return interleaved_val
+
+
+}		
+func shiftedVals(num int) int{ //splitting bits by 0 such that are 0s between everything 
+	num = (num | num << 16) & 0x0000FFFF0000FFFF // taking half of bits moving them up then cutting out the previous top. 
+	num = (num | num << 8) & 0x00FF00FF00FF00FF
+	num = (num | num << 4) & 0x0F0F0F0F0F0F0F0F
+	num = (num | num << 2) & 0x3333333333333333
+	num = (num | num << 1) & 0x5555555555555555
+
+	return num
+}
+
+func reverseGeoScore(){
+
+}
 
 func sortEntries(arr []Entry, e Entry)[]Entry{
 	fmt.Println("this is the arr before sorting ", arr)
