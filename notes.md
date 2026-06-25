@@ -128,3 +128,8 @@ using time.UnixMilli(int64(ms)) assuming they are ms, allows for comparing again
 turned into a func that is general purpose
 6. bad logic, am passing stuff into execute when I could just call it outside, and then 
 have execute handle everything else nativelyu
+
+thinking notes
+__________________________________________________________________
+1. write out core logic, check if it handles edge cases on own, and then add on to it after if
+it doesn't. Don't get locked into having to handle all edge, cases err on the side of elegance

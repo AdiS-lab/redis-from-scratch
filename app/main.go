@@ -414,31 +414,12 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	case "LRANGE": //  to find the range when given smth like LRANGE 0 5
 		listName := statement[1]
 		_, exists := lists[listName]
+		if(!exists){
+			return "*0\r\n"
+		}
 		start, _ := strconv.Atoi(statement[2])
 		stop, _ := strconv.Atoi(statement[3])
-		length := len(lists[listName])
-		if stop > length-1 {
-			stop = length - 1
-		}
-		if start < 0 {
-			start = length + start
-			if start < 0 {
-				start = 0
-			}
-		}
-		if stop < 0 {
-			stop = length + stop
-			if stop < 0 {
-				stop = 0
-			}
-		}
-		if !exists || start >= length || start > stop {
-			return ("*0\r\n")
-
-		}
-
-		message := createArr(lists[listName], start, stop+1)
-		return (message)
+		return findRange(lists[listName], start, stop)
 	case "BLPOP":
 		listName := statement[1]
 		timeout, _ := strconv.ParseFloat(statement[2], 64)
@@ -616,6 +597,13 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		start, _ := strconv.Atoi(statement[2])
 		stop, _ := strconv.Atoi(statement[3])
 		return findRange(validArr, start, stop)
+	case "ZCARD":
+		setName := statement[1]
+		_,exists := sortedSets[setName]
+		if !exists{ 
+			return ":0\r\n"
+		}
+		return fmt.Sprintf(":%d\r\n", len(sortedSets[setName]))
 
 	default:
 		return ("+messageNotFound\r\n")
@@ -625,27 +613,13 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 func sortEntries(arr []Entry, e Entry)[]Entry{
 	fmt.Println("this is the arr before sorting ", arr)
 	length := len(arr)
-	if length == 0 || e.Score > arr[length-1].Score{ // if greater or length is 0 just append
-		return append(arr, e)
-	}else{ // that means less than so go on
-		fmt.Println("made it inside the check if less than ", e)
-		for i:=0; i<len(arr);i++{ 
-			curr := arr[i]
-			if e.Score < curr.Score{ //  so if equal then check if less, insert otherwise wait until end then go
-				result := slices.Insert(arr, i, e)
-				return result
-			}else if e.Score == curr.Score{
-				if e.Member <= curr.Member{
-					return	slices.Insert(arr, i, e)
-				}else if i == length -1{
-					return append(arr, e) 
-				}else if e.Score != arr[i+1].Score{					
-					return slices.Insert(arr, i+1, e)
-				}
-			}
+	for i:=0; i<len(arr);i++{ 
+		curr := arr[i] // less than catches case that e.Member > than all others. everything else caught by return
+		if e.Score < curr.Score || (e.Score==curr.Score && e.Member < curr.Member){ //  so if equal then check if less, insert otherwise wait until end then go
+			return slices.Insert(arr, i, e)
 		}
 	}
-	return arr
+	return append(arr, e)
 }
 func findRange(arr[]string, start int, stop int)string{
 	length := len(arr)
