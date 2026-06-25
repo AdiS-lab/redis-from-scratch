@@ -576,9 +576,11 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		firstName := statement[3] 	
 		length := len(sortedSets[setName])
 		e := Entry{Member: firstName, Score: setScore}
+
 		for j:=0; j<length; j++{
 			if sortedSets[setName][j].Member == e.Member{ // pop it out only if exists
 				sortedSets[setName] = append(sortedSets[setName][:j], sortedSets[setName][j+1:]...)
+				break
 			}
 		} // in case of nothing will handle that, in case exists, will isolate it, in case of multiple have to loop 
 		// in case of delete can handle that inside other
