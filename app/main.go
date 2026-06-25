@@ -502,7 +502,7 @@ func execute(statement []string, conn net.Conn, fullPort string, channelArr []st
 	case "SUBSCRIBE":
 		numChannels := 0
 		channel := statement[1]
-		
+		fmt.Println("this is our channel array ", channelArr)
 		if (slices.Contains(channelArr, channel)){
 			numChannels = len(channelArr)
 		}else{
