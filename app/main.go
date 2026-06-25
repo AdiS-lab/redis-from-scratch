@@ -587,7 +587,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		fmt.Println("this is insertARr ", insertArr)
 		sortedSets[setName] = insertArr
 	
-		return fmt.Sprintf(":%d\r\n", len(sortedSets[setName]))
+		return fmt.Sprintf(":%d\r\n", 1)
 	default:
 		return ("+messageNotFound\r\n")
 	}
