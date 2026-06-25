@@ -643,6 +643,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			for _,entries := range fullList{
 				if(entries.Member == statement[i]){
 					latitude, longitude := reverseGeoScore(int(entries.Score)) 
+					fmt.Println("this is latitude ", latitude)
 					x := strconv.FormatFloat(latitude, 'f', -1, 64) 
 					y := strconv.FormatFloat(longitude, 'f', -1, 64) 
 
@@ -699,7 +700,7 @@ func shiftedVals(num int) int{ //splitting bits by 0 such that are 0s between ev
 
 func reverseGeoScore(geocode int)(float64, float64){ 
 	fmt.Println("made it inside reverse Geoscore ", geocode)
-	y := uint64(geocode)>> 1 & 0x5555555555555555
+	y := uint64(geocode) >> 1 & 0x5555555555555555
 	x := uint64(geocode) & 0x5555555555555555
 
 	new_x := shiftBackVals(x)
@@ -715,9 +716,9 @@ func reverseGeoScore(geocode int)(float64, float64){
 	
 	//idea is that we qunatize a number line, and therefore the converted number is not 
 	x_edge := (LAT_RANGE * (float64(new_x) / math.Pow(2,26))) + MIN_X // convert to float and redo the math before
-	x_other_edge := (LAT_RANGE * (float64(new_x + 1) / math.Pow(2,26))) + MIN_X // convert to float and redo the math before
+	x_other_edge := (LAT_RANGE * (float64(new_x) + 1/ math.Pow(2,26))) + MIN_X // convert to float and redo the math before
 	y_edge := (LONG_RANGE * (float64(new_y) / math.Pow(2,26))) + MIN_Y
-	y_other_edge := (LONG_RANGE * (float64(new_y + 1) / math.Pow(2,26))) + MIN_Y
+	y_other_edge := (LONG_RANGE * (float64(new_y) + 1 / math.Pow(2,26))) + MIN_Y
 
 	fmt.Println("this is the x stuff ", x_edge, x_other_edge)
 	final_x := (x_edge + x_other_edge) /2
