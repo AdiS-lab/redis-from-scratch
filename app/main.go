@@ -719,6 +719,7 @@ func reverseGeoScore(geocode int)(float64, float64){
 	y_edge := (LONG_RANGE * (float64(new_y) / math.Pow(2,26))) + MIN_Y
 	y_other_edge := (LONG_RANGE * (float64(new_y + 1) / math.Pow(2,26))) + MIN_Y
 
+	fmt.Println("this is the x stuff ", x_edge, x_other_edge)
 	final_x := (x_edge + x_other_edge) /2
 	final_y := (y_edge + y_other_edge) /2
 	return final_x, final_y
