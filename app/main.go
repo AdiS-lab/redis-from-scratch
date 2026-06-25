@@ -577,7 +577,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		length := len(sortedSets[setName])
 		e := Entry{Member: firstName, Score: setScore}
 
-		if e.Score > sortedSets[setName][length-1].Score || length ==0{ // if greater or length is 0 just append
+		if length == 0 || e.Score > sortedSets[setName][length-1].Score{ // if greater or length is 0 just append
 			sortedSets[setName] = append(sortedSets[setName], e)
 		}else{ // that means less than so go on
 			for i:=0; i<len(sortedSets[setName]);i++{ 
