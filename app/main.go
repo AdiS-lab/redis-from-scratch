@@ -615,6 +615,16 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			}
 		}		
 		return "$-1\r\n "
+	case "ZREM":
+		setName := statement[1] 
+		member := statement[2]
+		for j,entries := range sortedSets[setName]{
+			if member == entries.Member{
+				sortedSets[setName] = append(sortedSets[setName][:j], sortedSets[setName][j+1:]...)
+				return ":1\r\n"
+			}
+		}
+		return ":0\r\n"
 	default:
 		return ("+messageNotFound\r\n")
 	}
