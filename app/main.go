@@ -625,8 +625,10 @@ func sortEntries(arr []Entry, e Entry)[]Entry{
 			}else if e.Score == curr.Score{
 				if e.Member <= curr.Member{
 					return	slices.Insert(arr, i, e)
-				}else if e.Member != arr[i+1].Member{
-					return	slices.Insert(arr, i+1, e)
+				}else if i == length -1{
+					return append(arr, e) 
+				}else if e.Score != arr[i+1].Score{					
+					return slices.Insert(arr, i+1, e)
 				}
 			}
 		}
