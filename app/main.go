@@ -595,16 +595,13 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	case "ZRANK":
 		setName := statement[1] 
 		firstName := statement[2] 
-		rank := 0 
-
 		for i,entries := range sortedSets[setName]{
 			if entries.Member == firstName{
-				rank = i
+				rank := i
+				return fmt.Sprintf(":%d\r\n", rank) 
 			}
 		}
-		
-		return fmt.Sprintf(":%d\r\n", rank) 
-
+		return "$-1\r\n"
 	default:
 		return ("+messageNotFound\r\n")
 	}
