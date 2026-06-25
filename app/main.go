@@ -682,7 +682,7 @@ func calcGeoScore(x float64, y float64)int{
 	norm_x = shiftedVals(norm_x)
 	norm_y = shiftedVals(norm_y)
 
-	interleaved_val := norm_x << 1 | norm_y
+	interleaved_val := norm_x | (norm_y << 1)
 	return interleaved_val
 
 
@@ -700,8 +700,8 @@ func shiftedVals(num int) int{ //splitting bits by 0 such that are 0s between ev
 
 func reverseGeoScore(geocode uint64)(float64, float64){ 
 	fmt.Println("made it inside reverse Geoscore ", geocode)
-	y := (geocode) & 0x5555555555555555
-	x := (geocode >> 1) & 0x5555555555555555
+	y := (geocode >> 1) & 0x5555555555555555
+	x := (geocode) & 0x5555555555555555
 
 	new_x := shiftBackVals(x)
 	new_y := shiftBackVals(y)
@@ -716,6 +716,7 @@ func reverseGeoScore(geocode uint64)(float64, float64){
 
 	convx := float64(new_x)
 	convy := float64(new_y)
+	fmt.Println("this is new _x ", new_x)
 
 	//idea is that we qunatize a number line, and therefore the converted number is not 
 	x_edge := (LAT_RANGE * (convx / math.Pow(2,26))) + MIN_X // convert to float and redo the math before
