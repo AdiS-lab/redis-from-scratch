@@ -625,6 +625,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			}
 		}
 		return ":0\r\n"
+	case "GEOADD":
+		return ":1\r\n"
 	default:
 		return ("+messageNotFound\r\n")
 	}
