@@ -37,6 +37,8 @@ var firstOK bool
 var masterUpdate bool 
 var expectingRDB = false
 
+var numChannels = 0
+
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
@@ -502,7 +504,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return ""
 	case "SUBSCRIBE":
 		channel := statement[1]
-		return fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:1\r\n",len("subscribe"), "subscribe", len(channel), channel )
+		numChannels++ 
+		return fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n",len("subscribe"), "subscribe", len(channel), channel, numChannels)
 	default:
 		return ("+messageNotFound\r\n")
 	}
