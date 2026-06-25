@@ -30,6 +30,7 @@ var data = make(map[string]string)
 var slaveConnections = make(map[net.Conn]map[string]string) // sync.Mutex protects concurrent access (whateva that means)
 var configs = make(map[string]string)
 var expired = make(map[string]int)
+var totalSubs = make(map[string]int)
 
 var watchCheck bool
 var firstPONG bool
@@ -242,6 +243,8 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			subscribeMode = true
 			numChannels := 0
 			channel := statement[1]
+			totalSubs[channel] = totalSubs[channel] + 1
+			
 			fmt.Println("this is our channel array ", channelArr)
 			if (slices.Contains(channelArr, channel)){
 				numChannels = len(channelArr)
@@ -285,7 +288,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 }
 
 //______________________________ reading command __________________________________________
-func execute(statement []string, conn net.Conn, fullPort string, channelArr []string) string {
+func execute(statement []string, conn net.Conn, fullPort string) string {
 	switch strings.ToUpper(statement[0]) {
 	case "PING":
 		fmt.Println("made it inside PING at least")
@@ -526,6 +529,10 @@ func execute(statement []string, conn net.Conn, fullPort string, channelArr []st
 				return message
 			}
 			return ""
+	case "PUBLISH":
+		channelName := statement[1]
+		numSubs := strconv.Itoa(totalSubs[channelName])
+		return numSubs
 	default:
 		return ("+messageNotFound\r\n")
 	}
@@ -651,18 +658,6 @@ func createArr(array []string, first int, last int) string { // used as a templa
 	}
 	return message
 }
-// could make list and use for loop or just a map and use that to lookup strings etc. 
-// func waitKey(key string, ms int) {
-// 	fmt.Println("HJELLLLOOOO INSIDE WAITKEY ")
-// 	expiryTime := time.UnixMilli(int64(ms))
-// 	fmt.Println(time.Now())
-// 	fmt.Println(expiryTime)
-// 	fmt.Println(time.Now().After(expiryTime))
-// 	if(time.Now().After(expiryTime)){
-// 			fmt.Println("these are the keys supposed to be expired ", key)
-// 			delete(storage, key)
-// 	} // in the case that it is in unix
-// }
 
 func wait(key string, ms int){
 	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
