@@ -598,6 +598,7 @@ func sortEntries(arr []Entry, e Entry)[]Entry{
 	if length == 0 || e.Score > arr[length-1].Score{ // if greater or length is 0 just append
 		return append(arr, e)
 	}else{ // that means less than so go on
+		fmt.Println("made it inside the check if less than ", e)
 		for i:=0; i<len(arr);i++{ 
 			curr := arr[i].Score
 			if e.Score <= curr{
