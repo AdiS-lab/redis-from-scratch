@@ -658,11 +658,37 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}
 		return message
 		
-	
+	case "GEODIST":
+		setName := statement[1]
+		place1 := statement[2]
+		place2 := statement[3] 
+		var x1, y1, x2, y2 float64
+		for _, entries := range sortedSets[setName]{
+			if (entries.Member == place1){
+				x1, y1 = reverseGeoScore(int(entries.Score))
+			}
+			if entries.Member == place2{
+				x2, y2 = reverseGeoScore(int(entries.Score))
+			}
+		}
+		distance := hsDist(x1,x2,y1,y2)
+		return fmt.Sprintf(":%d\r\n", int(distance))
+
+
+
 	default:
 		return ("+messageNotFound\r\n")
 	}
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
+
+func hsDist(lat1 float64,lat2 float64, long1 float64, long2 float64) float64 {
+	const rEarth = 6372797.560856  
+    return 2 * rEarth * math.Asin(math.Sqrt(haversine(lat2-lat1)+
+        math.Cos(lat1)*math.Cos(lat2)*haversine(long2-long1)))
+}
+func haversine(θ float64)float64{
+	return .5 * (1 - math.Cos(θ))
+}
 
 func calcGeoScore(x float64, y float64)int{
 	MIN_X := -85.05112878
