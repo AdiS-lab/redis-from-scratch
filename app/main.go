@@ -674,6 +674,33 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		distance := hsDist(x1,x2,y1,y2)
 		result := strconv.FormatFloat(distance, 'f', -1, 64)
 		return fmt.Sprintf("$%d\r\n%s\r\n", len(result), result)
+	case "GEOSEARCH":
+		validPlaces := []string{}
+		setName := statement[1]
+		long1 :=0.0
+		lat1 := 0.0
+		radius := 0.0
+		for i:=0; i<len(statement); i++{
+			if(statement[i] == "FROMLONLAT" ){
+				long1,_  = strconv.ParseFloat(statement[i+1], 64)
+				lat1,_ = strconv.ParseFloat(statement[i+1], 64)
+			}else if(statement[i] == "BYRADIUS"){
+				radius,_ = strconv.ParseFloat(statement[i+1], 64)
+			}
+		}
+
+		for _, entries := range sortedSets[setName]{
+			lat2, long2 := reverseGeoScore(int(entries.Score))
+			distance := hsDist(lat1, lat2, long1, long2)
+			if(distance <= radius){
+				validPlaces = append(validPlaces, entries.Member)
+			}
+		}	
+		return createArr(validPlaces, 0, len(validPlaces))
+
+
+		//basically just finding jawn, then parsing location, then finding distance, then comparing to radius
+
 
 	default:
 		return ("+messageNotFound\r\n")
