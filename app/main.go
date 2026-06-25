@@ -638,6 +638,20 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		e := Entry{Member: memberName, Score: float64(score)}
 		sortedSets[setName] = append(sortedSets[setName], e)
 		return ":1\r\n"
+	case "GEPOS":
+		message := fmt.Sprintf("*%d\r\n", len(statement) - 1)
+		for i:=1; i<len(statement); i++{
+			_, exists := sortedSets[statement[1]]
+			if(!exists){
+				return "-1\r\n"
+			}else{
+				message += "*2\r\n$1\r\n0\r\n$1\r\n0\r\n"
+			}
+			
+		}
+		return message
+		
+	
 	default:
 		return ("+messageNotFound\r\n")
 	}
@@ -655,7 +669,7 @@ func calcGeoScore(x float64, y float64)int{
 	x = ((x - MIN_X ) / LAT_RANGE ) * math.Pow(2,26)
 	y = ((y - MIN_Y ) / LONG_RANGE) * math.Pow(2,26) 
 
-	norm_x := int(x) 
+	norm_x := int(x)  // this produces loss, rounding to int removes precission
 	norm_y := int(y) 
 
 	norm_x = shiftedVals(norm_x)
@@ -677,9 +691,45 @@ func shiftedVals(num int) int{ //splitting bits by 0 such that are 0s between ev
 	return num
 }
 
-func reverseGeoScore(){
+func reverseGeoScore(geocode int)(float64, float64){ 
+	y := geocode >> 1 & 0x55555555
+	x := geocode & 0x55555555
+	new_x := shiftBackVals(y)
+	new_y := shiftBackVals(x)
 
+	MIN_X := -85.05112878
+	MAX_X := 85.05112878
+	MIN_Y := -180.00
+	MAX_Y := 180.00
+
+	LAT_RANGE := MAX_X - MIN_X
+	LONG_RANGE := MAX_Y - MIN_Y 
+	
+	//idea is that we qunatize a number line, and therefore the converted number is not 
+	x_edge := LAT_RANGE * (float64(new_x) / math.Pow(2,26)) + MIN_X // convert to float and redo the math before
+	x_other_edge := LAT_RANGE * (float64(new_x + 1) / math.Pow(2,26)) + MIN_X // convert to float and redo the math before
+	y_edge := LONG_RANGE * (float64(new_y) / math.Pow(2,26)) + MIN_Y
+	y_other_edge := LONG_RANGE * (float64(new_y + 1) / math.Pow(2,26)) + MIN_Y
+
+	final_x := (x_edge + x_other_edge) /2
+	final_y := (y_edge + y_other_edge) /2
+	return final_x, final_y
 }
+
+func shiftBackVals(num int)int{
+	num = (num | (num >> 1)) & 0x3333333333333333 //shifting back + undoing mask
+    num = (num | (num >> 2)) & 0x0F0F0F0F0F0F0F0F
+    num = (num | (num >> 4)) & 0x00FF00FF00FF00FF
+    num = (num | (num >> 8)) & 0x0000FFFF0000FFFF
+    num = (num | (num >> 16)) & 0x00000000FFFFFFFF
+	return num
+}
+
+
+
+
+
+
 
 func sortEntries(arr []Entry, e Entry)[]Entry{
 	fmt.Println("this is the arr before sorting ", arr)
@@ -708,8 +758,6 @@ func findRange(arr[]string, start int, stop int)string{
 	message := createArr(arr, start, stop+1)
 	return message
 }
-
-
 
 func readRDB(info []byte)([]string, []string, []string){
 	fmt.Println("made it inside RDB check ")
