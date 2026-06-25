@@ -643,7 +643,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		for i:=2; i<len(statement); i++{
 			_, exists := sortedSets[statement[1]]
 			if(!exists){
-				return "-1\r\n"
+				return "*-1\r\n"
 			}else{
 				message += "*2\r\n$1\r\n0\r\n$1\r\n0\r\n"
 			}
