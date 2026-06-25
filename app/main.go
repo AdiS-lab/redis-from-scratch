@@ -682,6 +682,12 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 
 func hsDist(lat1 float64,lat2 float64, long1 float64, long2 float64) float64 {
 	const rEarth = 6372797.560856  
+	lat1 = lat1* math.Pi / 180
+	lat2 = lat2* math.Pi / 180
+	long1 = long1* math.Pi / 180
+	long2 = long2* math.Pi / 180
+
+
     return 2 * rEarth * math.Asin(math.Sqrt(haversine(lat2-lat1)+
         math.Cos(lat1)*math.Cos(lat2)*haversine(long2-long1)))
 }
