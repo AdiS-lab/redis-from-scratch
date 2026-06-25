@@ -48,7 +48,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	firstOK = false
 	expectingRDB = false
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
-	channelArr := []string{}
+	var channelArr []string
 	
 	otherDir := configs["dir"] 
 	filePath := configs["dbfilename"]
@@ -509,6 +509,7 @@ func execute(statement []string, conn net.Conn, fullPort string, channelArr []st
 			fmt.Println("was not found in channel so updated ")
 			channelArr = append(channelArr, channel)
 			numChannels = len(channelArr)
+			fmt.Println("channel updated ? " , channelArr)
 		}
 		return fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n",len("subscribe"), "subscribe", len(channel), channel, numChannels)
 	default:
