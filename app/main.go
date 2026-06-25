@@ -604,7 +604,15 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return ":0\r\n"
 		}
 		return fmt.Sprintf(":%d\r\n", len(sortedSets[setName]))
-
+	case "ZSCORE":
+		setName := statement[1]
+		member := statement[2] 
+		for _, entries := range sortedSets[setName]{
+			if(entries.Member == member){
+				return fmt.Sprintf(":%f\r\n", entries.Score)
+			}
+		}		
+		return" $-1\r\n "
 	default:
 		return ("+messageNotFound\r\n")
 	}
@@ -626,16 +634,10 @@ func findRange(arr[]string, start int, stop int)string{
 		stop = length - 1
 	}
 	if start < 0 { // clamp 0  and handle negative
-		start = length + start
-		if start < 0 {
-			start = 0
-		}
+		start = max(length + start, 0)
 	}
 	if stop < 0 { // clamp 0  and handle negative
-		stop = length + stop
-		if stop < 0 {
-			stop = 0
-		}
+		stop = max(length + stop, 0)
 	}
 	if start >= length || start > stop {
 		return ("*0\r\n")
