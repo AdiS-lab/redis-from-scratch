@@ -646,12 +646,13 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		for i:=2; i<len(statement); i++{
 			for _,entries := range fullList{
 				if(entries.Member == statement[i]){
+					fmt.Println("this made it inside check ", statement[i])
 					message += "*2\r\n$1\r\n0\r\n$1\r\n0\r\n"
 					count ++ 
 				}
 			}	
 		}
-		if count != len(statement)-2{
+		if count != (len(statement)-2){
 			return "*-1\r\n"
 		}
 		return message
