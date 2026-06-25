@@ -507,7 +507,7 @@ func execute(statement []string, conn net.Conn, fullPort string, channelArr []st
 			numChannels = len(channelArr)
 		}else{
 			channelArr = append(channelArr, channel)
-			numChannels = len(channelArr) + 1
+			numChannels = len(channelArr)
 		}
 		return fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n",len("subscribe"), "subscribe", len(channel), channel, numChannels)
 	default:
