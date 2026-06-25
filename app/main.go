@@ -642,7 +642,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			found := false
 			for _,entries := range fullList{
 				if(entries.Member == statement[i]){
-					latitude, longitude := reverseGeoScore(int(entries.Score)) 
+					latitude, longitude := reverseGeoScore(uint64(entries.Score)) 
 					fmt.Println("this is latitude ", latitude)
 					x := strconv.FormatFloat(latitude, 'f', -1, 64) 
 					y := strconv.FormatFloat(longitude, 'f', -1, 64) 
@@ -698,10 +698,10 @@ func shiftedVals(num int) int{ //splitting bits by 0 such that are 0s between ev
 	return num
 }
 
-func reverseGeoScore(geocode int)(float64, float64){ 
+func reverseGeoScore(geocode uint64)(float64, float64){ 
 	fmt.Println("made it inside reverse Geoscore ", geocode)
-	y := (uint64(geocode) >> 1) & 0x5555555555555555
-	x := uint64(geocode) & 0x5555555555555555
+	y := (geocode >> 1) & 0x5555555555555555
+	x := (geocode) & 0x5555555555555555
 
 	new_x := shiftBackVals(x)
 	new_y := shiftBackVals(y)
