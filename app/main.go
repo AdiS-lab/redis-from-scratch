@@ -640,14 +640,19 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return ":1\r\n"
 	case "GEOPOS":
 		message := fmt.Sprintf("*%d\r\n", len(statement) - 2)
+		fullList,_ := sortedSets[statement[1]]
+		count := 0 
+
 		for i:=2; i<len(statement); i++{
-			_, exists := sortedSets[statement[1]]
-			if(!exists){
-				return "*-1\r\n"
-			}else{
-				message += "*2\r\n$1\r\n0\r\n$1\r\n0\r\n"
-			}
-			
+			for _,entries := range fullList{
+				if(entries.Member == statement[i]){
+					message += "*2\r\n$1\r\n0\r\n$1\r\n0\r\n"
+					count ++ 
+				}
+			}	
+		}
+		if count != len(statement)-2{
+			return "*-1\r\n"
 		}
 		return message
 		
