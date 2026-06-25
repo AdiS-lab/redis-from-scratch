@@ -723,6 +723,11 @@ func reverseGeoScore(geocode int)(float64, float64){
 	fmt.Println("this is convy ", convy)
 
 
+	fmt.Println("first part ", convx/math.Pow(2,26))
+	fmt.Println("second part " , convx/math.Pow(2,26)*LAT_RANGE)
+	fmt.Println("third part ",(convx/math.Pow(2,26)*LAT_RANGE) + MIN_X )
+
+
 	//idea is that we qunatize a number line, and therefore the converted number is not 
 	x_edge := (LAT_RANGE * (convx / math.Pow(2,26))) + MIN_X // convert to float and redo the math before
 	x_other_edge := (LAT_RANGE * ((convx+ 1) / math.Pow(2,26))) + MIN_X // convert to float and redo the math before
