@@ -644,8 +644,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
 
 func calcGeoScore(x float64, y float64)int{
-	MIN_X := 85.05112878
-	MAX_X := -85.05112878
+	MIN_X := -85.05112878
+	MAX_X := 85.05112878
 	MIN_Y := -180.00
 	MAX_Y := 180.00
  
