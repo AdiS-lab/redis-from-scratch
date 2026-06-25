@@ -129,7 +129,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			}
 		}
 		if len(statement) != 0 {
-			input = statement[0]
+			input = strings.ToUpper(statement[0])
 		}
 		// manage masterUpdate by checking when doesn't equal one of those. 
 
@@ -138,7 +138,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		//___________________________master mode propogation ___________________________________________
 		if masterUpdate == true && data["role"] == "master"{//after three way connection
 			fmt.Println("propogating down to slave here's statement ", statement)
-			if slices.Contains(writeStatements, strings.ToUpper(input)){
+			if slices.Contains(writeStatements,input){
 				curr_offset,_ := strconv.Atoi(data["master_repl_offset"])  // track master offset 
 				new_offset := curr_offset + len(recreatedCmd)
 				data["master_repl_offset"] = strconv.Itoa(new_offset)
@@ -152,8 +152,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	
 		} 
 		//____________________________ subscribe mode ________________________________________
-		if subscribeMode && !slices.Contains(subStatements, input ){
-			conn.Write([]byte(fmt.Sprintf("-ERR can't execute '%s' when one or more subscriptions exist\r\n", input)))
+		if subscribeMode && !slices.Contains(subStatements, input){
+			if input == "PONG"{
+				conn.Write([]byte("*2\r\n$4\r\npong\r\n$0\r\n\r\n"))
+			}else{
+				conn.Write([]byte(fmt.Sprintf("-ERR can't execute '%s' when one or more subscriptions exist\r\n", input)))
+			}
 			continue
 		}
 
