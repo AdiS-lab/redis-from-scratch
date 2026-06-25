@@ -16,12 +16,26 @@ import (
 	"bytes"
 )
 
-// Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
-var _ = net.Listen
-var _ = os.Exit
+
+type Entry struct {
+	Member string
+	Score float64
+}// define data structure for ZADD commnand
+
+type FullList struct {
+	Entry 
+	Name string
+}
+
+// e := Entry{member:, score: }
+// push this into a list/object
 
 // buf := make([]byte, 1024)  create buffer, read stream and assign to buffer, and then do logic based on that
 // n,err := conn.Read(buf)  number of bytes
+
+
+
+
 
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
@@ -31,11 +45,13 @@ var slaveConnections = make(map[net.Conn]map[string]string) // sync.Mutex protec
 var configs = make(map[string]string)
 var expired = make(map[string]int)
 var totalSubs = make(map[string][]net.Conn)
+var sortedSets = make(map[string][]Entry)  // in the key we should have a list populated by multiple entries, if we want to create a new one, we just do so. 
+
 
 var watchCheck bool
 var firstPONG bool
 var firstOK bool
-var masterUpdate bool 
+var masterUpdate bool
 var expectingRDB = false
 
 
@@ -554,6 +570,25 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			conn.Write([]byte(fmt.Sprintf("*3\r\n$7\r\nmessage\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(channelName), channelName, len(message), message)))
 		}
 		return fmt.Sprintf(":%d\r\n", len(totalSubs[channelName]))
+	case "ZADD":
+		setName:= statement[1]  
+		setScore,_ := strconv.ParseFloat(statement[2], 64)
+		firstName := statement[3] 	
+		length := len(sortedSets[setName])
+		e := Entry{Member: firstName, Score: setScore}
+
+		if e.Score > sortedSets[setName][length-1].Score || length ==0{ // if greater or length is 0 just append
+			sortedSets[setName] = append(sortedSets[setName], e)
+		}else{ // that means less than so go on
+			for i:=0; i<len(sortedSets[setName]);i++{ 
+				curr := sortedSets[setName][i].Score
+				if e.Score <= curr{
+					result := slices.Insert(sortedSets[setName], i, e)
+					sortedSets[setName] = result
+				}
+			}
+		}	
+		return ":1\r\n"
 	default:
 		return ("+messageNotFound\r\n")
 	}
