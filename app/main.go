@@ -647,7 +647,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 					x := strconv.FormatFloat(latitude, 'f', -1, 64) 
 					y := strconv.FormatFloat(longitude, 'f', -1, 64) 
 
-					message += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(x), x, len(y), y)
+					message += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(y), y, len(x), x)
 					found = true
 					break
 				}
