@@ -652,6 +652,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 				}
 			}	
 		}
+		fmt.Println("these are comparisons", count, len(statement)-2)
 		if count != (len(statement)-2){
 			return "*-1\r\n"
 		}
