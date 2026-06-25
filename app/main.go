@@ -37,7 +37,6 @@ var firstOK bool
 var masterUpdate bool 
 var expectingRDB = false
 
-var numChannels = 0
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
@@ -48,6 +47,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	firstPONG = false
 	firstOK = false
 	expectingRDB = false
+	numChannels := 0
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
 	
 	
@@ -98,7 +98,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		 for message != nil{
 			message,_ = parser(reader)
 			if(message != nil){
-				execute(message,conn,fullPort)
+				execute(message,conn,fullPort,numChannels)
 			}
 		 }
 		 
@@ -199,7 +199,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					message := ""
 					fmt.Println(queue)
 					for i := 0; i < len(queue); i++ {
-						writeVal := execute(queue[i], conn, fullPort)
+						writeVal := execute(queue[i], conn, fullPort, numChannels)
 						writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
 					}
 					count := len(writeArr)
@@ -237,7 +237,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			if input == "" { // means nothing was sent in command, or smth happened along the way
 				continue
 			} else {
-				writeVal := execute(statement, conn, fullPort) 
+				writeVal := execute(statement, conn, fullPort, numChannels) 
 				// we've created manifest file + appenddirname + appendfilename
 				if(masterUpdate && data["role"] == "slave"){//in case of slave + needing to update offset
 					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
@@ -261,7 +261,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 }
 
 //______________________________ reading command __________________________________________
-func execute(statement []string, conn net.Conn, fullPort string) string {
+func execute(statement []string, conn net.Conn, fullPort string, numChannels int) string {
 	switch strings.ToUpper(statement[0]) {
 	case "PING":
 		fmt.Println("made it inside PING at least")
