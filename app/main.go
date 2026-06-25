@@ -30,7 +30,7 @@ var data = make(map[string]string)
 var slaveConnections = make(map[net.Conn]map[string]string) // sync.Mutex protects concurrent access (whateva that means)
 var configs = make(map[string]string)
 var expired = make(map[string]int)
-var totalSubs = make(map[string]int)
+var totalSubs = make(map[string][]net.Conn)
 
 var watchCheck bool
 var firstPONG bool
@@ -243,7 +243,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			subscribeMode = true
 			numChannels := 0
 			channel := statement[1]
-			totalSubs[channel] = totalSubs[channel] + 1
+			totalSubs[channel] = append(totalSubs[channel], conn)
 			
 			fmt.Println("this is our channel array ", channelArr)
 			if (slices.Contains(channelArr, channel)){
@@ -531,7 +531,11 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return ""
 	case "PUBLISH":
 		channelName := statement[1]
-		return fmt.Sprintf(":%d\r\n", totalSubs[channelName])
+		message := statement[2]
+		for _,conn := range totalSubs[channelName]{
+			conn.Write([]byte(fmt.Sprintf("*3\r\n$7\r\nmessage\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(channelName), channelName, len(message), message)))
+		}
+		return fmt.Sprintf(":%d\r\n", len(totalSubs[channelName]))
 	default:
 		return ("+messageNotFound\r\n")
 	}
