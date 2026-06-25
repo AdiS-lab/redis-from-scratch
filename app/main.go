@@ -100,7 +100,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		 for message != nil{
 			message,_ = parser(reader)
 			if(message != nil){
-				execute(message,conn,fullPort, channelArr)
+				execute(message,conn,fullPort)
 			}
 		 }
 		 
@@ -210,7 +210,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					message := ""
 					fmt.Println(queue)
 					for i := 0; i < len(queue); i++ {
-						writeVal := execute(queue[i], conn, fullPort, channelArr)
+						writeVal := execute(queue[i], conn, fullPort)
 						writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
 					}
 					count := len(writeArr)
@@ -264,7 +264,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			if input == "" { // means nothing was sent in command, or smth happened along the way
 				continue
 			} else {
-				writeVal := execute(statement, conn, fullPort,channelArr) 
+				writeVal := execute(statement, conn, fullPort) 
 				// we've created manifest file + appenddirname + appendfilename
 				if(masterUpdate && data["role"] == "slave"){//in case of slave + needing to update offset
 					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
