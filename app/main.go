@@ -595,7 +595,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	default:
 		return ("+messageNotFound\r\n")
 	}
-}
+} // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
 
 func sortEntries(arr []Entry, e Entry)[]Entry{
 	fmt.Println("this is the arr before sorting ", arr)
@@ -605,10 +605,16 @@ func sortEntries(arr []Entry, e Entry)[]Entry{
 	}else{ // that means less than so go on
 		fmt.Println("made it inside the check if less than ", e)
 		for i:=0; i<len(arr);i++{ 
-			curr := arr[i].Score
-			if e.Score <= curr{
+			curr := arr[i]
+			if e.Score < curr.Score{ //  so if equal then check if less, insert otherwise wait until end then go
 				result := slices.Insert(arr, i, e)
 				return result
+			}else if e.Score == curr.Score{
+				if e.Member <= curr.Member{
+					return	slices.Insert(arr, i, e)
+				}else if e.Member != arr[i+1].Member{
+					return	slices.Insert(arr, i+1, e)
+				}
 			}
 		}
 	}
