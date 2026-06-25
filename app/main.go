@@ -639,14 +639,18 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		fullList,_ := sortedSets[statement[1]]
 
 		for i:=2; i<len(statement); i++{
+			found := false
 			for _,entries := range fullList{
 				if(entries.Member == statement[i]){
 					fmt.Println("this made it inside check ", statement[i])
 					message += "*2\r\n$1\r\n0\r\n$1\r\n0\r\n"
-				}else{
-					message+= "*-1\r\n"
+					found = true
+					break
 				}
 			}	
+			if !found{
+				message += "*-1\r\n"
+			}
 		}
 		return message
 		
