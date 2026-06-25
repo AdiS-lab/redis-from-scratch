@@ -644,7 +644,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 					fmt.Println("this made it inside check ", statement[i])
 					message += "*2\r\n$1\r\n0\r\n$1\r\n0\r\n"
 				}else{
-					message += "*2\r\n*-1\r\n*-1\r\n"
+					message+= "*-1\r\n"
 				}
 			}	
 		}
