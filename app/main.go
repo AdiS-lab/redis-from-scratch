@@ -610,7 +610,6 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		for _, entries := range sortedSets[setName]{
 			if(entries.Member == member){
 				a := strconv.FormatFloat(entries.Score, 'f', -1, 64)
-
 				return fmt.Sprintf("$%d\r\n%s\r\n",len(a), a)
 			}
 		}		
@@ -626,6 +625,11 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}
 		return ":0\r\n"
 	case "GEOADD":
+		longitude,_ := strconv.ParseFloat(statement[2], 64)
+		latitude,_ := strconv.ParseFloat(statement[3], 64)
+		if !(longitude >= -180 && longitude <= 180) || !(latitude >= -85.05112878 && latitude <= 85.05112878){
+			return fmt.Sprintf("-ERR invalid longitude,latitude pair %f, %f", longitude, latitude)
+		}
 		return ":1\r\n"
 	default:
 		return ("+messageNotFound\r\n")
