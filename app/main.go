@@ -730,7 +730,7 @@ func reverseGeoScore(geocode int)(float64, float64){
 	return final_x, final_y
 }
 
-func shiftBackVals(num uint64)uint64{
+func shiftBackVals(num int)int{
 	num = (num | (num >> 1)) & 0x3333333333333333 //shifting back + undoing mask
     num = (num | (num >> 2)) & 0x0F0F0F0F0F0F0F0F
     num = (num | (num >> 4)) & 0x00FF00FF00FF00FF
