@@ -30,6 +30,7 @@ var data = make(map[string]string)
 var slaveConnections = make(map[net.Conn]map[string]string) // sync.Mutex protects concurrent access (whateva that means)
 var configs = make(map[string]string)
 var expired = make(map[string]int)
+var channelArr []string
 
 var watchCheck bool
 var firstPONG bool
@@ -47,7 +48,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	firstPONG = false
 	firstOK = false
 	expectingRDB = false
-	numChannels := 0
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
 	
 	
@@ -98,7 +98,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		 for message != nil{
 			message,_ = parser(reader)
 			if(message != nil){
-				execute(message,conn,fullPort,numChannels)
+				execute(message,conn,fullPort)
 			}
 		 }
 		 
@@ -127,8 +127,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				//write the cmd to target file
 			}
 		}
-
-
 		if len(statement) != 0 {
 			input = statement[0]
 		}
@@ -199,7 +197,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					message := ""
 					fmt.Println(queue)
 					for i := 0; i < len(queue); i++ {
-						writeVal := execute(queue[i], conn, fullPort, numChannels)
+						writeVal := execute(queue[i], conn, fullPort)
 						writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
 					}
 					count := len(writeArr)
@@ -237,7 +235,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			if input == "" { // means nothing was sent in command, or smth happened along the way
 				continue
 			} else {
-				writeVal := execute(statement, conn, fullPort, numChannels) 
+				writeVal := execute(statement, conn, fullPort,) 
 				// we've created manifest file + appenddirname + appendfilename
 				if(masterUpdate && data["role"] == "slave"){//in case of slave + needing to update offset
 					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
@@ -261,7 +259,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 }
 
 //______________________________ reading command __________________________________________
-func execute(statement []string, conn net.Conn, fullPort string, numChannels int) string {
+func execute(statement []string, conn net.Conn, fullPort string) string {
 	switch strings.ToUpper(statement[0]) {
 	case "PING":
 		fmt.Println("made it inside PING at least")
@@ -503,8 +501,14 @@ func execute(statement []string, conn net.Conn, fullPort string, numChannels int
 			}
 			return ""
 	case "SUBSCRIBE":
+		numChannels := 0
 		channel := statement[1]
-		numChannels++ 
+		if (slices.Contains(channelArr, channel)){
+			numChannels = len(channelArr)
+		}else{
+			numChannels = len(channelArr) + 1
+			channelArr = append(channelArr, channel)
+		}
 		return fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n",len("subscribe"), "subscribe", len(channel), channel, numChannels)
 	default:
 		return ("+messageNotFound\r\n")

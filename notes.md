@@ -127,4 +127,4 @@ using time.UnixMilli(int64(ms)) assuming they are ms, allows for comparing again
 5. Lines 51-75, lines 81-99, remove hardcoded AOF and see if this rewritten code can be
 turned into a func that is general purpose
 6. bad logic, am passing stuff into execute when I could just call it outside, and then 
-have execute handle on it's own. 
+have execute handle everything else nativelyu
