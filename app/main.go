@@ -506,6 +506,7 @@ func execute(statement []string, conn net.Conn, fullPort string, channelArr []st
 		if (slices.Contains(channelArr, channel)){
 			numChannels = len(channelArr)
 		}else{
+			fmt.Println("was not found in channel so updated ")
 			channelArr = append(channelArr, channel)
 			numChannels = len(channelArr)
 		}
