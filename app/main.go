@@ -576,10 +576,12 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		firstName := statement[3] 	
 		length := len(sortedSets[setName])
 		e := Entry{Member: firstName, Score: setScore}
+		count := 1
 
 		for j:=0; j<length; j++{
 			if sortedSets[setName][j].Member == e.Member{ // pop it out only if exists
 				sortedSets[setName] = append(sortedSets[setName][:j], sortedSets[setName][j+1:]...)
+				count = 0
 				break
 			}
 		} // in case of nothing will handle that, in case exists, will isolate it, in case of multiple have to loop 
@@ -589,7 +591,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		fmt.Println("this is insertARr ", insertArr)
 		sortedSets[setName] = insertArr
 	
-		return fmt.Sprintf(":%d\r\n", 1)
+		return fmt.Sprintf(":%d\r\n", count)
 	default:
 		return ("+messageNotFound\r\n")
 	}
