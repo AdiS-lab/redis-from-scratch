@@ -609,10 +609,12 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		member := statement[2] 
 		for _, entries := range sortedSets[setName]{
 			if(entries.Member == member){
-				return fmt.Sprintf(":%f\r\n", entries.Score)
+				a := strconv.FormatFloat(entries.Score, 'f', -1, 64)
+
+				return fmt.Sprintf("$%d\r\n%s\r\n",len(a), a)
 			}
 		}		
-		return" $-1\r\n "
+		return "$-1\r\n "
 	default:
 		return ("+messageNotFound\r\n")
 	}
