@@ -309,10 +309,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					data["master_repl_offset"] = strconv.Itoa(new_offset)
 				}
 				if writeVal != "" {
-					fmt.Println("this is writeVal ", writeVal, data["role"])
-					//after processing update offest, which mean reconvert that jawn 
-					// 1. need way to process
-					// 2. figure out where to update
 					conn.Write([]byte(writeVal))
 				}
 			}
@@ -648,11 +644,10 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 					fmt.Println("this made it inside check ", statement[i])
 					message += "*2\r\n$1\r\n0\r\n$1\r\n0\r\n"
 				}else{
-					message += "*-1\r\n"
+					message += "**2\r\n*-1\r\n*-1\r\n"
 				}
 			}	
 		}
-		fmt.Println(message)
 		return message
 		
 	
