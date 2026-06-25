@@ -638,12 +638,12 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		e := Entry{Member: memberName, Score: float64(score)}
 		sortedSets[setName] = append(sortedSets[setName], e)
 		return ":1\r\n"
-	case "GEPOS":
-		message := fmt.Sprintf("*%d\r\n", len(statement) - 1)
-		for i:=1; i<len(statement); i++{
+	case "GEOPOS":
+		message := fmt.Sprintf("*%d\r\n", len(statement) - 2)
+		for i:=2; i<len(statement); i++{
 			_, exists := sortedSets[statement[1]]
 			if(!exists){
-				message += "-1\r\n"
+				return "-1\r\n"
 			}else{
 				message += "*2\r\n$1\r\n0\r\n$1\r\n0\r\n"
 			}
