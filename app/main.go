@@ -271,7 +271,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					}
 				}
 			}
-			conn.Write([]byte(fmt.Sprintf("*3\r\n$9\r\nunsubscribe\r\n$%d\r\n%s\r\n:%d\r\n", len(channelName), channelName, len(channelArr))))
+			conn.Write([]byte(fmt.Sprintf("*3\r\n$11\r\nunsubscribe\r\n$%d\r\n%s\r\n:%d\r\n", len(channelName), channelName, len(channelArr))))
 
 		}else if isQueue == true && len(statement) > 0 {// to actually put stuff inside our queue
 
