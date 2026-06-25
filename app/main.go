@@ -612,7 +612,6 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 
 func sortEntries(arr []Entry, e Entry)[]Entry{
 	fmt.Println("this is the arr before sorting ", arr)
-	length := len(arr)
 	for i:=0; i<len(arr);i++{ 
 		curr := arr[i] // less than catches case that e.Member > than all others. everything else caught by return
 		if e.Score < curr.Score || (e.Score==curr.Score && e.Member < curr.Member){ //  so if equal then check if less, insert otherwise wait until end then go
