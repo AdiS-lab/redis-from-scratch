@@ -642,8 +642,11 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			found := false
 			for _,entries := range fullList{
 				if(entries.Member == statement[i]){
-					fmt.Println("this made it inside check ", statement[i])
-					message += "*2\r\n$1\r\n0\r\n$1\r\n0\r\n"
+					latitude, longitude := reverseGeoScore(int(entries.Score)) 
+					x := strconv.FormatFloat(latitude, 'f', -1, 64) 
+					y := strconv.FormatFloat(longitude, 'f', -1, 64) 
+
+					message += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(x), x, len(y), y)
 					found = true
 					break
 				}
