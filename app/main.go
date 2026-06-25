@@ -50,7 +50,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	expectingRDB = false
 	var subscribeMode bool
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
-	subStatements := []string{"SUBSCRIBE"}
+	subStatements := []string{"SUBSCRIBE", "PUBLISH", "UNSUBSCRIBE"}
 	var channelArr []string
 	
 	otherDir := configs["dir"] 
@@ -255,6 +255,24 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				fmt.Println("channel updated ? " , channelArr)
 			}
 			conn.Write([]byte(fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n",len("subscribe"), "subscribe", len(channel), channel, numChannels)))
+		}else if(input ==  "UNSUBSCRIBE"){
+			//pop channel arr as well
+			channelName := statement[1]
+			if slices.Contains(totalSubs[channelName], conn){
+				//go through channel arr, and sub arr pop both 
+				for j:= 0; j<len(channelArr); j++{
+					if channelArr[j] == channelName{
+						channelArr = append(channelArr[:j], channelArr[j+1:]...) // remove from local connections
+					}
+				}	
+				for i:=0; i<len(totalSubs[channelName]); i++{
+					if totalSubs[channelName][i] == conn{
+						totalSubs[channelName] = append(totalSubs[channelName][:i], totalSubs[channelName][i+1:]...) // remove from global connections
+					}
+				}
+			}
+			conn.Write([]byte(fmt.Sprintf("*3\r\n$9\r\nunsubscribe\r\n$%d\r\n%s\r\n:%d\r\n", len(channelName), channelName, len(channelArr))))
+
 		}else if isQueue == true && len(statement) > 0 {// to actually put stuff inside our queue
 
 			queue = append(queue, statement)
