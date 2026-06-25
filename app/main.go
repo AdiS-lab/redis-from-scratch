@@ -584,6 +584,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		// in case of delete can handle that inside other
 
 		insertArr := sortEntries(sortedSets[setName], e)
+		fmt.Println("this is insertARr ", insertArr)
 		sortedSets[setName] = insertArr
 	
 		return fmt.Sprintf(":%d\r\n", len(sortedSets[setName]))
