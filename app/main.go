@@ -672,9 +672,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			}
 		}
 		distance := hsDist(x1,x2,y1,y2)
-		return fmt.Sprintf(":%d\r\n", int(distance))
-
-
+		result := strconv.FormatFloat(distance, 'f', -1, 64)
+		return fmt.Sprintf("$%d\r\n%s\r\n", len(result), result)
 
 	default:
 		return ("+messageNotFound\r\n")
