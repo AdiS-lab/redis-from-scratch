@@ -592,6 +592,19 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		sortedSets[setName] = insertArr
 	
 		return fmt.Sprintf(":%d\r\n", count)
+	case "ZRANK":
+		setName := statement[1] 
+		firstName := statement[2] 
+		rank := 0 
+
+		for i,entries := range sortedSets[setName]{
+			if entries.Member == firstName{
+				rank = i
+			}
+		}
+		
+		return fmt.Sprintf(":%d\r\n", rank) 
+
 	default:
 		return ("+messageNotFound\r\n")
 	}
