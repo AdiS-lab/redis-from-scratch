@@ -652,8 +652,8 @@ func calcGeoScore(x float64, y float64)int{
 	LONG_RANGE := MAX_Y - MIN_Y 
 	LAT_RANGE := MAX_X - MIN_X
 
-	x = (x - MIN_X / (LAT_RANGE) ) * math.Pow(2, 26)
-	y = (y - MIN_X / (LONG_RANGE)) * math.Pow(2,26) 
+	x = (x - (MIN_X / LAT_RANGE )) * math.Pow(2,26)
+	y = (y - (MIN_Y / LONG_RANGE)) * math.Pow(2,26) 
 
 	norm_x := int(x) 
 	norm_y := int(y) 
