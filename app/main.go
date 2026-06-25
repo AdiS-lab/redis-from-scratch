@@ -149,7 +149,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			}
 	
 		} 
-
 		if input == "MULTI" && isQueue == false {//set queue as long as no tin queue
 			// but length is bad, then or isQueue = false
 			isQueue = true
@@ -482,7 +481,6 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		default:
 			return ""
 		}
-	
 	case "KEYS":
 			fmt.Println("made it inside Keys ", configs["dbfilename"])	
 			directory := configs["dir"] 
@@ -502,6 +500,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 				return message
 			}
 			return ""
+	case "SUBSCRIBE":
+		return fmt.Sprintf("*3\r\n%d\r\n%s\r\n$%d\r\n%s\r\n:1\r\n",len("subscribe"), "subscribe", len("foo"), "foo" )
 	default:
 		return ("+messageNotFound\r\n")
 	}
