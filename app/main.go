@@ -652,6 +652,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 				}
 			}	
 		}
+		fmt.Println(message)
 		return message
 		
 	
