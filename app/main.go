@@ -13,6 +13,7 @@ import (
 	"slices"
 	"path/filepath"
 	"encoding/binary"
+	"bytes"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -73,6 +74,10 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		 info,_ = os.ReadFile(configs["manifest"])
 		 fmt.Println(string(info))
 		 fullPathArr := []string{}
+		 stringArr := []string{}
+		 message := []string{}
+		 
+		 fullVal := ""
 		 fullDir := filepath.Dir(configs["manifest"])
 
 		 allPaths := strings.Split(string(info), " ")
@@ -83,19 +88,18 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		 }
 		 for _,value := range fullPathArr{
 			result,_ := os.ReadFile(value)
-			stringArr := strings.Split(string(result), "\r\n")
-			fmt.Println("this is what is inside each file ", stringArr)
-			
+			fullVal += string(result)
+			fmt.Println("this is what is inside each file ", stringArr) // for each file may have more than one comamnd
 		 }
 
-		// targetFile := filepath.Join(fullPath, fileName) // find targetFile string 
-		
-		// accStuff, _ := os.ReadFile(targetFile) 
-		// fmt.Println("this is accStuff file ", targetFile)
-		// fmt.Println("this is accStuff ", string(accStuff))
-		// if(accStuff != nil){
-		// 	fmt.Println("this is the split sequence ", strings.Split(string(accStuff), "\r\n") )
-		// }
+		 reader := bufio.NewReader(bytes.NewReader([]byte(fullVal))) // bufio needs access to some type of dynamic reader, otherwise byte arr is just statically sitting in memory
+		 for message != nil{
+			message,_ = parser(reader)
+			if(message != nil){
+				execute(message,conn,fullPort)
+			}
+		 }
+		 
 	}
 
 
