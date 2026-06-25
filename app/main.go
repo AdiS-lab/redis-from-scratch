@@ -634,7 +634,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return fmt.Sprintf("-ERR invalid longitude,latitude pair %f, %f\r\n", longitude, latitude)
 		}
 		score := calcGeoScore(longitude, latitude)
-		
+
 		e := Entry{Member: memberName, Score: float64(score)}
 		sortedSets[setName] = append(sortedSets[setName], e)
 		return ":1\r\n"
@@ -663,6 +663,7 @@ func calcGeoScore(x float64, y float64)int{
 
 }		
 func shiftedVals(num int) int{ //splitting bits by 0 such that are 0s between everything 
+	num = num & 0xFFFFFFFF //makes sure lower 32 bits are 0 
 	num = (num | num << 16) & 0x0000FFFF0000FFFF // taking half of bits moving them up then cutting out the previous top. 
 	num = (num | num << 8) & 0x00FF00FF00FF00FF
 	num = (num | num << 4) & 0x0F0F0F0F0F0F0F0F
