@@ -501,7 +501,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			}
 			return ""
 	case "SUBSCRIBE":
-		return fmt.Sprintf("*3\r\n%d\r\n%s\r\n$%d\r\n%s\r\n:1\r\n",len("subscribe"), "subscribe", len("foo"), "foo" )
+		channel := statement[1]
+		return fmt.Sprintf("*3\r\n%d\r\n%s\r\n$%d\r\n%s\r\n:1\r\n",len("subscribe"), "subscribe", len(channel), channel )
 	default:
 		return ("+messageNotFound\r\n")
 	}
