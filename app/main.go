@@ -633,7 +633,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		if !(longitude >= -180 && longitude <= 180) || !(latitude >= -85.05112878 && latitude <= 85.05112878){
 			return fmt.Sprintf("-ERR invalid longitude,latitude pair %f, %f\r\n", longitude, latitude)
 		}
-		score := calcGeoScore(longitude, latitude)
+		score := calcGeoScore(latitude, longitude)
 
 		e := Entry{Member: memberName, Score: float64(score)}
 		sortedSets[setName] = append(sortedSets[setName], e)
@@ -644,12 +644,16 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
 
 func calcGeoScore(x float64, y float64)int{
-	MIN_Y := -180.00
-	MAX_Y := 180.00
 	MIN_X := 85.05112878
 	MAX_X := -85.05112878
-	x = (x - MIN_X / (MAX_X - MIN_X) ) * math.Pow(2, 26)
-	y = (y - MIN_X / (MAX_Y - MIN_Y)) * math.Pow(2,26) 
+	MIN_Y := -180.00
+	MAX_Y := 180.00
+ 
+	LONG_RANGE := MAX_Y - MIN_Y 
+	LAT_RANGE := MAX_X - MIN_X
+
+	x = (x - MIN_X / (LAT_RANGE) ) * math.Pow(2, 26)
+	y = (y - MIN_X / (LONG_RANGE)) * math.Pow(2,26) 
 
 	norm_x := int(x) 
 	norm_y := int(y) 
