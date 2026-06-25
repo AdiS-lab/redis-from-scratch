@@ -576,25 +576,37 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		firstName := statement[3] 	
 		length := len(sortedSets[setName])
 		e := Entry{Member: firstName, Score: setScore}
-
-		if length == 0 || e.Score > sortedSets[setName][length-1].Score{ // if greater or length is 0 just append
-			sortedSets[setName] = append(sortedSets[setName], e)
-		}else{ // that means less than so go on
-			for i:=0; i<len(sortedSets[setName]);i++{ 
-				curr := sortedSets[setName][i].Score
-				if e.Score <= curr{
-					result := slices.Insert(sortedSets[setName], i, e)
-					sortedSets[setName] = result
-				}
+		for j:=0; j<length; j++{
+			if sortedSets[setName][j].Member == e.Member{ // pop it out only if exists
+				sortedSets[setName] = append(sortedSets[setName][:j], sortedSets[setName][j+1:]...)
 			}
-		}	
-		return ":1\r\n"
+		} // in case of nothing will handle that, in case exists, will isolate it, in case of multiple have to loop 
+		// in case of delete can handle that inside other
+
+		insertArr := sortEntries(sortedSets[setName], e)
+		sortedSets[setName] = insertArr
+	
+		return fmt.Sprintf(":%d\r\n", len(sortedSets[setName]))
 	default:
 		return ("+messageNotFound\r\n")
 	}
 }
 
-
+func sortEntries(arr []Entry, e Entry)[]Entry{
+	length := len(arr)
+	if length == 0 || e.Score > arr[length-1].Score{ // if greater or length is 0 just append
+		return append(arr, e)
+	}else{ // that means less than so go on
+		for i:=0; i<len(arr);i++{ 
+			curr := arr[i].Score
+			if e.Score <= curr{
+				result := slices.Insert(arr, i, e)
+				return result
+			}
+		}
+	}
+	return arr
+}
 func readRDB(info []byte)([]string, []string, []string){
 	fmt.Println("made it inside RDB check ")
 
