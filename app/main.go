@@ -602,6 +602,21 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			}
 		}
 		return "$-1\r\n"
+	case "ZRANGE":
+		setName := statement[1]
+		_, exists := sortedSets[setName]
+		if(!exists){
+			return "*0\r\n"
+		}
+		validArr := []string{}
+		for _,entries := range sortedSets[setName]{
+			validArr = append(validArr, entries.Member)
+		}
+
+		start, _ := strconv.Atoi(statement[2])
+		stop, _ := strconv.Atoi(statement[3])
+		return findRange(validArr, start, stop)
+
 	default:
 		return ("+messageNotFound\r\n")
 	}
@@ -632,6 +647,32 @@ func sortEntries(arr []Entry, e Entry)[]Entry{
 	}
 	return arr
 }
+func findRange(arr[]string, start int, stop int)string{
+	length := len(arr)
+	if stop > length-1 {
+		stop = length - 1
+	}
+	if start < 0 { // clamp 0  and handle negative
+		start = length + start
+		if start < 0 {
+			start = 0
+		}
+	}
+	if stop < 0 { // clamp 0  and handle negative
+		stop = length + stop
+		if stop < 0 {
+			stop = 0
+		}
+	}
+	if start >= length || start > stop {
+		return ("*0\r\n")
+	}
+	message := createArr(arr, start, stop+1)
+	return message
+}
+
+
+
 func readRDB(info []byte)([]string, []string, []string){
 	fmt.Println("made it inside RDB check ")
 
