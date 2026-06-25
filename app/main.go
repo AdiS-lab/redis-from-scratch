@@ -153,7 +153,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		} 
 		//____________________________ subscribe mode ________________________________________
 		if subscribeMode && !slices.Contains(subStatements, input ){
-			conn.Write([]byte("- ERR Can't execute 'set': only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in this context "))
+			conn.Write([]byte("- ERR Can't execute 'set': only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in this context \r\n"))
 			continue
 		}
 
