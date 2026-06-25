@@ -47,7 +47,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	firstPONG = false
 	firstOK = false
 	expectingRDB = false
+	var subscribeMode bool
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
+	subStatements := []string{"SUBSCRIBE"}
 	var channelArr []string
 	
 	otherDir := configs["dir"] 
@@ -133,6 +135,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 
 
 		fmt.Println("before going into check is ", masterUpdate)
+		//___________________________master mode propogation ___________________________________________
 		if masterUpdate == true && data["role"] == "master"{//after three way connection
 			fmt.Println("propogating down to slave here's statement ", statement)
 			if slices.Contains(writeStatements, strings.ToUpper(input)){
@@ -148,6 +151,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			}
 	
 		} 
+		//____________________________ subscribe mode ________________________________________
+		if subscribeMode && !slices.Contains(subStatements, input ){
+			conn.Write([]byte("- ERR Can't execute 'set': only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in this context "))
+			continue
+		}
+
 		if input == "MULTI" && isQueue == false {//set queue as long as no tin queue
 			// but length is bad, then or isQueue = false
 			isQueue = true
@@ -225,7 +234,8 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			data, _ := base64.StdEncoding.DecodeString("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==")
 			conn.Write([]byte("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n")) // send FULL RESYNC
 			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s", len(data), data))) // send RDB file
-		}else if input == "SUBSCRIBE"{
+		} else if input == "SUBSCRIBE"{
+			subscribeMode = true
 			numChannels := 0
 			channel := statement[1]
 			fmt.Println("this is our channel array ", channelArr)
