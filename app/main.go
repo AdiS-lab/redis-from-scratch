@@ -680,11 +680,13 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		long1 :=0.0
 		lat1 := 0.0
 		radius := 0.0
-		for i:=0; i<len(statement); i++{
-			if(statement[i] == "FROMLONLAT" ){
+
+		for i:=1; i<len(statement); i++{
+			switch statement[i] {
+			case "FROMLONLAT":
 				long1,_  = strconv.ParseFloat(statement[i+1], 64)
-				lat1,_ = strconv.ParseFloat(statement[i+1], 64)
-			}else if(statement[i] == "BYRADIUS"){
+				lat1,_ = strconv.ParseFloat(statement[i+2], 64)
+			case "BYRADIUS":
 				radius,_ = strconv.ParseFloat(statement[i+1], 64)
 			}
 		}
