@@ -594,6 +594,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 }
 
 func sortEntries(arr []Entry, e Entry)[]Entry{
+	fmt.Println("this is the arr before sorting ", arr)
 	length := len(arr)
 	if length == 0 || e.Score > arr[length-1].Score{ // if greater or length is 0 just append
 		return append(arr, e)
