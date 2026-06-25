@@ -701,8 +701,8 @@ func reverseGeoScore(geocode int)(float64, float64){
 	fmt.Println("made it inside reverse Geoscore ", geocode)
 	y := geocode >> 1 & 0x55555555
 	x := geocode & 0x55555555
-	new_x := shiftBackVals(y)
-	new_y := shiftBackVals(x)
+	new_x := shiftBackVals(x)
+	new_y := shiftBackVals(y)
 
 	MIN_X := -85.05112878
 	MAX_X := 85.05112878
