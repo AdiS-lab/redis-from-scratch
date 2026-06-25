@@ -532,7 +532,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	case "PUBLISH":
 		channelName := statement[1]
 		numSubs := strconv.Itoa(totalSubs[channelName])
-		return numSubs
+		return fmt.Sprintf(":%d\r\n", numSubs)
 	default:
 		return ("+messageNotFound\r\n")
 	}
