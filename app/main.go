@@ -241,19 +241,21 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 
 			for key := range streams[stream_key]{
 				fmt.Println("made it inside for loop ", key, streams[stream_key])
-				if key == string(ms){
+				if key == strconv.Itoa(ms){
 					temp_incr,_ := strconv.Atoi(strings.Split(key, "-")[1])
 					real_incr = temp_incr + 1
 				}
 			}
 		}else{
+			fmt.Println("made it inside the second step hwere not *")
 			ms,_ := strconv.Atoi(strings.Split(stream_id, "-")[0])
 			incr := strings.Split(stream_id, "-")[1]
 
 			prevms,_ := strconv.Atoi(strings.Split(prev_id, "-")[0])
 			previncr,_:= strconv.Atoi(strings.Split(prev_id, "-")[1])
 
-			if incr == "*" && ms==prevms{
+			if incr == "*"{
+				fmt.Println("made it inside the incr step" )
 				if ms == prevms{
 					real_incr = previncr +1
 				}else{
