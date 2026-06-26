@@ -1019,6 +1019,9 @@ func readRDB(info []byte) ([]string, []string, []string) {
 
 	//_________________________ have to still handle FD and convert to seconds ______________________
 	for i < len(info) {
+		if info[i] == 0xFF{
+			break
+		}
 		if info[i] == 0xFB {
 			length := int(info[i+1])
 			// fmt.Println("this is the length given by oxfb ", length)
@@ -1049,7 +1052,6 @@ func readRDB(info []byte) ([]string, []string, []string) {
 				count++
 				i = i + 3 + realLen + realLen2
 			}
-			break
 		} else {
 			i++
 		}
