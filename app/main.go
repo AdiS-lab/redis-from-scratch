@@ -893,6 +893,8 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			incr2,_ = strconv.Atoi(arg2[1])
 		}
 
+		fmt.Println("all args ", incr, incr2, ms1, ms2)
+
 		// ms == ms this is valid, but make sure everything is greater than or equal to index
 		// >ms <ms2 is all valid
 		// == ms2 make sure less than or equal to index if specified
