@@ -956,21 +956,21 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		fmt.Println("this is idBound ", idBound)
 		
 		if idBound[0] == "$"{
-			_, count := xread(keys, []string{"0-0"})
+			_, count,_ := xread(keys, []string{"0-0"})
 			ch1 := make(chan string)
 			go waitOnDollar(milliseconds, ch1, keys, []string{"0-0"}, count) 
 			return <- ch1
 
-		}
-
-		message, count := xread(keys, idBound)
-		if count == 0 {
-			ch := make(chan string)
-			go waitXread(milliseconds, ch, keys, idBound)
-			return <-ch
-
 		}else{
-			return message
+			message, count,_ := xread(keys, idBound)
+			if count == 0 {
+				ch := make(chan string)
+				go waitXread(milliseconds, ch, keys, idBound)
+				return <-ch
+
+			}else{
+				return message
+			}
 		}
 
 		// have some check for entries, and then if none, create channel
@@ -1000,7 +1000,7 @@ func waitXread(ms int, ch chan string, keys []string, idBound []string){
 	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
 
 	for range ticker.C{
-		message, count := xread(keys, idBound)
+		message, count,_ := xread(keys, idBound)
 		fmt.Println(message, count)
 		if(count > 0){
 			ch <- message
@@ -1017,7 +1017,7 @@ func waitOnDollar(ms int, ch chan string, keys []string, idBound []string, prevC
 	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
 
 	for range ticker.C{
-		message, count := xread(keys, idBound)
+		message, count,_ := xread(keys, idBound)
 		fmt.Println(message, count)
 		if(count > prevCount){
 			ch <- message
@@ -1030,10 +1030,11 @@ func waitOnDollar(ms int, ch chan string, keys []string, idBound []string, prevC
 }
 
 
-func xread(keys []string, idBound []string)(string, int){
+func xread(keys []string, idBound []string)(string, int, string){
 	fullStr := ""
 	countKeys := 0
 	totalEntries := 0
+	lastCmd := []string{}
 	
 	for i:=0; i < len(keys); i++ {  
 		count:=0
@@ -1062,9 +1063,11 @@ func xread(keys []string, idBound []string)(string, int){
 		}
 		insideArr := fmt.Sprintf("*%d\r\n", count) + kv
 		fullStr += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(keys[i]), keys[i], insideArr)
+		lastCmd = append(lastCmd, fullStr)
 
 	}
-	return fmt.Sprintf("*%d\r\n", countKeys) + fullStr, totalEntries
+
+	return fmt.Sprintf("*%d\r\n", countKeys) + fullStr, totalEntries, fmt.Sprintf("*1\r\n%s", lastCmd[len(lastCmd)-1])
 }
 
 
