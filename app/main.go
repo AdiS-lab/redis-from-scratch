@@ -932,6 +932,30 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		preMessage := fmt.Sprintf("*%d\r\n", count)
 		preMessage += goodMessage
 		return preMessage
+	case "XREAD": 
+		key := statement[2]
+		id := strings.Split(statement[3], "-")
+		ms1,_ := strconv.Atoi(id[0]) //  first milliseconds
+		incr,_ := strconv.Atoi(id[0]) 
+
+			
+		countKeys := 1
+		count := 0 
+		kv := ""
+
+		// list of ids, in each id 
+		for ids, vals := range streams[key]{
+			msKey,_ := strconv.Atoi(strings.Split(ids, "-")[0])
+			incrKey,_ := strconv.Atoi(strings.Split(ids, "-")[1])
+			if msKey > ms1 ||( msKey == ms1 && incrKey >= incr){
+					kv += createChunk(ids, vals) 
+					count ++
+			}
+		}
+		insideArr := fmt.Sprintf("*%d\r\n", count) + kv
+		return fmt.Sprintf("*%1\r\n", countKeys) + fmt.Sprintf("*2\r\n$%d\r\n$%s\r\n%s", len(key), key, insideArr)
+
+
 
 	default:
 		return ("+messageNotFound\r\n")
