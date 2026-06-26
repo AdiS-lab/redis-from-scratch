@@ -793,7 +793,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 	case "TYPE":
 		//string, list, set, zset, hash, stream, and vectorset
 		sk := statement[2]
-		_,exists := statement[sk]
+		_,exists := storage[sk]
 		if(exists){
 			return "+string\r\n"
 		}	
