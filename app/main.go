@@ -906,7 +906,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		for data, value := range streams[key]{ // this goes through all our id's 
 			msKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
 			incrKey,_ := strconv.Atoi(strings.Split(data, "-")[1])
-			if statement[1] == "-" {
+			if statement[2] == "-" {
 				if msKey < ms2 || (incrKey <= incr2 && msKey == ms2){
 					goodMessage += createChunk(data, value)
 					count++
