@@ -657,7 +657,6 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			}
 		}
 		return message
-		
 	case "GEODIST":
 		setName := statement[1]
 		place1 := statement[2]
@@ -699,7 +698,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			}
 		}	
 		return createArr(validPlaces, 0, len(validPlaces))
-
+	case "ACL":
+		return "$7\r\ndefault\r\n"
 
 		//basically just finding jawn, then parsing location, then finding distance, then comparing to radius
 
