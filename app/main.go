@@ -268,12 +268,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			}
 
 			for i := 3; i < len(statement); i += 2 {
-				fmt.Println("this is the streams ", streams)
 				key := statement[i]
 				value := statement[i+1]
 				fmt.Println("this is key and value ", key, value)
 				fmt.Println("this is id ", stream_id)
 				streams[stream_key][stream_id][key] = value
+				fmt.Println("this is the streams after adding data ", streams)
 			}
 			prev_id = fmt.Sprintf("%d-%d", ms, real_incr)
 			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(prev_id), prev_id)))
