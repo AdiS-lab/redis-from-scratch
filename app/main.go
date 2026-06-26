@@ -954,7 +954,14 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		idBound := statement[startind + length:]
 		fmt.Println("this is keys ", keys)
 		fmt.Println("this is idBound ", idBound)
- 
+		
+		if idBound[0] == "$"{
+			_, count := xread(keys, []string{"0-0"})
+			ch1 := make(chan string)
+			go waitOnDollar(milliseconds, ch1, keys, []string{"0-0"}, count) 
+			return <- ch1
+
+		}
 
 		message, count := xread(keys, idBound)
 		if count == 0 {
@@ -996,6 +1003,23 @@ func waitXread(ms int, ch chan string, keys []string, idBound []string){
 		message, count := xread(keys, idBound)
 		fmt.Println(message, count)
 		if(count > 0){
+			ch <- message
+			ticker.Stop()
+		}else if ms>0 && time.Now().After(deadline){
+			ch <- "*-1\r\n"
+			ticker.Stop()
+		}	
+	}
+}
+
+func waitOnDollar(ms int, ch chan string, keys []string, idBound []string, prevCount int){
+	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
+	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
+
+	for range ticker.C{
+		message, count := xread(keys, idBound)
+		fmt.Println(message, count)
+		if(count > prevCount){
 			ch <- message
 			ticker.Stop()
 		}else if ms>0 && time.Now().After(deadline){
