@@ -934,7 +934,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		return preMessage
 	case "XREAD": 
 		length := (len(statement)-2)/2
-		keys := statement[2:length] 
+		keys := statement[2:2+length] 
 		idBound := statement[2+length:]
 		fmt.Println("this is keys ", keys)
 		fmt.Println("this is idBound ", idBound)
