@@ -972,7 +972,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
 
 func waitXread(ms int, ch chan string, keys []string, idBound []string){
-	ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
+	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
 	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
 
 	for range ticker.C{
