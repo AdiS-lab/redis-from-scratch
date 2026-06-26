@@ -241,13 +241,10 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		incr,_ := strconv.Atoi(idParts[1])
 
 		if ms==0 && incr==0{
-			conn.Write([]byte("-ERR The ID specified in XADD must be greater than 0-0"))
+			conn.Write([]byte("-ERR The ID specified in XADD must be greater than 0-0\r\n"))
 			continue
-		}else if ms<prevms{
-			conn.Write([]byte("-ERR The ID specified in XADD is equal or smaller than the target stream top item"))
-			continue
-		}else if ms == prevms && incr<=previncr{
-			conn.Write([]byte("-ERR The ID specified in XADD is equal or smaller than the target stream top item"))
+		}else if ms<prevms || (ms == prevms && incr<=previncr){
+			conn.Write([]byte("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n"))
 			continue
 		}
 
