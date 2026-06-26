@@ -15,6 +15,7 @@ import (
 	"encoding/binary"
 	"bytes"
 	"math"
+	"crypto/sha256"
 )
 
 
@@ -26,6 +27,12 @@ type Entry struct {
 type FullList struct {
 	Entry 
 	Name string
+}
+
+type User struct {
+	Passwords []string
+	Flags []string
+	Connection net.Conn
 }
 
 // e := Entry{member:, score: }
@@ -47,7 +54,8 @@ var configs = make(map[string]string)
 var expired = make(map[string]int)
 var totalSubs = make(map[string][]net.Conn)
 var sortedSets = make(map[string][]Entry)  // in the key we should have a list populated by multiple entries, if we want to create a new one, we just do so. 
-
+var users = make(map[string]User) // map each connection to a user
+var nopass = true 
 
 var watchCheck bool
 var firstPONG bool
@@ -69,7 +77,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
 	subStatements := []string{"SUBSCRIBE", "PUBLISH", "UNSUBSCRIBE"}
 	var channelArr []string
-	
+
 	otherDir := configs["dir"] 
 	filePath := configs["dbfilename"]
 	fullPath := filepath.Join(otherDir, filePath)
@@ -699,16 +707,49 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		}	
 		return createArr(validPlaces, 0, len(validPlaces))
 	case "ACL":
-		if statement[1] == "WHOAMI" {
-			return "$7\r\ndefault\r\n"
-		}else if statement[1] == "GETUSER"{ 
-			
-			return fmt.Sprintf("*4\r\n$5\r\nflags\r\n*1\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n*0\r\n", len("nopass"), "nopass", len("passwords"), "passwords")
+		switch statement[1]{
+		case "WHOAMI":  // have to find connection and then find user 
+			user:="default"
+			return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user) // have to loop through
+
+		case "GETUSER": 
+			user := statement[2]
+			p := users[user].Passwords
+			f := users[user].Flags // get passwords and flags
+			flags := createArr(f,0,len(f))
+			passwords := createArr(p,0,len(p))
+			return fmt.Sprintf("*4\r\n$5\r\nflags\r\n%s$8\r\npassword\r\n%s", flags, passwords)
+
+		case "SETUSER":
+			user := statement[2] 
+			flags:= []string{"nopass"} 
+			passwords := []string{}
+			password := ""
+
+			if len(statement) > 3 { // if password exists
+				flags =[]string{}
+				password = statement[3][1:]
+			} 							
+			hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
+			hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
+ 			
+			_,exists := users[user] // check if user exists
+
+			if(exists){ 
+				upUser := User{Connection: conn, Passwords: append(users[user].Passwords, hashPass)}
+				if(len(users[user].Passwords) ==1){ // this means just added
+					upUser = User{Connection: conn, Passwords: append(users[user].Passwords, hashPass), Flags: []string{}}
+				}
+				users[user] = upUser
+			}else{
+				passwords = []string{hashPass}
+				newUser := User{Connection: conn, Passwords: passwords, Flags: flags}
+				users[user] = newUser
+			}
+			return "+OK\r\n"
+		default:
+			return ""
 		}
-		return ""
-	case ">":
-		fmt.Println("made it to the arrow case means have to parse it ")
-		return ""
 	default:
 		return ("+messageNotFound\r\n")
 	}
@@ -960,7 +1001,7 @@ func createArr(array []string, first int, last int) string { // used as a templa
 	fmt.Println("made it inside createArr function")
 	index := first
 	interval := last - index
-	message := fmt.Sprintf("*%d\r\n", interval)
+	message := fmt.Sprintf("*%d\r\n", interval) 
 
 	for index < last {
 		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[index]), array[index])
@@ -1133,6 +1174,9 @@ func main() {
 	configs["appenddirname"] = "appendonlydir"
 	configs["appendfilename"] = "appendonly.aof"
 	configs["appendfsync"] = "everysec"
+
+	users["default"] = User{Passwords:[]string{}, Flags: []string{"nopass"}}
+
 
 	if len(os.Args) > 2 {
 		if os.Args[1] == "--port" || os.Args[1] == "-p" {
