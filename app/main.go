@@ -264,6 +264,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				real_incr,_ = strconv.Atoi(incr) 
 			}
 		}
+		fmt.Println(ms)
 
 		if ms==0 && real_incr==0{
 			conn.Write([]byte("-ERR The ID specified in XADD must be greater than 0-0\r\n"))
