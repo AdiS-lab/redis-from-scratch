@@ -706,6 +706,9 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return fmt.Sprintf("*4\r\n$5\r\nflags\r\n*1\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n*0\r\n", len("nopass"), "nopass", len("passwords"), "passwords")
 		}
 		return ""
+	case ">":
+		fmt.Println("made it to the arrow case means have to parse it ")
+		return ""
 	default:
 		return ("+messageNotFound\r\n")
 	}
