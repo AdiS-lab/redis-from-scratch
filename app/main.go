@@ -821,9 +821,8 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		if !exists { // it's a key value, then key value, intiialized as empty, for lists we use {}
 			streams[stream_key] = map[string]map[string]string{}
 		}
-		// have to create if it doesn't exist, how did we handle this, in all cases we just added the next thing
-		
 		for i:=3; i<len(statement); i+=2{
+			fmt.Println("this is the streams ", streams)
 			key := statement[i] 
 			value := statement[i+1]
 			fmt.Println("this is key and value ", key, value)
