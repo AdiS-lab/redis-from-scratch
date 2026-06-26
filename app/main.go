@@ -2,36 +2,35 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"io"
+	"math"
 	"net"
 	"os"
+	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
-	"slices"
-	"path/filepath"
-	"encoding/binary"
-	"bytes"
-	"math"
-	"crypto/sha256"
 )
-
 
 type Entry struct {
 	Member string
-	Score float64
-}// define data structure for ZADD commnand
+	Score  float64
+} // define data structure for ZADD commnand
 
 type FullList struct {
-	Entry 
+	Entry
 	Name string
 }
 
 type User struct {
-	Passwords []string
-	Flags []string
+	Passwords  []string
+	Flags      []string
 	Connection net.Conn
 }
 
@@ -41,10 +40,6 @@ type User struct {
 // buf := make([]byte, 1024)  create buffer, read stream and assign to buffer, and then do logic based on that
 // n,err := conn.Read(buf)  number of bytes
 
-
-
-
-
 var storage = make(map[string]string)
 var lists = make(map[string][]string)
 var watchedKeys = make(map[string]string)
@@ -53,21 +48,22 @@ var slaveConnections = make(map[net.Conn]map[string]string) // sync.Mutex protec
 var configs = make(map[string]string)
 var expired = make(map[string]int)
 var totalSubs = make(map[string][]net.Conn)
-var sortedSets = make(map[string][]Entry)  // in the key we should have a list populated by multiple entries, if we want to create a new one, we just do so. 
-var users = make(map[string]User) // map each connection to a user
-var streams = make(map[string]map[string]map[string]string) 
-// name: {
-// 	id: {
-// 		key: value
-// 		key: valye
-// 		key: value
-// 	}
-// 	id{
-// 		key: value
-// 		key: value
-// 	}
-// }
-var authState = true 
+var sortedSets = make(map[string][]Entry) // in the key we should have a list populated by multiple entries, if we want to create a new one, we just do so.
+var users = make(map[string]User)         // map each connection to a user
+var streams = make(map[string]map[string]map[string]string)
+
+//	name: {
+//		id: {
+//			key: value
+//			key: valye
+//			key: value
+//		}
+//		id{
+//			key: value
+//			key: value
+//		}
+//	}
+var authState = true
 
 var watchCheck bool
 var firstPONG bool
@@ -75,19 +71,17 @@ var firstOK bool
 var masterUpdate bool
 var expectingRDB = false
 
-
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
-	users["default"] = User{Connection: conn, Passwords:[]string{}, Flags: []string{"nopass"}}
+	users["default"] = User{Connection: conn, Passwords: []string{}, Flags: []string{"nopass"}}
 
-	
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	var queue [][]string
 	var subscribeMode bool
 	var channelArr []string
 
 	prev_id := "0-0" // every stream has to have their own. if stream don't exist then reset prev_id
-	// 
+	//
 	isQueue := false
 	watchCheck = false
 	firstPONG = false
@@ -95,62 +89,60 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	expectingRDB = false
 	userAuth := false
 
-	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
+	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds.
 	subStatements := []string{"SUBSCRIBE", "PUBLISH", "UNSUBSCRIBE"}
 
-	otherDir := configs["dir"] 
+	otherDir := configs["dir"]
 	filePath := configs["dbfilename"]
 	fullPath := filepath.Join(otherDir, filePath)
-	info,_ := os.ReadFile(fullPath) //create byte arr
+	info, _ := os.ReadFile(fullPath) //create byte arr
 
-
-	allKeys, allVals, allExp  := readRDB(info)
-	fmt.Println("this is allkeys again ", allKeys) 
-	fmt.Println("this is allVals ", allVals) 
+	allKeys, allVals, allExp := readRDB(info)
+	fmt.Println("this is allkeys again ", allKeys)
+	fmt.Println("this is allVals ", allVals)
 	fmt.Println("this is allExp ", allExp)
-	for i:=0; i<len(allKeys); i++{
-		storage[allKeys[i]] = allVals[i] // set storage 
-		if (allExp[i] != ""){
+	for i := 0; i < len(allKeys); i++ {
+		storage[allKeys[i]] = allVals[i] // set storage
+		if allExp[i] != "" {
 			fmt.Println("have made it inside the expiry handler ")
-			ms,_ := strconv.Atoi(allExp[i])
+			ms, _ := strconv.Atoi(allExp[i])
 			expired[allKeys[i]] = ms
 			// go waitKey(allKeys[i], ms)
 		}
 	}
 	// executing everything in rdb file
 	_, exists := configs["manifest"]
-	if exists{ 
-		 info,_ = os.ReadFile(configs["manifest"])
-		 fmt.Println(string(info))
-		 fullPathArr := []string{}
-		 stringArr := []string{}
-		 message := []string{}
-		 
-		 fullVal := ""
-		 fullDir := filepath.Dir(configs["manifest"])
+	if exists {
+		info, _ = os.ReadFile(configs["manifest"])
+		fmt.Println(string(info))
+		fullPathArr := []string{}
+		stringArr := []string{}
+		message := []string{}
 
-		 allPaths := strings.Split(string(info), " ")
-		 for i:=0; i<len(allPaths); i++{
-			if(allPaths[i] == "file"){
+		fullVal := ""
+		fullDir := filepath.Dir(configs["manifest"])
+
+		allPaths := strings.Split(string(info), " ")
+		for i := 0; i < len(allPaths); i++ {
+			if allPaths[i] == "file" {
 				fullPathArr = append(fullPathArr, filepath.Join(fullDir, allPaths[i+1]))
 			}
-		 }
-		 for _,value := range fullPathArr{
-			result,_ := os.ReadFile(value)
+		}
+		for _, value := range fullPathArr {
+			result, _ := os.ReadFile(value)
 			fullVal += string(result)
 			fmt.Println("this is what is inside each file ", stringArr) // for each file may have more than one comamnd
-		 }
+		}
 
-		 reader := bufio.NewReader(bytes.NewReader([]byte(fullVal))) // bufio needs access to some type of dynamic reader, otherwise byte arr is just statically sitting in memory
-		 for message != nil{
-			message,_ = parser(reader)
-			if(message != nil){
-				execute(message,conn,fullPort, &userAuth)
+		reader := bufio.NewReader(bytes.NewReader([]byte(fullVal))) // bufio needs access to some type of dynamic reader, otherwise byte arr is just statically sitting in memory
+		for message != nil {
+			message, _ = parser(reader)
+			if message != nil {
+				execute(message, conn, fullPort, &userAuth)
 			}
-		 }
-		 
-	}
+		}
 
+	}
 
 	for {
 		input := ""
@@ -158,16 +150,16 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		if statement == nil {
 			fmt.Println("something happened when parsing and connection disconnected")
 			break
-		}	
+		}
 		_, exists := configs["manifest"]
-		if exists{
-			if slices.Contains(writeStatements, statement[0]){
-				// result, _ := os.ReadFile(configs["manifest"]) //  use manifest to identify 
+		if exists {
+			if slices.Contains(writeStatements, statement[0]) {
+				// result, _ := os.ReadFile(configs["manifest"]) //  use manifest to identify
 				fmt.Println("made it to the append stage ")
 				fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
-				targetFile := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"])) // find targetFile string 
+				targetFile := filepath.Join(fullPath, fmt.Sprintf("%s.1.incr.aof", configs["appendfilename"])) // find targetFile string
 				fmt.Println("this is target file ", targetFile)
-				
+
 				file, _ := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
 				file.WriteString(recreatedCmd)
 				file.Close()
@@ -177,20 +169,20 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		if len(statement) != 0 {
 			input = strings.ToUpper(statement[0])
 		}
-		// manage masterUpdate by checking when doesn't equal one of those. 
+		// manage masterUpdate by checking when doesn't equal one of those.
 		fmt.Println("before going into check is ", masterUpdate)
 		//______________________________ auth mode _________________________________________________
 		fmt.Println("userAuth is after setting ", userAuth)
-		if !authState && !userAuth && input!="AUTH"{ 
+		if !authState && !userAuth && input != "AUTH" {
 			fmt.Println("made it inside the authenticatino error ")
 			conn.Write([]byte("-NOAUTH Authentication required.\r\n"))
 			continue
 		}
 		//___________________________master mode propogation ___________________________________________
-		if masterUpdate == true && data["role"] == "master"{//after three way connection
+		if masterUpdate == true && data["role"] == "master" { //after three way connection
 			fmt.Println("propogating down to slave here's statement ", statement)
-			if slices.Contains(writeStatements,input){
-				curr_offset,_ := strconv.Atoi(data["master_repl_offset"])  // track master offset 
+			if slices.Contains(writeStatements, input) {
+				curr_offset, _ := strconv.Atoi(data["master_repl_offset"]) // track master offset
 				new_offset := curr_offset + len(recreatedCmd)
 				data["master_repl_offset"] = strconv.Itoa(new_offset)
 				for conn, _ := range slaveConnections {
@@ -200,92 +192,92 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 
 				}
 			}
-	
-		} 
+
+		}
 		//____________________________ subscribe mode ________________________________________
-		if subscribeMode && !slices.Contains(subStatements, input){
-			if input == "PING"{
+		if subscribeMode && !slices.Contains(subStatements, input) {
+			if input == "PING" {
 				conn.Write([]byte("*2\r\n$4\r\npong\r\n$0\r\n\r\n"))
-			}else{
+			} else {
 				conn.Write([]byte(fmt.Sprintf("-ERR can't execute '%s' when one or more subscriptions exist\r\n", input)))
 			}
 			continue
 		}
 
-		if input == "MULTI" && isQueue == false {//set queue as long as no tin queue
+		if input == "MULTI" && isQueue == false { //set queue as long as no tin queue
 			// but length is bad, then or isQueue = false
 			isQueue = true
 			conn.Write([]byte("+OK\r\n"))
-		} else if input == "XADD"{
-		//  redis-cli XADD stream_key 1526919030474-0 temperature 36 humidity 95 "1526919030474-0"
-		stream_key := statement[1] 
-		stream_id := statement[2]	
+		} else if input == "XADD" {
+			//  redis-cli XADD stream_key 1526919030474-0 temperature 36 humidity 95 "1526919030474-0"
+			stream_key := statement[1]
+			stream_id := statement[2]
 
-		_,exists := streams[stream_key] 
-		if !exists { // it's a key value, then key value, intiialized as empty, for lists we use {}
-			streams[stream_key] = map[string]map[string]string{}
-			prev_id = "0-0"
-		}
-		_,idThere := streams[stream_key][stream_id] // if current id is 
-		if(!idThere){
-			streams[stream_key][stream_id] = map[string]string{}
-		} 
-		real_incr := 0
-		ms := 0
-		prevms := 0
-		previncr := 0
+			_, exists := streams[stream_key]
+			if !exists { // it's a key value, then key value, intiialized as empty, for lists we use {}
+				streams[stream_key] = map[string]map[string]string{}
+				prev_id = "0-0"
+			}
+			_, idThere := streams[stream_key][stream_id] // if current id is
+			if !idThere {
+				streams[stream_key][stream_id] = map[string]string{}
+			}
+			real_incr := 0
+			ms := 0
+			prevms := 0
+			previncr := 0
 
-		if stream_id == "*"{
-			ms = int(time.Now().UnixMilli())
-			fmt.Println("made it inside * and ms is ", ms)
+			if stream_id == "*" {
+				ms = int(time.Now().UnixMilli())
+				fmt.Println("made it inside * and ms is ", ms)
 
-			for key := range streams[stream_key]{
-				fmt.Println("made it inside for loop ", key, streams[stream_key])
-				if key == strconv.Itoa(ms){
-					temp_incr,_ := strconv.Atoi(strings.Split(key, "-")[1])
-					real_incr = temp_incr + 1
+				for key := range streams[stream_key] {
+					fmt.Println("made it inside for loop ", key, streams[stream_key])
+					if key == strconv.Itoa(ms) {
+						temp_incr, _ := strconv.Atoi(strings.Split(key, "-")[1])
+						real_incr = temp_incr + 1
+					}
+				}
+			} else {
+				fmt.Println("made it inside the second step hwere not *")
+				ms, _ = strconv.Atoi(strings.Split(stream_id, "-")[0])
+				incr := strings.Split(stream_id, "-")[1]
+
+				prevms, _ = strconv.Atoi(strings.Split(prev_id, "-")[0])
+				previncr, _ = strconv.Atoi(strings.Split(prev_id, "-")[1])
+
+				if incr == "*" {
+					fmt.Println("made it inside the incr step")
+					if ms == prevms {
+						real_incr = previncr + 1
+					} else {
+						real_incr = 0
+					}
+				} else {
+					real_incr, _ = strconv.Atoi(incr)
 				}
 			}
-		}else{
-			fmt.Println("made it inside the second step hwere not *")
-			ms,_ = strconv.Atoi(strings.Split(stream_id, "-")[0])
-			incr := strings.Split(stream_id, "-")[1]
+			fmt.Println(ms)
 
-			prevms,_ = strconv.Atoi(strings.Split(prev_id, "-")[0])
-			previncr,_ = strconv.Atoi(strings.Split(prev_id, "-")[1])
-
-			if incr == "*"{
-				fmt.Println("made it inside the incr step" )
-				if ms == prevms{
-					real_incr = previncr +1
-				}else{
-					real_incr = 0
-				}
-			}else{
-				real_incr,_ = strconv.Atoi(incr) 
+			if ms == 0 && real_incr == 0 {
+				conn.Write([]byte("-ERR The ID specified in XADD must be greater than 0-0\r\n"))
+				continue
+			} else if ms < prevms || (ms == prevms && real_incr <= previncr) {
+				conn.Write([]byte("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n"))
+				continue
 			}
-		}
-		fmt.Println(ms)
 
-		if ms==0 && real_incr==0{
-			conn.Write([]byte("-ERR The ID specified in XADD must be greater than 0-0\r\n"))
-			continue
-		}else if ms<prevms || (ms == prevms && real_incr<=previncr){
-			conn.Write([]byte("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n"))
-			continue
-		}
-
-		for i:=3; i<len(statement); i+=2{
-			fmt.Println("this is the streams ", streams)
-			key := statement[i] 
-			value := statement[i+1]
-			fmt.Println("this is key and value ", key, value)
-			fmt.Println("this is id ", stream_id)
-			streams[stream_key][stream_id][key] = value
-		}
-		prev_id = fmt.Sprintf("%d-%d",ms,real_incr)
-		conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(prev_id), prev_id)))
-		} else if input == "WATCH" {// set keys that can't be changed
+			for i := 3; i < len(statement); i += 2 {
+				fmt.Println("this is the streams ", streams)
+				key := statement[i]
+				value := statement[i+1]
+				fmt.Println("this is key and value ", key, value)
+				fmt.Println("this is id ", stream_id)
+				streams[stream_key][stream_id][key] = value
+			}
+			prev_id = fmt.Sprintf("%d-%d", ms, real_incr)
+			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(prev_id), prev_id)))
+		} else if input == "WATCH" { // set keys that can't be changed
 			if isQueue == true {
 				conn.Write([]byte("-ERR WATCH inside MULTI is not allowed\r\n"))
 			} else {
@@ -295,12 +287,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				conn.Write([]byte("+OK\r\n"))
 			}
 
-		} else if input == "UNWATCH" {// reset, remove all watched keys
+		} else if input == "UNWATCH" { // reset, remove all watched keys
 			watchedKeys = make(map[string]string)
 			watchCheck = false
 			conn.Write([]byte("+OK\r\n"))
 
-		} else if input == "DISCARD" {// remove all queued items reset
+		} else if input == "DISCARD" { // remove all queued items reset
 			if isQueue == true {
 				isQueue = false
 				queue = [][]string{}
@@ -310,7 +302,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			} else {
 				conn.Write([]byte("-ERR DISCARD without MULTI\r\n"))
 			}
-		} else if input == "EXEC" {//if queued items then start executing them 
+		} else if input == "EXEC" { //if queued items then start executing them
 			if isQueue == false {
 				conn.Write([]byte("-ERR EXEC without MULTI\r\n"))
 			} else if len(queue) == 0 {
@@ -343,56 +335,56 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				}
 			}
 
-		} else if strings.Split(input, " ")[0] == "FULLRESYNC" {// second step of 3 way handshake for master
+		} else if strings.Split(input, " ")[0] == "FULLRESYNC" { // second step of 3 way handshake for master
 			inputArr := strings.Split(input, " ")
 			data["master_replid"] = inputArr[1]
 			data["master_repl_offset"] = inputArr[2]
 			expectingRDB = true
 		} else if input == "PSYNC" { // 3rd step for 3 way handshake
 			// base64 to binary
-			// update the data to include the port PSYNC sends. 
+			// update the data to include the port PSYNC sends.
 			masterUpdate = true
 			slaveConnections[conn] = map[string]string{} // sets the state right so everything goes to the slave
 			slaveConnections[conn]["offset"] = "0"
-			
+
 			data, _ := base64.StdEncoding.DecodeString("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==")
 			conn.Write([]byte("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n")) // send FULL RESYNC
-			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s", len(data), data))) // send RDB file
-		} else if input == "SUBSCRIBE"{
+			conn.Write([]byte(fmt.Sprintf("$%d\r\n%s", len(data), data)))                    // send RDB file
+		} else if input == "SUBSCRIBE" {
 			subscribeMode = true
 			numChannels := 0
 			channel := statement[1]
 			totalSubs[channel] = append(totalSubs[channel], conn)
-			
+
 			fmt.Println("this is our channel array ", channelArr)
-			if (slices.Contains(channelArr, channel)){
+			if slices.Contains(channelArr, channel) {
 				numChannels = len(channelArr)
-			}else{
+			} else {
 				fmt.Println("was not found in channel so updated ")
 				channelArr = append(channelArr, channel)
 				numChannels = len(channelArr)
-				fmt.Println("channel updated ? " , channelArr)
+				fmt.Println("channel updated ? ", channelArr)
 			}
-			conn.Write([]byte(fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n",len("subscribe"), "subscribe", len(channel), channel, numChannels)))
-		} else if(input ==  "UNSUBSCRIBE"){
+			conn.Write([]byte(fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n", len("subscribe"), "subscribe", len(channel), channel, numChannels)))
+		} else if input == "UNSUBSCRIBE" {
 			//pop channel arr as well
 			channelName := statement[1]
-			if slices.Contains(totalSubs[channelName], conn){
-				//go through channel arr, and sub arr pop both 
-				for j:= 0; j<len(channelArr); j++{
-					if channelArr[j] == channelName{
+			if slices.Contains(totalSubs[channelName], conn) {
+				//go through channel arr, and sub arr pop both
+				for j := 0; j < len(channelArr); j++ {
+					if channelArr[j] == channelName {
 						channelArr = append(channelArr[:j], channelArr[j+1:]...) // remove from local connections
 					}
-				}	
-				for i:=0; i<len(totalSubs[channelName]); i++{
-					if totalSubs[channelName][i] == conn{
+				}
+				for i := 0; i < len(totalSubs[channelName]); i++ {
+					if totalSubs[channelName][i] == conn {
 						totalSubs[channelName] = append(totalSubs[channelName][:i], totalSubs[channelName][i+1:]...) // remove from global connections
 					}
 				}
 			}
 			conn.Write([]byte(fmt.Sprintf("*3\r\n$11\r\nunsubscribe\r\n$%d\r\n%s\r\n:%d\r\n", len(channelName), channelName, len(channelArr))))
 
-		} else if isQueue == true && len(statement) > 0 {// to actually put stuff inside our queue
+		} else if isQueue == true && len(statement) > 0 { // to actually put stuff inside our queue
 
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
@@ -401,13 +393,13 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			if input == "" { // means nothing was sent in command, or smth happened along the way
 				continue
 			} else {
-				writeVal := execute(statement, conn, fullPort, &userAuth) 
+				writeVal := execute(statement, conn, fullPort, &userAuth)
 				// we've created manifest file + appenddirname + appendfilename
-				if(masterUpdate && data["role"] == "slave"){//in case of slave + needing to update offset
-					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
+				if masterUpdate && data["role"] == "slave" { //in case of slave + needing to update offset
+					curr_offset, _ := strconv.Atoi(data["master_repl_offset"])
 					new_offset := curr_offset + len(recreatedCmd)
 
-					fmt.Println("made it inside to the update offset ",curr_offset)
+					fmt.Println("made it inside to the update offset ", curr_offset)
 					data["master_repl_offset"] = strconv.Itoa(new_offset)
 				}
 				if writeVal != "" {
@@ -415,12 +407,11 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				}
 			}
 		}
-	
 
 	}
 }
 
-//______________________________ reading command __________________________________________
+// ______________________________ reading command __________________________________________
 func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool) string {
 	switch strings.ToUpper(statement[0]) {
 	case "PING":
@@ -451,14 +442,14 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		fmt.Println("this is storage: ", storage)
 		fmt.Println("these are slave connections: ", slaveConnections)
 		storageKey := statement[1]
-		ms,_ := expired[storageKey]
-		if(ms != 0){
+		ms, _ := expired[storageKey]
+		if ms != 0 {
 			expiryTime := time.UnixMilli(int64(ms))
-			if(time.Now().After(expiryTime)){
-				delete(storage, storageKey) 
+			if time.Now().After(expiryTime) {
+				delete(storage, storageKey)
 				delete(expired, storageKey)
 			}
-		} // check if assigned expiry is there to delete 
+		} // check if assigned expiry is there to delete
 
 		value, exists := storage[storageKey]
 		if exists {
@@ -513,7 +504,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 	case "LRANGE": //  to find the range when given smth like LRANGE 0 5
 		listName := statement[1]
 		_, exists := lists[listName]
-		if(!exists){
+		if !exists {
 			return "*0\r\n"
 		}
 		start, _ := strconv.Atoi(statement[2])
@@ -574,122 +565,122 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			return ("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n")
 		}
 		return "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"
-	case "REPLCONF": 
+	case "REPLCONF":
 		fmt.Println("made it inside ReplConf ", statement)
-		if(len(statement)>2 && statement[1] == "GETACK"){
+		if len(statement) > 2 && statement[1] == "GETACK" {
 			fmt.Println("made it to GETACK")
 			offset := data["master_repl_offset"]
 			return fmt.Sprintf("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$%d\r\n%s\r\n", len(offset), offset)
-		}else if(len(statement)>2 && statement[1] == "ACK"){
+		} else if len(statement) > 2 && statement[1] == "ACK" {
 			fmt.Println("Recieved ACK statement ", statement[2])
 			slaveConnections[conn]["offset"] = statement[2]
 			return ""
 		}
 		return "+OK\r\n"
 	case "WAIT":
-		if(data["role"] == "master"){
-		
+		if data["role"] == "master" {
+
 			// either after time is expired, or if completed before
-			for connection,_ := range slaveConnections {
-				connection.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will 
+			for connection, _ := range slaveConnections {
+				connection.Write([]byte("*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n")) // continiously sends this out every ticker second, and if received, will
 			}
-			target,_:= strconv.Atoi(statement[1])
-			sleep,_ := strconv.Atoi(statement[2])
+			target, _ := strconv.Atoi(statement[1])
+			sleep, _ := strconv.Atoi(statement[2])
 			ch := make(chan string)
 			go waitOnConnections(sleep, target, ch)
-			return <- ch
+			return <-ch
 		}
-		return""
-    case "CONFIG": 
+		return ""
+	case "CONFIG":
 		files := statement[2]
-		directory := configs["dir"] 
+		directory := configs["dir"]
 		filePath := configs["dbfilename"]
 		fmt.Println("this is dir ", directory)
-		
-		switch files{
-		case "dir":  
-			return fmt.Sprintf("*2\r\n$3\r\ndir\r\n$%d\r\n%s\r\n",len(directory),directory)
+
+		switch files {
+		case "dir":
+			return fmt.Sprintf("*2\r\n$3\r\ndir\r\n$%d\r\n%s\r\n", len(directory), directory)
 		case "dbfilename":
 			return fmt.Sprintf("*2\r\n$10\r\ndbfilename\r\n$%d\r\n%s\r\n", len(filePath), filePath)
 
 		case "appendonly":
-			return fmt.Sprintf("*2\r\n$10\r\nappendonly\r\n$%d\r\n%s\r\n",len(configs["appendonly"]),  configs["appendonly"]) // appendonly, no
+			return fmt.Sprintf("*2\r\n$10\r\nappendonly\r\n$%d\r\n%s\r\n", len(configs["appendonly"]), configs["appendonly"]) // appendonly, no
 		case "appenddirname":
-			return fmt.Sprintf("*2\r\n$13\r\nappenddirname\r\n$%d\r\n%s\r\n", len(configs["appenddirname"]),  configs["appenddirname"])// appenddirname, appendonlydir
+			return fmt.Sprintf("*2\r\n$13\r\nappenddirname\r\n$%d\r\n%s\r\n", len(configs["appenddirname"]), configs["appenddirname"]) // appenddirname, appendonlydir
 
 		case "appendfilename":
 			return fmt.Sprintf("*2\r\n$14\r\nappendfilename\r\n$%d\r\n%s\r\n", len(configs["appendfilename"]), configs["appendfilename"]) // appendfilename, appendonly.aof
 		case "appendfsync":
-			return fmt.Sprintf("*2\r\n$11\r\nappendfsync\r\n$%d\r\n%s\r\n", len(configs["appendfsync"]), configs["appendfsync"])// everysec
+			return fmt.Sprintf("*2\r\n$11\r\nappendfsync\r\n$%d\r\n%s\r\n", len(configs["appendfsync"]), configs["appendfsync"]) // everysec
 		default:
 			return ""
 		}
 	case "KEYS":
-			fmt.Println("made it inside Keys ", configs["dbfilename"])	
-			directory := configs["dir"] 
-			filePath := configs["dbfilename"]
-			fullPath := filepath.Join(directory, filePath)
-			info,_ := os.ReadFile(fullPath) //create byte arr
-			fmt.Println("this is supposed to be RDB ", info)
-			if info == nil{
-				return ""
-			}
-			allKeys, _ , _ := readRDB(info)
-			decide := statement[1]
-			switch decide{
-			case "*": 
-				fmt.Println("here are all the keys ", allKeys)
-				message := createArr(allKeys, 0, len(allKeys))
-				return message
-			}
+		fmt.Println("made it inside Keys ", configs["dbfilename"])
+		directory := configs["dir"]
+		filePath := configs["dbfilename"]
+		fullPath := filepath.Join(directory, filePath)
+		info, _ := os.ReadFile(fullPath) //create byte arr
+		fmt.Println("this is supposed to be RDB ", info)
+		if info == nil {
 			return ""
+		}
+		allKeys, _, _ := readRDB(info)
+		decide := statement[1]
+		switch decide {
+		case "*":
+			fmt.Println("here are all the keys ", allKeys)
+			message := createArr(allKeys, 0, len(allKeys))
+			return message
+		}
+		return ""
 	case "PUBLISH":
 		channelName := statement[1]
 		message := statement[2]
-		for _,conn := range totalSubs[channelName]{
+		for _, conn := range totalSubs[channelName] {
 			conn.Write([]byte(fmt.Sprintf("*3\r\n$7\r\nmessage\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(channelName), channelName, len(message), message)))
 		}
 		return fmt.Sprintf(":%d\r\n", len(totalSubs[channelName]))
 	case "ZADD":
-		setName:= statement[1]  
-		setScore,_ := strconv.ParseFloat(statement[2], 64)
-		firstName := statement[3] 	
+		setName := statement[1]
+		setScore, _ := strconv.ParseFloat(statement[2], 64)
+		firstName := statement[3]
 		length := len(sortedSets[setName])
 		e := Entry{Member: firstName, Score: setScore}
 		count := 1
 
-		for j:=0; j<length; j++{
-			if sortedSets[setName][j].Member == e.Member{ // pop it out only if exists
+		for j := 0; j < length; j++ {
+			if sortedSets[setName][j].Member == e.Member { // pop it out only if exists
 				sortedSets[setName] = append(sortedSets[setName][:j], sortedSets[setName][j+1:]...)
 				count = 0
 				break
 			}
-		} // in case of nothing will handle that, in case exists, will isolate it, in case of multiple have to loop 
+		} // in case of nothing will handle that, in case exists, will isolate it, in case of multiple have to loop
 		// in case of delete can handle that inside other
 
 		insertArr := sortEntries(sortedSets[setName], e)
 		fmt.Println("this is insertARr ", insertArr)
 		sortedSets[setName] = insertArr
-	
+
 		return fmt.Sprintf(":%d\r\n", count)
 	case "ZRANK":
-		setName := statement[1] 
-		firstName := statement[2] 
-		for i,entries := range sortedSets[setName]{
-			if entries.Member == firstName{
+		setName := statement[1]
+		firstName := statement[2]
+		for i, entries := range sortedSets[setName] {
+			if entries.Member == firstName {
 				rank := i
-				return fmt.Sprintf(":%d\r\n", rank) 
+				return fmt.Sprintf(":%d\r\n", rank)
 			}
 		}
 		return "$-1\r\n"
 	case "ZRANGE":
 		setName := statement[1]
 		_, exists := sortedSets[setName]
-		if(!exists){
+		if !exists {
 			return "*0\r\n"
 		}
 		validArr := []string{}
-		for _,entries := range sortedSets[setName]{
+		for _, entries := range sortedSets[setName] {
 			validArr = append(validArr, entries.Member)
 		}
 
@@ -698,26 +689,26 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		return findRange(validArr, start, stop)
 	case "ZCARD":
 		setName := statement[1]
-		_,exists := sortedSets[setName]
-		if !exists{ 
+		_, exists := sortedSets[setName]
+		if !exists {
 			return ":0\r\n"
 		}
 		return fmt.Sprintf(":%d\r\n", len(sortedSets[setName]))
 	case "ZSCORE":
 		setName := statement[1]
-		member := statement[2] 
-		for _, entries := range sortedSets[setName]{
-			if(entries.Member == member){
+		member := statement[2]
+		for _, entries := range sortedSets[setName] {
+			if entries.Member == member {
 				a := strconv.FormatFloat(entries.Score, 'f', -1, 64)
-				return fmt.Sprintf("$%d\r\n%s\r\n",len(a), a)
+				return fmt.Sprintf("$%d\r\n%s\r\n", len(a), a)
 			}
-		}		
+		}
 		return "$-1\r\n "
 	case "ZREM":
-		setName := statement[1] 
+		setName := statement[1]
 		member := statement[2]
-		for j,entries := range sortedSets[setName]{
-			if member == entries.Member{
+		for j, entries := range sortedSets[setName] {
+			if member == entries.Member {
 				sortedSets[setName] = append(sortedSets[setName][:j], sortedSets[setName][j+1:]...)
 				return ":1\r\n"
 			}
@@ -726,9 +717,9 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 	case "GEOADD":
 		setName := statement[1]
 		memberName := statement[4]
-		longitude,_ := strconv.ParseFloat(statement[2], 64)
-		latitude,_ := strconv.ParseFloat(statement[3], 64)
-		if !(longitude >= -180 && longitude <= 180) || !(latitude >= -85.05112878 && latitude <= 85.05112878){
+		longitude, _ := strconv.ParseFloat(statement[2], 64)
+		latitude, _ := strconv.ParseFloat(statement[3], 64)
+		if !(longitude >= -180 && longitude <= 180) || !(latitude >= -85.05112878 && latitude <= 85.05112878) {
 			return fmt.Sprintf("-ERR invalid longitude,latitude pair %f, %f\r\n", longitude, latitude)
 		}
 		score := calcGeoScore(latitude, longitude)
@@ -737,24 +728,24 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		sortedSets[setName] = append(sortedSets[setName], e)
 		return ":1\r\n"
 	case "GEOPOS":
-		message := fmt.Sprintf("*%d\r\n", len(statement) - 2)
-		fullList,_ := sortedSets[statement[1]]
+		message := fmt.Sprintf("*%d\r\n", len(statement)-2)
+		fullList, _ := sortedSets[statement[1]]
 
-		for i:=2; i<len(statement); i++{
+		for i := 2; i < len(statement); i++ {
 			found := false
-			for _,entries := range fullList{
-				if(entries.Member == statement[i]){
-					latitude, longitude := reverseGeoScore(int(entries.Score)) 
+			for _, entries := range fullList {
+				if entries.Member == statement[i] {
+					latitude, longitude := reverseGeoScore(int(entries.Score))
 					fmt.Println("this is latitude ", latitude)
-					x := strconv.FormatFloat(latitude, 'f', -1, 64) 
-					y := strconv.FormatFloat(longitude, 'f', -1, 64) 
+					x := strconv.FormatFloat(latitude, 'f', -1, 64)
+					y := strconv.FormatFloat(longitude, 'f', -1, 64)
 
 					message += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n", len(y), y, len(x), x)
 					found = true
 					break
 				}
-			}	
-			if !found{
+			}
+			if !found {
 				message += "*-1\r\n"
 			}
 		}
@@ -762,95 +753,95 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 	case "GEODIST":
 		setName := statement[1]
 		place1 := statement[2]
-		place2 := statement[3] 
+		place2 := statement[3]
 		var x1, y1, x2, y2 float64
-		for _, entries := range sortedSets[setName]{
-			if (entries.Member == place1){
+		for _, entries := range sortedSets[setName] {
+			if entries.Member == place1 {
 				x1, y1 = reverseGeoScore(int(entries.Score))
 			}
-			if entries.Member == place2{
+			if entries.Member == place2 {
 				x2, y2 = reverseGeoScore(int(entries.Score))
 			}
 		}
-		distance := hsDist(x1,x2,y1,y2)
+		distance := hsDist(x1, x2, y1, y2)
 		result := strconv.FormatFloat(distance, 'f', -1, 64)
 		return fmt.Sprintf("$%d\r\n%s\r\n", len(result), result)
 	case "GEOSEARCH":
 		validPlaces := []string{}
 		setName := statement[1]
-		long1 :=0.0
+		long1 := 0.0
 		lat1 := 0.0
 		radius := 0.0
 
-		for i:=1; i<len(statement); i++{
+		for i := 1; i < len(statement); i++ {
 			switch statement[i] {
 			case "FROMLONLAT":
-				long1,_  = strconv.ParseFloat(statement[i+1], 64)
-				lat1,_ = strconv.ParseFloat(statement[i+2], 64)
+				long1, _ = strconv.ParseFloat(statement[i+1], 64)
+				lat1, _ = strconv.ParseFloat(statement[i+2], 64)
 			case "BYRADIUS":
-				radius,_ = strconv.ParseFloat(statement[i+1], 64)
+				radius, _ = strconv.ParseFloat(statement[i+1], 64)
 			}
 		}
 
-		for _, entries := range sortedSets[setName]{
+		for _, entries := range sortedSets[setName] {
 			lat2, long2 := reverseGeoScore(int(entries.Score))
 			distance := hsDist(lat1, lat2, long1, long2)
-			if(distance <= radius){
+			if distance <= radius {
 				validPlaces = append(validPlaces, entries.Member)
 			}
-		}	
+		}
 		return createArr(validPlaces, 0, len(validPlaces))
 	case "ACL":
-		switch statement[1]{
-		case "WHOAMI":  // have to find connection and then find user
-			user:="default"
-			for name,u := range users{
-				if u.Connection == conn{
+		switch statement[1] {
+		case "WHOAMI": // have to find connection and then find user
+			user := "default"
+			for name, u := range users {
+				if u.Connection == conn {
 					user = name
 				}
 			}
-			if(slices.Contains(users[user].Flags, "nopass") && authState){
+			if slices.Contains(users[user].Flags, "nopass") && authState {
 				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user)
-			}else if *userAuth { // handle auth logic here 
-				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user)  
-			}else{
+			} else if *userAuth { // handle auth logic here
+				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user)
+			} else {
 				return "-NOAUTH Authentication required.\r\n"
 			}
 
-		case "GETUSER": 
+		case "GETUSER":
 			user := statement[2]
 			p := users[user].Passwords
 			f := users[user].Flags // get passwords and flags
-			flags := createArr(f,0,len(f))
-			passwords := createArr(p,0,len(p))
+			flags := createArr(f, 0, len(f))
+			passwords := createArr(p, 0, len(p))
 			return fmt.Sprintf("*4\r\n$5\r\nflags\r\n%s$9\r\npasswords\r\n%s", flags, passwords)
 
 		case "SETUSER":
-			user := statement[2] 
-			flags:= []string{"nopass"} 
+			user := statement[2]
+			flags := []string{"nopass"}
 			passwords := []string{}
 			password := ""
 
 			if len(statement) > 3 { // if password exists
-				flags =[]string{}
+				flags = []string{}
 				password = statement[3][1:]
 				authState = false
-				*userAuth = true 
-			} 							
+				*userAuth = true
+			}
 			hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
-			hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
- 			
-			_,exists := users[user] // check if user exists
-			
-			if(exists){ 
+			hashPass := fmt.Sprintf("%x", hashedPassword)     // gives hash password in hexdecimal
+
+			_, exists := users[user] // check if user exists
+
+			if exists {
 				upUser := User{Connection: conn, Passwords: append(users[user].Passwords, hashPass)}
-				if(len(users[user].Passwords) ==1){ // this means just added
+				if len(users[user].Passwords) == 1 { // this means just added
 					upUser = User{Connection: conn, Passwords: append(users[user].Passwords, hashPass), Flags: []string{}}
 				}
 				fmt.Println("the user is ", upUser)
 				users[user] = upUser
 				fmt.Println("the user is now ", users[user])
-			}else{
+			} else {
 				passwords = []string{hashPass}
 				newUser := User{Connection: conn, Passwords: passwords, Flags: flags}
 				users[user] = newUser
@@ -863,14 +854,14 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		user := statement[1]
 		password := statement[2]
 		hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
-		hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
-		if(len(users[user].Passwords) == 0){
-			newUser := User{Connection:conn, Passwords:[]string{hashPass}, }
+		hashPass := fmt.Sprintf("%x", hashedPassword)     // gives hash password in hexdecimal
+		if len(users[user].Passwords) == 0 {
+			newUser := User{Connection: conn, Passwords: []string{hashPass}}
 			users[user] = newUser
-			*userAuth = true	
+			*userAuth = true
 			authState = false
 			return "+OK\r\n"
-		}else if slices.Contains(users[user].Passwords, hashPass){
+		} else if slices.Contains(users[user].Passwords, hashPass) {
 			*userAuth = true
 			return "+OK\r\n"
 		}
@@ -878,11 +869,11 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 	case "TYPE":
 		//string, list, set, zset, hash, stream, and vectorset
 		sk := statement[1]
-		_,storageExists := storage[sk]
-		_,streamExists := streams[sk] // problem is the keys could be the same 
-		if(storageExists){
+		_, storageExists := storage[sk]
+		_, streamExists := streams[sk] // problem is the keys could be the same
+		if storageExists {
 			return "+string\r\n"
-		}else if streamExists{
+		} else if streamExists {
 			return "+stream\r\n"
 		}
 		return "+none\r\n"
@@ -891,36 +882,34 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 	}
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
 
+func hsDist(lat1 float64, lat2 float64, long1 float64, long2 float64) float64 {
+	const rEarth = 6372797.560856
+	lat1 = lat1 * math.Pi / 180
+	lat2 = lat2 * math.Pi / 180
+	long1 = long1 * math.Pi / 180
+	long2 = long2 * math.Pi / 180
 
-func hsDist(lat1 float64,lat2 float64, long1 float64, long2 float64) float64 {
-	const rEarth = 6372797.560856  
-	lat1 = lat1* math.Pi / 180
-	lat2 = lat2* math.Pi / 180
-	long1 = long1* math.Pi / 180
-	long2 = long2* math.Pi / 180
-
-
-    return 2 * rEarth * math.Asin(math.Sqrt(haversine(lat2-lat1)+
-        math.Cos(lat1)*math.Cos(lat2)*haversine(long2-long1)))
+	return 2 * rEarth * math.Asin(math.Sqrt(haversine(lat2-lat1)+
+		math.Cos(lat1)*math.Cos(lat2)*haversine(long2-long1)))
 }
-func haversine(θ float64)float64{
+func haversine(θ float64) float64 {
 	return .5 * (1 - math.Cos(θ))
 }
 
-func calcGeoScore(x float64, y float64)int{
+func calcGeoScore(x float64, y float64) int {
 	MIN_X := -85.05112878
 	MAX_X := 85.05112878
 	MIN_Y := -180.00
 	MAX_Y := 180.00
 
- 	LAT_RANGE := MAX_X - MIN_X
-	LONG_RANGE := MAX_Y - MIN_Y 
+	LAT_RANGE := MAX_X - MIN_X
+	LONG_RANGE := MAX_Y - MIN_Y
 
-	x = ((x - MIN_X ) / LAT_RANGE ) * math.Pow(2,26)
-	y = ((y - MIN_Y ) / LONG_RANGE) * math.Pow(2,26) 
+	x = ((x - MIN_X) / LAT_RANGE) * math.Pow(2, 26)
+	y = ((y - MIN_Y) / LONG_RANGE) * math.Pow(2, 26)
 
-	norm_x := int(x)  // this produces loss, rounding to int removes precission
-	norm_y := int(y) 
+	norm_x := int(x) // this produces loss, rounding to int removes precission
+	norm_y := int(y)
 
 	norm_x = shiftedVals(norm_x)
 	norm_y = shiftedVals(norm_y)
@@ -928,20 +917,19 @@ func calcGeoScore(x float64, y float64)int{
 	interleaved_val := norm_x | (norm_y << 1)
 	return interleaved_val
 
-
-}		
-func shiftedVals(num int) int{ //splitting bits by 0 such that are 0s between everything 
-	num = num & 0xFFFFFFFF //makes sure lower 32 bits are 0 
-	num = (num | num << 16) & 0x0000FFFF0000FFFF // taking half of bits moving them up then cutting out the previous top. 
-	num = (num | num << 8) & 0x00FF00FF00FF00FF
-	num = (num | num << 4) & 0x0F0F0F0F0F0F0F0F
-	num = (num | num << 2) & 0x3333333333333333
-	num = (num | num << 1) & 0x5555555555555555
+}
+func shiftedVals(num int) int { //splitting bits by 0 such that are 0s between everything
+	num = num & 0xFFFFFFFF                     //makes sure lower 32 bits are 0
+	num = (num | num<<16) & 0x0000FFFF0000FFFF // taking half of bits moving them up then cutting out the previous top.
+	num = (num | num<<8) & 0x00FF00FF00FF00FF
+	num = (num | num<<4) & 0x0F0F0F0F0F0F0F0F
+	num = (num | num<<2) & 0x3333333333333333
+	num = (num | num<<1) & 0x5555555555555555
 
 	return num
 }
 
-func reverseGeoScore(geocode int)(float64, float64){ 
+func reverseGeoScore(geocode int) (float64, float64) {
 	fmt.Println("made it inside reverse Geoscore ", geocode)
 	y := geocode >> 1
 	x := geocode
@@ -955,64 +943,62 @@ func reverseGeoScore(geocode int)(float64, float64){
 	MAX_Y := 180.00
 
 	LAT_RANGE := MAX_X - MIN_X
-	LONG_RANGE := MAX_Y - MIN_Y 
+	LONG_RANGE := MAX_Y - MIN_Y
 	fmt.Println("ranges are ", LAT_RANGE, LONG_RANGE)
- 
+
 	convx := float64(new_x)
 	convy := float64(new_y)
 	fmt.Println("this is new _x ", new_x)
-	fmt.Println("this is new_y ",  new_y)
+	fmt.Println("this is new_y ", new_y)
 	fmt.Println("this is convx ", convx)
 	fmt.Println("this is convy ", convy)
 
+	fmt.Println("first part ", convx/math.Pow(2, 26))
+	fmt.Println("second part ", convx/math.Pow(2, 26)*LAT_RANGE)
+	fmt.Println("third part ", (convx/math.Pow(2, 26)*LAT_RANGE)+MIN_X)
 
-	fmt.Println("first part ", convx/math.Pow(2,26))
-	fmt.Println("second part " , convx/math.Pow(2,26)*LAT_RANGE)
-	fmt.Println("third part ",(convx/math.Pow(2,26)*LAT_RANGE) + MIN_X )
-
-
-	//idea is that we qunatize a number line, and therefore the converted number is not 
-	x_edge := (LAT_RANGE * (convx / math.Pow(2,26))) + MIN_X // convert to float and redo the math before
-	x_other_edge := (LAT_RANGE * ((convx+ 1) / math.Pow(2,26))) + MIN_X // convert to float and redo the math before
-	y_edge := (LONG_RANGE * (convy / math.Pow(2,26))) + MIN_Y
-	y_other_edge := (LONG_RANGE * ((convy + 1 )/ math.Pow(2,26))) + MIN_Y
+	//idea is that we qunatize a number line, and therefore the converted number is not
+	x_edge := (LAT_RANGE * (convx / math.Pow(2, 26))) + MIN_X             // convert to float and redo the math before
+	x_other_edge := (LAT_RANGE * ((convx + 1) / math.Pow(2, 26))) + MIN_X // convert to float and redo the math before
+	y_edge := (LONG_RANGE * (convy / math.Pow(2, 26))) + MIN_Y
+	y_other_edge := (LONG_RANGE * ((convy + 1) / math.Pow(2, 26))) + MIN_Y
 
 	fmt.Println("this is the x stuff ", x_edge, x_other_edge)
-	final_x := (x_edge + x_other_edge) /2
-	final_y := (y_edge + y_other_edge) /2
+	final_x := (x_edge + x_other_edge) / 2
+	final_y := (y_edge + y_other_edge) / 2
 	return final_x, final_y
 }
 
-func shiftBackVals(num int)int{
+func shiftBackVals(num int) int {
 	num = num & 0x5555555555555555
 	num = (num | (num >> 1)) & 0x3333333333333333 //shifting back + undoing mask
-    num = (num | (num >> 2)) & 0x0F0F0F0F0F0F0F0F
-    num = (num | (num >> 4)) & 0x00FF00FF00FF00FF
-    num = (num | (num >> 8)) & 0x0000FFFF0000FFFF
-    num = (num | (num >> 16)) & 0x00000000FFFFFFFF
+	num = (num | (num >> 2)) & 0x0F0F0F0F0F0F0F0F
+	num = (num | (num >> 4)) & 0x00FF00FF00FF00FF
+	num = (num | (num >> 8)) & 0x0000FFFF0000FFFF
+	num = (num | (num >> 16)) & 0x00000000FFFFFFFF
 	return num
 }
 
-func sortEntries(arr []Entry, e Entry)[]Entry{
+func sortEntries(arr []Entry, e Entry) []Entry {
 	fmt.Println("this is the arr before sorting ", arr)
-	for i:=0; i<len(arr);i++{ 
-		curr := arr[i] // less than catches case that e.Member > than all others. everything else caught by return
-		if e.Score < curr.Score || (e.Score==curr.Score && e.Member < curr.Member){ //  so if equal then check if less, insert otherwise wait until end then go
+	for i := 0; i < len(arr); i++ {
+		curr := arr[i]                                                                 // less than catches case that e.Member > than all others. everything else caught by return
+		if e.Score < curr.Score || (e.Score == curr.Score && e.Member < curr.Member) { //  so if equal then check if less, insert otherwise wait until end then go
 			return slices.Insert(arr, i, e)
 		}
 	}
 	return append(arr, e)
 }
-func findRange(arr[]string, start int, stop int)string{
+func findRange(arr []string, start int, stop int) string {
 	length := len(arr)
 	if stop > length-1 {
 		stop = length - 1
 	}
 	if start < 0 { // clamp 0  and handle negative
-		start = max(length + start, 0)
+		start = max(length+start, 0)
 	}
 	if stop < 0 { // clamp 0  and handle negative
-		stop = max(length + stop, 0)
+		stop = max(length+stop, 0)
 	}
 	if start >= length || start > stop {
 		return ("*0\r\n")
@@ -1021,49 +1007,49 @@ func findRange(arr[]string, start int, stop int)string{
 	return message
 }
 
-func readRDB(info []byte)([]string, []string, []string){
+func readRDB(info []byte) ([]string, []string, []string) {
 	fmt.Println("made it inside RDB check ")
 
-	i:= 0
-	count:=0
+	i := 0
+	count := 0
 
 	allKeys := []string{}
 	allVals := []string{}
 	allExp := []string{}
 
 	//_________________________ have to still handle FD and convert to seconds ______________________
-	for i<len(info){
-		if info[i] == 0xFB{
+	for i < len(info) {
+		if info[i] == 0xFB {
 			length := int(info[i+1])
 			// fmt.Println("this is the length given by oxfb ", length)
 			allExp = make([]string, length)
-			i = i+3
-			for j:=0; j<length;j++{
+			i = i + 3
+			for j := 0; j < length; j++ {
 				// fmt.Println("this is where we are ", i, len(info))
-				if info[i] == 0xFC{// at this point at 0xFC
-					// unix timestamp uses little endian, so backwards by size of bytes. 
-					tempExp := binary.LittleEndian.Uint64(info[i+1:i+9]) 
+				if info[i] == 0xFC { // at this point at 0xFC
+					// unix timestamp uses little endian, so backwards by size of bytes.
+					tempExp := binary.LittleEndian.Uint64(info[i+1 : i+9])
 					expiry := strconv.FormatUint(tempExp, 10)
 					allExp[count] = expiry
 					i = i + 9
 				} // at this point at 0x00
 				fmt.Println("this is supposed to be before kv ", info[i])
 				realLen := int(info[i+1])
-				keyLen := i+2+realLen
-				keys := info[i+2:keyLen]
+				keyLen := i + 2 + realLen
+				keys := info[i+2 : keyLen]
 
 				realLen2 := int(info[keyLen])
-				vals := info[keyLen+1: keyLen+1 + realLen2]
+				vals := info[keyLen+1 : keyLen+1+realLen2]
 
 				// fmt.Println("this is key ", string(keys))
 				// fmt.Println("this is value ", string(vals))
 
 				allKeys = append(allKeys, string(keys))
 				allVals = append(allVals, string(vals))
-				count ++ 
-				i =  i + 3 + realLen + realLen2
+				count++
+				i = i + 3 + realLen + realLen2
 			}
-		}else{
+		} else {
 			i++
 		}
 	}
@@ -1071,6 +1057,7 @@ func readRDB(info []byte)([]string, []string, []string){
 	// fmt.Println("this is all Keys ", allKeys)
 	return allKeys, allVals, allExp
 }
+
 //  set and increment
 
 func LPOP(listName string, sliceNum int, conn net.Conn) string {
@@ -1103,6 +1090,7 @@ func checkWatch(statement []string) {
 		}
 	}
 }
+
 // __________________ poll and wait to see if length updates ________________________
 func waitChange(listName string, timeout float64, conn net.Conn, ch1 chan string) {
 	fmt.Println(timeout)
@@ -1132,7 +1120,7 @@ func createArr(array []string, first int, last int) string { // used as a templa
 	fmt.Println("made it inside createArr function")
 	index := first
 	interval := last - index
-	message := fmt.Sprintf("*%d\r\n", interval) 
+	message := fmt.Sprintf("*%d\r\n", interval)
 
 	for index < last {
 		message += fmt.Sprintf("$%d\r\n%s\r\n", len(array[index]), array[index])
@@ -1141,19 +1129,19 @@ func createArr(array []string, first int, last int) string { // used as a templa
 	return message
 }
 
-func wait(key string, ms int){
+func wait(key string, ms int) {
 	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
-	ticker := time.NewTicker(time.Duration(10) *( time.Millisecond))
+	ticker := time.NewTicker(time.Duration(10) * (time.Millisecond))
 	fmt.Println(" here are the keys to be deleted ", key)
 
-	for range ticker.C{
-		if time.Now().After(deadline){
+	for range ticker.C {
+		if time.Now().After(deadline) {
 			delete(storage, key)
 			// ticker.Stop() // set ticker that when first time runs out, just delete, and then go on.
 		}
 	}
 }
-func parser(reader *bufio.Reader)( []string, string) {
+func parser(reader *bufio.Reader) ([]string, string) {
 	// 3 different versions $n \r\n         *n \r\n $b \r\n
 	t, err := reader.ReadByte() // read first byte
 	count := 0
@@ -1173,7 +1161,7 @@ func parser(reader *bufio.Reader)( []string, string) {
 
 		count, _ = strconv.Atoi(strings.TrimSpace(n)) // got the count \n $b \r\n
 		count = count - 1                             // subtract 1 because we already calculating first value
-		r,_ := reader.ReadString('$')                        // by pass the /r/n and $
+		r, _ := reader.ReadString('$')                // by pass the /r/n and $
 		recreatedCmd += r
 
 		initial, _ := reader.ReadString('\n')
@@ -1187,13 +1175,13 @@ func parser(reader *bufio.Reader)( []string, string) {
 		initVal, err := strconv.Atoi(strings.TrimSpace(initial)) // got the count \n $b \r\n
 		if err != nil {
 			fmt.Println("error here when trying to parse RDB ", err)
-			return nil,""
+			return nil, ""
 		}
 		fmt.Println("expectingRDB inside parse is ", expectingRDB)
-		if(expectingRDB){ //handle RDB file
+		if expectingRDB { //handle RDB file
 			fmt.Println("this is initVal ", initVal)
 			buf := make([]byte, initVal) // we set a buffer
-			io.ReadFull(reader, buf)   // consume and discard
+			io.ReadFull(reader, buf)     // consume and discard
 			expectingRDB = false
 			masterUpdate = true
 			return statement, recreatedCmd
@@ -1219,7 +1207,7 @@ func parser(reader *bufio.Reader)( []string, string) {
 	statement = append(statement, string(name))
 	recreatedCmd += string(name)
 
-	e,_ := reader.ReadString('\n')
+	e, _ := reader.ReadString('\n')
 	recreatedCmd += e
 
 	for count > 0 {
@@ -1244,43 +1232,43 @@ func parser(reader *bufio.Reader)( []string, string) {
 		recreatedCmd += f
 		count--
 	}
-	fmt.Println("immediately after parsing cmd is " , recreatedCmd)
+	fmt.Println("immediately after parsing cmd is ", recreatedCmd)
 	fmt.Println("immediately after parsing statement is ", statement)
 	return statement, recreatedCmd
 }
-func writeUpdate(returnVal string) string{
+func writeUpdate(returnVal string) string {
 	if data["role"] == "master" {
 		return returnVal
-	}else{
+	} else {
 		fmt.Println("made it here as a slave to writeUpdate")
 		return ""
 	}
 }
-func waitOnConnections(sleep int, target int, ch chan string){
-	deadline := time.Now().Add(time.Duration(sleep)*time.Millisecond)
+func waitOnConnections(sleep int, target int, ch chan string) {
+	deadline := time.Now().Add(time.Duration(sleep) * time.Millisecond)
 	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
 	count := 0
-	masterOffset,_ := strconv.Atoi(data["master_repl_offset"])
+	masterOffset, _ := strconv.Atoi(data["master_repl_offset"])
 
 	// need to send REPLGEETACK
-	
-	for range ticker.C{
+
+	for range ticker.C {
 		fmt.Println("this is masterOffset", masterOffset)
-		if(time.Now().After(deadline)){ 
+		if time.Now().After(deadline) {
 			fmt.Println("made it to the point where it overextended")
 			ch <- fmt.Sprintf(":%d\r\n", count) // go into infinite for loop wait until after deadline
 			ticker.Stop()
 			break
-		}else{ // keep resetting such can count from fresh. 
+		} else { // keep resetting such can count from fresh.
 			count = 0
-			for conn,_ := range slaveConnections{
-				offsetVal,_ := strconv.Atoi(slaveConnections[conn]["offset"])
+			for conn, _ := range slaveConnections {
+				offsetVal, _ := strconv.Atoi(slaveConnections[conn]["offset"])
 				fmt.Println("this is Slave offset ", offsetVal)
-				if(offsetVal>=masterOffset){
-					count++ 
+				if offsetVal >= masterOffset {
+					count++
 				}
 			}
-			if(count>=target){
+			if count >= target {
 				ch <- fmt.Sprintf(":%d\r\n", count)
 				ticker.Stop()
 				break
@@ -1299,7 +1287,7 @@ func main() {
 	data["master_replid"] = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
 
 	curr_dir, _ := os.Getwd()
-	fmt.Println("this is the current direcotry " , curr_dir)
+	fmt.Println("this is the current direcotry ", curr_dir)
 	configs["dir"] = curr_dir
 	configs["appendonly"] = "no"
 	configs["appenddirname"] = "appendonlydir"
@@ -1309,59 +1297,57 @@ func main() {
 	if len(os.Args) > 2 {
 		if os.Args[1] == "--port" || os.Args[1] == "-p" {
 			fullPort = os.Args[2]
-		}else if(os.Args[1]=="--dir"){
+		} else if os.Args[1] == "--dir" {
 			fmt.Println("made it inside the dir function check ")
-			for i:=0; i<len(os.Args); i++{
-				if(os.Args[i] == "--dir"){
+			for i := 0; i < len(os.Args); i++ {
+				if os.Args[i] == "--dir" {
 					configs["dir"] = os.Args[i+1]
-				}else if(os.Args[i] == "--dbfilename"){
+				} else if os.Args[i] == "--dbfilename" {
 					configs["dbfilename"] = os.Args[i+1]
-				}else if(os.Args[i] == "--appendonly"){		
-						configs["appendonly"] = os.Args[i+1]
-				}else if(os.Args[i] == "--appenddirname"){
+				} else if os.Args[i] == "--appendonly" {
+					configs["appendonly"] = os.Args[i+1]
+				} else if os.Args[i] == "--appenddirname" {
 					configs["appenddirname"] = os.Args[i+1]
-				}else if(os.Args[i] == "--appendfilename"){
+				} else if os.Args[i] == "--appendfilename" {
 					configs["appendfilename"] = os.Args[i+1]
-				}else if(os.Args[i] == "--appendfsync"){
+				} else if os.Args[i] == "--appendfsync" {
 					configs["appendfsync"] = os.Args[i+1]
-				}	
+				}
 			}
-			if configs["appendonly"] == "yes"{
+			if configs["appendonly"] == "yes" {
 				fullPath := filepath.Join(configs["dir"], configs["appenddirname"])
-				fileArr,_ := os.ReadDir(fullPath)
+				fileArr, _ := os.ReadDir(fullPath)
 				incrCount := 0
 				manifestFile := filepath.Join(fullPath, fmt.Sprintf("%s.manifest", configs["appendfilename"]))
 
-
-				if(len(fileArr)>0){
-					for i:=0; i<len(fileArr); i++ {
+				if len(fileArr) > 0 {
+					for i := 0; i < len(fileArr); i++ {
 						fileParts := strings.Split(fileArr[i].Name(), ".")
-						if(slices.Contains(fileParts,"incr")){
-							incrCount ++ 
+						if slices.Contains(fileParts, "incr") {
+							incrCount++
 						}
-						if(slices.Contains(fileParts, "manifest")){
+						if slices.Contains(fileParts, "manifest") {
 							manifestFile = filepath.Join(fullPath, fileArr[i].Name())
 						}
 					}
-				}else{
+				} else {
 					os.MkdirAll(fullPath, 0755) //create a directory 0755 is just permission logic
 				}
 
-
 				filePath := filepath.Join(fullPath, fmt.Sprintf("%s.%d.incr.aof", configs["appendfilename"], incrCount+1))
 				manifestMessage := fmt.Sprintf("file %s.%d.incr.aof seq %d type i", configs["appendfilename"], incrCount+1, incrCount+1) // type incremental file
-				
-				file, _ := os.Create(filePath)// this is our aof, creates on file path
-				file.Close() 
-			
+
+				file, _ := os.Create(filePath) // this is our aof, creates on file path
+				file.Close()
+
 				instructionFile, _ := os.OpenFile(manifestFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 				instructionFile.WriteString(manifestMessage)
 				instructionFile.Close() // to append
 
-				inside,_ := os.ReadFile(manifestFile)
+				inside, _ := os.ReadFile(manifestFile)
 				fmt.Println("inside instruction file is  ", string(inside))
 				configs["manifest"] = manifestFile
-			}	
+			}
 		}
 	}
 	// 1. read manifest file by recreating if dirname is yes
@@ -1382,7 +1368,7 @@ func main() {
 				// reader := bufio.NewReader(masterConn)
 				fmt.Println("Made it inside this for loop")
 				go handleConnection(masterConn, fullPort)
-				// so we establish our master connection assuming this is a replica here. 
+				// so we establish our master connection assuming this is a replica here.
 				// master gets port based on message sente
 			}
 		}
