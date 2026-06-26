@@ -792,7 +792,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		return "-WRONGPASS invalid username-password pair or user is disabled.\r\n"
 	case "TYPE":
 		//string, list, set, zset, hash, stream, and vectorset
-		sk := statement[2]
+		sk := statement[1]
 		_,exists := storage[sk]
 		if(exists){
 			return "+string\r\n"
