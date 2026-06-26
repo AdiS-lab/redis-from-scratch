@@ -718,7 +718,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			f := users[user].Flags // get passwords and flags
 			flags := createArr(f,0,len(f))
 			passwords := createArr(p,0,len(p))
-			return fmt.Sprintf("*4\r\n$5\r\nflags\r\n%s$8\r\npassword\r\n%s", flags, passwords)
+			return fmt.Sprintf("*4\r\n$5\r\nflags\r\n%s$9\r\npasswords\r\n%s", flags, passwords)
 
 		case "SETUSER":
 			user := statement[2] 
