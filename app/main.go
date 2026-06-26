@@ -908,25 +908,25 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			incrKey,_ := strconv.Atoi(strings.Split(data, "-")[1])
 			if statement[2] == "-" {
 				if msKey < ms2 || (incrKey <= incr2 && msKey == ms2){
-					sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
+					goodMessage = sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
 					count++
 				}
 			}else if statement[3] == "+"{
 				if msKey > ms1 ||( incrKey >= incr && msKey == ms1){
-					sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
+					goodMessage = sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
 					fmt.Println("this is good message growing ", goodMessage)
 					count++
 				}
 			}else{
 				if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
-					sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
+					goodMessage = sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
 					count++
 				}else if msKey > ms1 && msKey < ms2{
-					sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
+					goodMessage = sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
 					count ++ 
 					//do something with data
 				}else if msKey == ms2 && incrKey < incr2 && ms2>ms1{
-					sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
+					goodMessage = sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
 					count ++ 
 				}
 			}
