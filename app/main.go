@@ -936,17 +936,22 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		length := (len(statement)-2)/2
 		keys := statement[2:length] 
 		idBound := statement[2+length:]
+		fmt.Println("this is keys ", keys)
+		fmt.Println("this is idBound ", idBound)
 		
 		fullStr := ""
 		countKeys := 0
+		
 		for i:=0; i < len(keys); i++ {  
 			count:=0
 			kv := ""
 
 			id := strings.Split(idBound[i], "-")
 			ms1,_ := strconv.Atoi(id[0]) // first milliseconds
-			incr,_ := strconv.Atoi(id[0]) // get id associated with it. 
+			incr,_ := strconv.Atoi(id[1]) // get id associated with it. 
 			countKeys ++ 
+
+			fmt.Println("this is my id and ms for each ", ms1, incr)
 			// list of ids, in each id 
 			for ids, vals := range streams[keys[i]]{
 				msKey,_ := strconv.Atoi(strings.Split(ids, "-")[0])
