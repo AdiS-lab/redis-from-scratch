@@ -702,7 +702,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		if statement[1] == "WHOAMI" {
 			return "$7\r\ndefault\r\n"
 		}else if statement[1] == "GETUSER"{
-			return "*2\r\n$3\r\nflags\r\n*0\r\n"
+			return "*2\r\n$5\r\nflags\r\n*0\r\n"
 		}
 		return ""
 	default:
