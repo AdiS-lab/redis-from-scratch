@@ -702,7 +702,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		if statement[1] == "WHOAMI" {
 			return "$7\r\ndefault\r\n"
 		}else if statement[1] == "GETUSER"{ 
-			return fmt.Sprintf("*2\r\n$5\r\nflags\r\n*1\r\n$%d\r\n%s\r\n", len("nopass"), "nopass")
+			
+			return fmt.Sprintf("*3\r\n$5\r\nflags\r\n*1\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n*0\r\n", len("nopass"), "nopass", len("message"), "message")
 		}
 		return ""
 	default:
