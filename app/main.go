@@ -764,6 +764,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 				}
 				fmt.Println("the user is ", upUser)
 				users[user] = upUser
+				fmt.Println("the user is now ", users[user])
 			}else{
 				passwords = []string{hashPass}
 				newUser := User{Connection: conn, Passwords: passwords, Flags: flags}
