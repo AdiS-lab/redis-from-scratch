@@ -880,7 +880,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 	case "XRANGE":
 		key := statement[1] 
 		arg1 := strings.Split(statement[2], "-")
-		arg2 := strings.Split(statement[2], "-")
+		arg2 := strings.Split(statement[3], "-")
 		ms1,_ := strconv.Atoi(arg1[0]) //  first milliseconds
 		ms2,_ := strconv.Atoi(arg2[0]) // second milliseconds
 		incr := 0
