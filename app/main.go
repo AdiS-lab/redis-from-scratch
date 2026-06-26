@@ -908,6 +908,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
 				fmt.Println("made it inside this conditional")
 				goodMessage += createChunk(data, value)
+				fmt.Println(goodMessage)
 				count++
 
 			}else if msKey > ms1 && msKey < ms2{
@@ -938,6 +939,7 @@ func createChunk(data string, value map[string]string)string{
 	message := createArr(tempArr, 0, len(tempArr))
 	fmt.Println(message)
 	other := fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(data), data, message)
+	fmt.Println(other)
 	return other
 }
 
