@@ -238,8 +238,10 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		if stream_id == "*"{
 			ms := time.Now().UnixMilli()
 			truems := strconv.FormatInt(ms, 10)
+			fmt.Println("made it inside * and ms is ", truems)
 
 			for key := range streams[stream_key]{
+				fmt.Println("made it inside for loop ", key, streams[stream_key])
 				if key == truems{
 					temp_incr,_ := strconv.Atoi(strings.Split(key, "-")[1])
 					real_incr = temp_incr + 1
