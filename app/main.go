@@ -167,7 +167,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		fmt.Println("userAuth is after setting ", userAuth)
 		if !authState && !userAuth && input!="AUTH"{ 
 			fmt.Println("made it inside the authenticatino error ")
-			conn.Write([]byte("-WRONGPASS invalid username-password pair or user is disabled.\r\n"))
+			conn.Write([]byte("-NOAUTH Authentication required.\r\n"))
 			continue
 		}
 		//___________________________master mode propogation ___________________________________________
