@@ -712,17 +712,19 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	case "ACL":
 		switch statement[1]{
 		case "WHOAMI":  // have to find connection and then find user
-			if(!authenticated){
-				return "-NOAUTH Authentication required.\r\n"
-			}
 			user:="default"
 			for name,u := range users{
 				if u.Connection == conn{
 					user = name
 				}
 			}
-			// on creatino 
-			return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user) // have to loop through
+			if(slices.Contains(users[user].Flags, "nopass") && authenticated){
+				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user)
+			}else if len(users[user].Passwords) > 0 { // handle auth logic here 
+				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user)  
+			}else{
+				return "-NOAUTH Authentication required.\r\n"
+			}
 
 		case "GETUSER": 
 			user := statement[2]
@@ -747,13 +749,13 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
  			
 			_,exists := users[user] // check if user exists
-
+			
 			if(exists){ 
 				upUser := User{Connection: conn, Passwords: append(users[user].Passwords, hashPass)}
 				if(len(users[user].Passwords) ==1){ // this means just added
 					upUser = User{Connection: conn, Passwords: append(users[user].Passwords, hashPass), Flags: []string{}}
 				}
-				fmt.Println("the user is ", users[user])
+				fmt.Println("the user is ", upUser)
 				users[user] = upUser
 			}else{
 				passwords = []string{hashPass}
