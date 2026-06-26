@@ -899,38 +899,44 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		// >ms <ms2 is all valid
 		// == ms2 make sure less than or equal to index if specified
 		count := 0 
-		goodMessage := ""
+		goodMessage := []string{}
+		prevms := 0
+		previncr := 0
 
 		for data, value := range streams[key]{ // this goes through all our id's 
 			msKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
 			incrKey,_ := strconv.Atoi(strings.Split(data, "-")[1])
 			if statement[2] == "-" {
 				if msKey < ms2 || (incrKey <= incr2 && msKey == ms2){
-					goodMessage += createChunk(data, value)
+					sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
 					count++
 				}
 			}else if statement[3] == "+"{
 				if msKey > ms1 ||( incrKey >= incr && msKey == ms1){
-					goodMessage += createChunk(data, value)
+					sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
 					fmt.Println("this is good message growing ", goodMessage)
 					count++
 				}
 			}else{
 				if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
-					goodMessage += createChunk(data, value)
+					sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
 					count++
 				}else if msKey > ms1 && msKey < ms2{
-					goodMessage += createChunk(data, value)
+					sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
 					count ++ 
 					//do something with data
 				}else if msKey == ms2 && incrKey < incr2 && ms2>ms1{
-					goodMessage += createChunk(data,value)
+					sortStrArr(goodMessage, createChunk(data, value), prevms, msKey, previncr, incrKey)
 					count ++ 
 				}
 			}
+
+			prevms = msKey
+			previncr = incrKey
+			
 		}		
 		preMessage := fmt.Sprintf("*%d\r\n", count)
-		preMessage += goodMessage
+		preMessage += strings.Join(goodMessage, "")
 		return preMessage
 	case "XREAD": 	
 		startind := 0
@@ -970,6 +976,17 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		return ("+messageNotFound\r\n")
 	}
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
+
+
+func sortStrArr(arr []string, input string, prevms int, ms int, previncr int, incr int)[]string{
+	for i:=0; i<len(arr); i++{
+		if ms<prevms ||( ms==prevms && incr <= previncr){
+			return slices.Insert(arr, i, input)
+		}
+	}
+	return append(arr, input)
+}
+
 
 func waitXread(ms int, ch chan string, keys []string, idBound []string){
 	ticker := time.NewTicker(time.Duration(10) * time.Millisecond)
