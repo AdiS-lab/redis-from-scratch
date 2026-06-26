@@ -911,7 +911,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 					goodMessage += createChunk(data, value)
 					count++
 				}
-			}else if statement[2] == "+"{
+			}else if statement[3] == "+"{
 				if msKey > ms1 ||( incrKey >= incr && msKey == ms1){
 					goodMessage += createChunk(data, value)
 					count++
