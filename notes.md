@@ -136,3 +136,5 @@ it doesn't. Don't get locked into having to handle all edge, cases err on the si
 2. for clamping logic, look to max if conditionals start to nest
 3. structs and pointers are the haven for go. Can track persistence with pointers, and then 
 define custom stuff with structs
+4. statically typed means that types are known at compile time so no built in types. depends on 
+pre-knowing your storage etc. 
