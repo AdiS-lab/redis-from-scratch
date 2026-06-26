@@ -1000,10 +1000,10 @@ func xread(keys []string, idBound []string)(string, int){
 		incr,_ := strconv.Atoi(id[1]) // get id associated with it. 
 		countKeys ++ 
 		fmt.Println("this is my incr inside of xread, ", incr)
-
 		fmt.Println("this is my id and ms for each ", ms1, incr)
 		// list of ids, in each id 
 		for ids, vals := range streams[keys[i]]{
+			fmt.Println("these are vals inside of a stream ", vals)
 			msKey,_ := strconv.Atoi(strings.Split(ids, "-")[0])
 			incrKey,_ := strconv.Atoi(strings.Split(ids, "-")[1])
 			if msKey > ms1 ||( msKey == ms1 && incrKey > incr){
