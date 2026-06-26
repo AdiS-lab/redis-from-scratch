@@ -751,8 +751,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			return ""
 		}
 	case "AUTH":
-		user := statement[2]
-		password := statement[3]
+		user := statement[1]
+		password := statement[2]
 		hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
 		hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
 		if slices.Contains(users[user].Passwords, hashPass){
