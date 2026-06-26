@@ -1067,7 +1067,7 @@ func xread(keys []string, idBound []string)(string, int, string){
 
 	}
 
-	lc := fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(keys[0]), keys[0]) + fmt.Sprintf("*1\r\n%s", lastCmd[len(lastCmd)-1])
+	lc := fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(keys[0]), keys[0], fmt.Sprintf("*1\r\n%s", lastCmd[len(lastCmd)-1]))
 
 	return fmt.Sprintf("*%d\r\n", countKeys) + fullStr, totalEntries, fmt.Sprintf("*%d\r\n", countKeys) + lc
 }
