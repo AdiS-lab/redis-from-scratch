@@ -999,6 +999,7 @@ func xread(keys []string, idBound []string)(string, int){
 		ms1,_ := strconv.Atoi(id[0]) // first milliseconds
 		incr,_ := strconv.Atoi(id[1]) // get id associated with it. 
 		countKeys ++ 
+		fmt.Println("this is my incr inside of xread, ", incr)
 
 		fmt.Println("this is my id and ms for each ", ms1, incr)
 		// list of ids, in each id 
