@@ -886,6 +886,8 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		incr := 0
 		incr2 := math.MaxInt32
 
+
+
 		if len(arg1) > 1{
 			incr,_ = strconv.Atoi(arg1[1])
 		}
@@ -904,21 +906,28 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		for data, value := range streams[key]{ // this goes through all our id's 
 			msKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
 			incrKey,_ := strconv.Atoi(strings.Split(data, "-")[1])
-			fmt.Println("all other keys ", incrKey, incr)
-			fmt.Println("all toher ms ", ms1, msKey)
-			if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
-				fmt.Println("made it inside this conditional")
-				goodMessage += createChunk(data, value)
-				fmt.Println("this is good message ", goodMessage)
-				count++
-
-			}else if msKey > ms1 && msKey < ms2{
-				goodMessage += createChunk(data, value)
-				count ++ 
-				//do something with data
-			}else if msKey == ms2 && incrKey < incr2 && ms2>ms1{
-				goodMessage += createChunk(data,value)
-				count ++ 
+			if statement[1] == "-" {
+				if msKey < ms2 || (incrKey <= incr2 && msKey == ms2){
+					goodMessage += createChunk(data, value)
+					count++
+				}
+			}else if statement[2] == "+"{
+				if msKey > ms1 ||( incrKey >= incr && msKey == ms1){
+					goodMessage += createChunk(data, value)
+					count++
+				}
+			}else{
+				if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
+					goodMessage += createChunk(data, value)
+					count++
+				}else if msKey > ms1 && msKey < ms2{
+					goodMessage += createChunk(data, value)
+					count ++ 
+					//do something with data
+				}else if msKey == ms2 && incrKey < incr2 && ms2>ms1{
+					goodMessage += createChunk(data,value)
+					count ++ 
+				}
 			}
 		}		
 		preMessage := fmt.Sprintf("*%d\r\n", count)
