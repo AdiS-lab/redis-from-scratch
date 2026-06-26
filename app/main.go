@@ -230,21 +230,37 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		if(!idThere){
 			streams[stream_key][stream_id] = map[string]string{}
 		} 
-		ms,_ := strconv.Atoi(strings.Split(stream_id, "-")[0])
-		incr := strings.Split(stream_id, "-")[1]
-
-		prevms,_ := strconv.Atoi(strings.Split(prev_id, "-")[0])
-		previncr,_:= strconv.Atoi(strings.Split(prev_id, "-")[1])
-
 		real_incr := 0
-		if incr == "*" && ms==prevms{
-			if ms == prevms{
-				real_incr = previncr +1
-			}else{
-				real_incr = 0
+		ms := 0
+		prevms := 0
+		previncr := 0
+
+		if stream_id == "*"{
+			ms := time.Now().UnixMilli()
+			real_incr = 0
+
+			for key,_ := range streams[stream_key]{
+				if key == string(ms){
+					temp_incr,_ := strconv.Atoi(strings.Split(key, "-")[1])
+					real_incr = temp_incr + 1
+				}
 			}
 		}else{
-			real_incr,_ = strconv.Atoi(incr) 
+			ms,_ := strconv.Atoi(strings.Split(stream_id, "-")[0])
+			incr := strings.Split(stream_id, "-")[1]
+
+			prevms,_ := strconv.Atoi(strings.Split(prev_id, "-")[0])
+			previncr,_:= strconv.Atoi(strings.Split(prev_id, "-")[1])
+
+			if incr == "*" && ms==prevms{
+				if ms == prevms{
+					real_incr = previncr +1
+				}else{
+					real_incr = 0
+				}
+			}else{
+				real_incr,_ = strconv.Atoi(incr) 
+			}
 		}
 
 		if ms==0 && real_incr==0{
