@@ -953,7 +953,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			}
 		}
 		insideArr := fmt.Sprintf("*%d\r\n", count) + kv
-		return fmt.Sprintf("*%d\r\n", countKeys) + fmt.Sprintf("*2\r\n$%d\r\n$%s\r\n%s", len(key), key, insideArr)
+		return fmt.Sprintf("*%d\r\n", countKeys) + fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(key), key, insideArr)
 
 
 
