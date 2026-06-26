@@ -902,7 +902,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		goodMessage := ""
 		for data, value := range streams[key]{ // this goes through all our id's 
 			msKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
-			incrKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
+			incrKey,_ := strconv.Atoi(strings.Split(data, "-")[1])
 			fmt.Println("all other keys ", incrKey, incr)
 			if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
 				
