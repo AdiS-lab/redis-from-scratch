@@ -932,47 +932,93 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		preMessage := fmt.Sprintf("*%d\r\n", count)
 		preMessage += goodMessage
 		return preMessage
-	case "XREAD": 
-		length := (len(statement)-2)/2
-		keys := statement[2:2+length] 
-		idBound := statement[2+length:]
+	case "XREAD": 	
+		startind := 0
+		milliseconds := 0
+		for i, vals := range statement{
+			if vals == "BLOCKING"{
+				milliseconds,_ = strconv.Atoi(statement[i+1])
+			}else if strings.ToUpper(vals) == "STREAM"{
+				startind = i+1
+			}
+		} 
+
+		length := (len(statement)-startind)/2
+		keys := statement[startind: startind+length] 
+		idBound := statement[startind + length:]
 		fmt.Println("this is keys ", keys)
 		fmt.Println("this is idBound ", idBound)
-		
-		fullStr := ""
-		countKeys := 0
-		
-		for i:=0; i < len(keys); i++ {  
-			count:=0
-			kv := ""
-
-			id := strings.Split(idBound[i], "-")
-			ms1,_ := strconv.Atoi(id[0]) // first milliseconds
-			incr,_ := strconv.Atoi(id[1]) // get id associated with it. 
-			countKeys ++ 
-
-			fmt.Println("this is my id and ms for each ", ms1, incr)
-			// list of ids, in each id 
-			for ids, vals := range streams[keys[i]]{
-				msKey,_ := strconv.Atoi(strings.Split(ids, "-")[0])
-				incrKey,_ := strconv.Atoi(strings.Split(ids, "-")[1])
-				if msKey > ms1 ||( msKey == ms1 && incrKey >= incr){
-						kv += createChunk(ids, vals) 
-						count ++
-				}
-			}
-			insideArr := fmt.Sprintf("*%d\r\n", count) + kv
-			fullStr += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(keys[i]), keys[i], insideArr)
-
-		}
-		return fmt.Sprintf("*%d\r\n", countKeys) + fullStr
  
 
+		message, count := xread(keys, idBound)
+		if count == 0 {
+			ch := make(chan string)
+			go waitXread(milliseconds, ch, keys, idBound)
+			return <-ch
+
+		}else{
+			return message
+		}
+
+		// have some check for entries, and then if none, create channel
+		// call go func, and set a timer if, select case
+		// if channel responds with whatever, then we pass that it into the rest of this 
+		// that means create function of this, case that return func, otherwise null, else this func
+		// takes in keys + indicies already specifie
 
 	default:
 		return ("+messageNotFound\r\n")
 	}
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
+
+func waitXread(ms int, ch chan string, keys []string, idBound []string){
+	ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
+	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
+
+	for range ticker.C{
+		message, count := xread(keys, idBound)
+		if(count > 0){
+			ch <- message
+		}else if time.Now().After(deadline){
+			ch <- "*-1\r\n"
+		}	
+	}
+}
+
+
+func xread(keys []string, idBound []string)(string, int){
+	fullStr := ""
+	countKeys := 0
+	
+	for i:=0; i < len(keys); i++ {  
+		totalEntries := 0
+
+		count:=0
+		kv := ""
+
+		id := strings.Split(idBound[i], "-")
+		ms1,_ := strconv.Atoi(id[0]) // first milliseconds
+		incr,_ := strconv.Atoi(id[1]) // get id associated with it. 
+		countKeys ++ 
+
+		fmt.Println("this is my id and ms for each ", ms1, incr)
+		// list of ids, in each id 
+		for ids, vals := range streams[keys[i]]{
+			msKey,_ := strconv.Atoi(strings.Split(ids, "-")[0])
+			incrKey,_ := strconv.Atoi(strings.Split(ids, "-")[1])
+			if msKey > ms1 ||( msKey == ms1 && incrKey >= incr){
+					kv += createChunk(ids, vals) 
+					count ++
+					totalEntries ++
+			}
+		}
+		insideArr := fmt.Sprintf("*%d\r\n", count) + kv
+		fullStr += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(keys[i]), keys[i], insideArr)
+
+	}
+	return fmt.Sprintf("*%d\r\n", countKeys) + fullStr, totalEntries
+}
+
 
 func createChunk(data string, value map[string]string)string{
 	tempArr := []string{}
