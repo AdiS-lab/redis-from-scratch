@@ -981,7 +981,7 @@ func waitXread(ms int, ch chan string, keys []string, idBound []string){
 		if(count > 0){
 			ch <- message
 			ticker.Stop()
-		}else if time.Now().After(deadline){
+		}else if ms>0 && time.Now().After(deadline){
 			ch <- "*-1\r\n"
 			ticker.Stop()
 		}	
