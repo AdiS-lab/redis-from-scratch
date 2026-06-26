@@ -936,6 +936,7 @@ func createChunk(data string, value map[string]string)string{
 		tempArr = append(tempArr, key1, values)  //array of strings, back to back to back
 	}
 	message := createArr(tempArr, 0, len(tempArr))
+	fmt.Println(message)
 	other := fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(data), data, message)
 	return other
 }
