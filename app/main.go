@@ -933,28 +933,35 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		preMessage += goodMessage
 		return preMessage
 	case "XREAD": 
-		key := statement[2]
-		id := strings.Split(statement[3], "-")
-		ms1,_ := strconv.Atoi(id[0]) //  first milliseconds
-		incr,_ := strconv.Atoi(id[0]) 
+		length := (len(statement)-2)/2
+		keys := statement[2:length] 
+		idBound := statement[2+length:]
+		
+		fullStr := ""
+		countKeys := 0
+		for i:=0; i < len(keys); i++ {  
+			count:=0
+			kv := ""
 
-			
-		countKeys := 1
-		count := 0 
-		kv := ""
-
-		// list of ids, in each id 
-		for ids, vals := range streams[key]{
-			msKey,_ := strconv.Atoi(strings.Split(ids, "-")[0])
-			incrKey,_ := strconv.Atoi(strings.Split(ids, "-")[1])
-			if msKey > ms1 ||( msKey == ms1 && incrKey >= incr){
-					kv += createChunk(ids, vals) 
-					count ++
+			id := strings.Split(idBound[i], "-")
+			ms1,_ := strconv.Atoi(id[0]) // first milliseconds
+			incr,_ := strconv.Atoi(id[0]) // get id associated with it. 
+			countKeys ++ 
+			// list of ids, in each id 
+			for ids, vals := range streams[keys[i]]{
+				msKey,_ := strconv.Atoi(strings.Split(ids, "-")[0])
+				incrKey,_ := strconv.Atoi(strings.Split(ids, "-")[1])
+				if msKey > ms1 ||( msKey == ms1 && incrKey >= incr){
+						kv += createChunk(ids, vals) 
+						count ++
+				}
 			}
-		}
-		insideArr := fmt.Sprintf("*%d\r\n", count) + kv
-		return fmt.Sprintf("*%d\r\n", countKeys) + fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(key), key, insideArr)
+			insideArr := fmt.Sprintf("*%d\r\n", count) + kv
+			fullStr += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(keys[i]), keys[i], insideArr)
 
+		}
+		return fmt.Sprintf("*%d\r\n", countKeys) + fullStr
+ 
 
 
 	default:
