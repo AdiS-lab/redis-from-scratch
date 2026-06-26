@@ -954,6 +954,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		if count == 0 {
 			ch := make(chan string)
 			go waitXread(milliseconds, ch, keys, idBound)
+			fmt.Println("this is what channel is producing ", <- ch)
 			return <-ch
 
 		}else{
