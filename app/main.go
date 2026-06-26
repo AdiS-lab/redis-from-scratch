@@ -904,6 +904,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			msKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
 			incrKey,_ := strconv.Atoi(strings.Split(data, "-")[1])
 			fmt.Println("all other keys ", incrKey, incr)
+			fmt.Println("all toher ms ", ms1, msKey)
 			if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
 				
 				goodMessage += createChunk(data, value)
