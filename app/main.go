@@ -55,6 +55,18 @@ var expired = make(map[string]int)
 var totalSubs = make(map[string][]net.Conn)
 var sortedSets = make(map[string][]Entry)  // in the key we should have a list populated by multiple entries, if we want to create a new one, we just do so. 
 var users = make(map[string]User) // map each connection to a user
+var streams = make(map[string]map[string]map[string]string) 
+// name: {
+// 	id: {
+// 		key: value
+// 		key: valye
+// 		key: value
+// 	}
+// 	id{
+// 		key: value
+// 		key: value
+// 	}
+// }
 var authState = true 
 
 var watchCheck bool
@@ -798,6 +810,16 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			return "+string\r\n"
 		}	
 		return "+none\r\n"
+	case "XADD":
+		//  redis-cli XADD stream_key 1526919030474-0 temperature 36 humidity 95 "1526919030474-0"
+		stream_key := statement[1] 
+		stream_id := statement[2]
+		for i:=3; i<len(statement); i+=2{
+			key := statement[i] 
+			value := statement[i+1]
+			streams[stream_key][stream_id][key] = value
+		}
+		return fmt.Sprintf("$%d\r\n%s\r\n", len(stream_id), stream_id)
 	default:
 		return ("+messageNotFound\r\n")
 	}
