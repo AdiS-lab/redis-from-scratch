@@ -779,9 +779,14 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		password := statement[2]
 		hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
 		hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
-		fmt.Println("made it to AUTH cmd, ", user, password, hashPass )
-		fmt.Println("this is current user password ", users[user].Passwords)
-		if slices.Contains(users[user].Passwords, hashPass){
+		_,exists := users[user]
+		if(!exists){
+			newUser := User{Connection:conn, Passwords:[]string{hashPass}, }
+			users[user] = newUser
+			*userAuth = true	
+			authState = false
+			return "+OK\r\n"
+		}else if slices.Contains(users[user].Passwords, hashPass){
 			*userAuth = true
 			return "+OK\r\n"
 		}
