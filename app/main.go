@@ -978,6 +978,7 @@ func waitXread(ms int, ch chan string, keys []string, idBound []string){
 
 	for range ticker.C{
 		message, count := xread(keys, idBound)
+		fmt.Println(message, count)
 		if(count > 0){
 			ch <- message
 			ticker.Stop()
