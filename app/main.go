@@ -886,8 +886,6 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		incr := 0
 		incr2 := math.MaxInt32
 
-
-
 		if len(arg1) > 1{
 			incr,_ = strconv.Atoi(arg1[1])
 		}
