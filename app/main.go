@@ -826,6 +826,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		for i:=3; i<len(statement); i+=2{
 			key := statement[i] 
 			value := statement[i+1]
+			fmt.Println("this is key and value ", key, value)
 			streams[stream_key][stream_id][key] = value
 		}
 		return fmt.Sprintf("$%d\r\n%s\r\n", len(stream_id), stream_id)
