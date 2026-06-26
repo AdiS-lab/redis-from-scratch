@@ -55,7 +55,7 @@ var expired = make(map[string]int)
 var totalSubs = make(map[string][]net.Conn)
 var sortedSets = make(map[string][]Entry)  // in the key we should have a list populated by multiple entries, if we want to create a new one, we just do so. 
 var users = make(map[string]User) // map each connection to a user
-var authenticated = true 
+var authState = true 
 
 var watchCheck bool
 var firstPONG bool
@@ -76,6 +76,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	firstPONG = false
 	firstOK = false
 	expectingRDB = false
+	userAuth := false
 	var subscribeMode bool
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
 	subStatements := []string{"SUBSCRIBE", "PUBLISH", "UNSUBSCRIBE"}
@@ -128,7 +129,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		 for message != nil{
 			message,_ = parser(reader)
 			if(message != nil){
-				execute(message,conn,fullPort)
+				execute(message,conn,fullPort, userAuth)
 			}
 		 }
 		 
@@ -161,9 +162,12 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			input = strings.ToUpper(statement[0])
 		}
 		// manage masterUpdate by checking when doesn't equal one of those. 
-
-
 		fmt.Println("before going into check is ", masterUpdate)
+		//______________________________ auth mode _________________________________________________
+		if !authState && !userAuth && input!="AUTH"{ 
+			conn.Write([]byte("-WRONGPASS invalid username-password pair or user is disabled.\r\n"))
+			continue
+		}
 		//___________________________master mode propogation ___________________________________________
 		if masterUpdate == true && data["role"] == "master"{//after three way connection
 			fmt.Println("propogating down to slave here's statement ", statement)
@@ -238,7 +242,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					message := ""
 					fmt.Println(queue)
 					for i := 0; i < len(queue); i++ {
-						writeVal := execute(queue[i], conn, fullPort)
+						writeVal := execute(queue[i], conn, fullPort, userAuth)
 						writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
 					}
 					count := len(writeArr)
@@ -310,7 +314,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			if input == "" { // means nothing was sent in command, or smth happened along the way
 				continue
 			} else {
-				writeVal := execute(statement, conn, fullPort) 
+				writeVal := execute(statement, conn, fullPort, userAuth) 
 				// we've created manifest file + appenddirname + appendfilename
 				if(masterUpdate && data["role"] == "slave"){//in case of slave + needing to update offset
 					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
@@ -330,7 +334,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 }
 
 //______________________________ reading command __________________________________________
-func execute(statement []string, conn net.Conn, fullPort string) string {
+func execute(statement []string, conn net.Conn, fullPort string, userAuth bool) string {
 	switch strings.ToUpper(statement[0]) {
 	case "PING":
 		fmt.Println("made it inside PING at least")
@@ -718,9 +722,9 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 					user = name
 				}
 			}
-			if(slices.Contains(users[user].Flags, "nopass") && authenticated){
+			if(slices.Contains(users[user].Flags, "nopass") && authState){
 				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user)
-			}else if len(users[user].Passwords) > 0 { // handle auth logic here 
+			}else if userAuth { // handle auth logic here 
 				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user)  
 			}else{
 				return "-NOAUTH Authentication required.\r\n"
@@ -743,7 +747,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			if len(statement) > 3 { // if password exists
 				flags =[]string{}
 				password = statement[3][1:]
-				authenticated = false 
+				authState = false
+				userAuth = true 
 			} 							
 			hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
 			hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
@@ -772,6 +777,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
 		hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
 		if slices.Contains(users[user].Passwords, hashPass){
+			userAuth = true
 			return "+OK\r\n"
 		}
 		return "-WRONGPASS invalid username-password pair or user is disabled.\r\n"
@@ -881,12 +887,6 @@ func shiftBackVals(num int)int{
     num = (num | (num >> 16)) & 0x00000000FFFFFFFF
 	return num
 }
-
-
-
-
-
-
 
 func sortEntries(arr []Entry, e Entry)[]Entry{
 	fmt.Println("this is the arr before sorting ", arr)
