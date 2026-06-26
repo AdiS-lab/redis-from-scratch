@@ -243,6 +243,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			continue		
 		}
 		if incr == "*" && ms==prevms{
+			fmt.
 			if ms == prevms{
 				real_incr = previncr +1
 			}else{
@@ -253,8 +254,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		}
 
 
-
-		fmt.Println("this is current id and previous ",stream_id, prev_id)
 		if ms==0 && real_incr==0{
 			conn.Write([]byte("-ERR The ID specified in XADD must be greater than 0-0\r\n"))
 			continue
@@ -271,7 +270,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			fmt.Println("this is id ", stream_id)
 			streams[stream_key][stream_id][key] = value
 		}
-		prev_id = fmt.Sprintf("%d-%d",ms,incr)
+		prev_id = fmt.Sprintf("%d-%d",ms,real_incr)
 		conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(prev_id), prev_id)))
 		} else if input == "WATCH" {// set keys that can't be changed
 			if isQueue == true {
