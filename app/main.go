@@ -1017,10 +1017,10 @@ func waitOnDollar(ms int, ch chan string, keys []string, idBound []string, prevC
 	deadline := time.Now().Add(time.Duration(ms) * time.Millisecond)
 
 	for range ticker.C{
-		message, count,_ := xread(keys, idBound)
+		message, count,lastCmd := xread(keys, idBound)
 		fmt.Println(message, count)
 		if(count > prevCount){
-			ch <- message
+			ch <- lastCmd
 			ticker.Stop()
 		}else if ms>0 && time.Now().After(deadline){
 			ch <- "*-1\r\n"
