@@ -243,7 +243,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			continue		
 		}
 		if incr == "*" && ms==prevms{
-			if ms > prevms{
+			if ms == prevms{
 				real_incr = previncr +1
 			}else{
 				real_incr = 0
