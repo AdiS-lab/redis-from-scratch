@@ -779,8 +779,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		password := statement[2]
 		hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
 		hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
-		_,exists := users[user]
-		if(!exists){
+		if(len(users[user].Passwords) == 0){
 			newUser := User{Connection:conn, Passwords:[]string{hashPass}, }
 			users[user] = newUser
 			*userAuth = true	
