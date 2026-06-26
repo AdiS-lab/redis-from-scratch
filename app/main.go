@@ -1003,6 +1003,8 @@ func xread(keys []string, idBound []string)(string, int){
 		countKeys ++ 
 		fmt.Println("this is my incr inside of xread, ", incr)
 		fmt.Println("this is my id and ms for each ", ms1, incr)
+
+		fmt.Println("this is streams inside XREAD ", streams)
 		// list of ids, in each id 
 		for ids, vals := range streams[keys[i]]{
 			fmt.Println("these are vals inside of a stream ", vals)
