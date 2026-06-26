@@ -129,7 +129,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		 for message != nil{
 			message,_ = parser(reader)
 			if(message != nil){
-				execute(message,conn,fullPort, userAuth)
+				execute(message,conn,fullPort, &userAuth)
 			}
 		 }
 		 
@@ -244,7 +244,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 					message := ""
 					fmt.Println(queue)
 					for i := 0; i < len(queue); i++ {
-						writeVal := execute(queue[i], conn, fullPort, userAuth)
+						writeVal := execute(queue[i], conn, fullPort, &userAuth)
 						writeArr = append(writeArr, writeVal) // loop through queue, and then one by one append our message another string slice
 					}
 					count := len(writeArr)
@@ -316,7 +316,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			if input == "" { // means nothing was sent in command, or smth happened along the way
 				continue
 			} else {
-				writeVal := execute(statement, conn, fullPort, userAuth) 
+				writeVal := execute(statement, conn, fullPort, &userAuth) 
 				// we've created manifest file + appenddirname + appendfilename
 				if(masterUpdate && data["role"] == "slave"){//in case of slave + needing to update offset
 					curr_offset,_ := strconv.Atoi(data["master_repl_offset"])
@@ -336,7 +336,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 }
 
 //______________________________ reading command __________________________________________
-func execute(statement []string, conn net.Conn, fullPort string, userAuth bool) string {
+func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool) string {
 	switch strings.ToUpper(statement[0]) {
 	case "PING":
 		fmt.Println("made it inside PING at least")
@@ -726,7 +726,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth bool) 
 			}
 			if(slices.Contains(users[user].Flags, "nopass") && authState){
 				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user)
-			}else if userAuth { // handle auth logic here 
+			}else if *userAuth { // handle auth logic here 
 				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user)  
 			}else{
 				return "-NOAUTH Authentication required.\r\n"
@@ -750,7 +750,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth bool) 
 				flags =[]string{}
 				password = statement[3][1:]
 				authState = false
-				userAuth = true 
+				*userAuth = true 
 			} 							
 			hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
 			hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
@@ -779,7 +779,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth bool) 
 		hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
 		hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
 		if slices.Contains(users[user].Passwords, hashPass){
-			userAuth = true
+			*userAuth = true
 			return "+OK\r\n"
 		}
 		return "-WRONGPASS invalid username-password pair or user is disabled.\r\n"

@@ -134,3 +134,5 @@ __________________________________________________________________
 1. write out core logic, check if it handles edge cases on own, and then add on to it after if
 it doesn't. Don't get locked into having to handle all edge, cases err on the side of elegance
 2. for clamping logic, look to max if conditionals start to nest
+3. structs and pointers are the haven for go. Can track persistence with pointers, and then 
+define custom stuff with structs
