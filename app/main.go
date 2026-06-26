@@ -713,7 +713,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		switch statement[1]{
 		case "WHOAMI":  // have to find connection and then find user
 			if(!authenticated){
-				return "-NOAUTH Authentication required."
+				return "-NOAUTH Authentication required.\r\n"
 			}
 			user:="default"
 			for name,u := range users{
