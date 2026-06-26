@@ -1030,7 +1030,7 @@ func waitOnDollar(ms int, ch chan string, keys []string, idBound []string, prevC
 }
 
 
-func xread(keys []string, idBound []string)(string, int, string){
+func xread(keys []string, idBound []string)(string, int){
 	fullStr := ""
 	countKeys := 0
 	totalEntries := 0
@@ -1060,10 +1060,9 @@ func xread(keys []string, idBound []string)(string, int, string){
 		fullStr += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(keys[i]), keys[i], insideArr)
 
 	}
+	fmt.Println("this is my last command ", lastCmd)
 
-	lc := fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(keys[0]), keys[0], fmt.Sprintf("*1\r\n%s", lastCmd[len(lastCmd)-1]))
-
-	return fmt.Sprintf("*%d\r\n", countKeys) + fullStr, totalEntries, fmt.Sprintf("*%d\r\n", countKeys) + lc
+	return fmt.Sprintf("*%d\r\n", countKeys) + fullStr, totalEntries
 }
 
 
