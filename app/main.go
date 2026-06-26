@@ -231,14 +231,9 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			streams[stream_key][stream_id] = map[string]string{}
 		}
 
-		idParts := strings.Split(stream_id, "-")
-		prevParts := strings.Split(prev_id, "-")
+		ms, incr := SplitId(stream_id, streams[stream_key][stream_id]) 
+		prevms, previncr := SplitId(prev_id, streams[stream_key][stream_id]) 
 
-		prevms,_ := strconv.Atoi(prevParts[0])
-		previncr,_ := strconv.Atoi(prevParts[1])
-
-		ms,_ := strconv.Atoi(idParts[0]) 
-		incr,_ := strconv.Atoi(idParts[1])
 		fmt.Println("this is current id and previous ",stream_id, prev_id)
 		if ms==0 && incr==0{
 			conn.Write([]byte("-ERR The ID specified in XADD must be greater than 0-0\r\n"))
@@ -256,7 +251,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			fmt.Println("this is id ", stream_id)
 			streams[stream_key][stream_id][key] = value
 		}
-		prev_id = stream_id
+		prev_id = fmt.Sprintf("%d-%d",ms,incr)
 		conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(stream_id), stream_id)))
 		} else if input == "WATCH" {// set keys that can't be changed
 			if isQueue == true {
@@ -863,6 +858,26 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		return ("+messageNotFound\r\n")
 	}
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
+
+func SplitId(id string, store map[string]string)(int, int){
+	idParts := strings.Split(id, "-")
+	ms,_ := strconv.Atoi(idParts[0])
+	incr := idParts[1] // initially equals string
+
+	maxid := 0 
+	if(incr == "*"){
+		for key,_ := range store{
+			id, _ := strconv.Atoi(strings.Split(key, "-")[1]) // returns an integer
+			if id > maxid{
+				maxid = id
+			}
+		}
+		return ms, maxid+1
+	}else{
+		maxid,_ = strconv.Atoi(incr)
+		return ms, maxid
+	}
+}
 
 func hsDist(lat1 float64,lat2 float64, long1 float64, long2 float64) float64 {
 	const rEarth = 6372797.560856  
