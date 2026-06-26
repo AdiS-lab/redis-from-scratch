@@ -904,8 +904,9 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			msKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
 			incrKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
 
-			if ms1 == msKey && incr <= incrKey{// have to go inside and get all kv pairs
+			if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
 				goodMessage += createChunk(data, value)
+
 				count++
 
 			}else if msKey > ms1 && msKey < ms2{
