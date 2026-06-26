@@ -229,16 +229,36 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		_,idThere := streams[stream_key][stream_id] // if current id is 
 		if(!idThere){
 			streams[stream_key][stream_id] = map[string]string{}
+		} 
+		real_incr := 0
+
+		ms,_ := strconv.Atoi(strings.Split(stream_id, "-")[0])
+		incr := strings.Split(stream_id, "-")[1]
+
+		prevms,_ := strconv.Atoi(strings.Split(prev_id, "-")[0])
+		previncr,_:= strconv.Atoi(strings.Split(prev_id, "-")[1])
+
+		if ms<prevms{
+			conn.Write([]byte("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n"))
+			continue		
+		}
+		if incr == "*" && ms==prevms{
+			if ms > prevms{
+				real_incr = previncr +1
+			}else{
+				real_incr = 0
+			}
+		}else{
+			real_incr,_ = strconv.Atoi(incr) 
 		}
 
-		ms, incr := SplitId(stream_id, streams[stream_key][stream_id]) 
-		prevms, previncr := SplitId(prev_id, streams[stream_key][stream_id]) 
+
 
 		fmt.Println("this is current id and previous ",stream_id, prev_id)
-		if ms==0 && incr==0{
+		if ms==0 && real_incr==0{
 			conn.Write([]byte("-ERR The ID specified in XADD must be greater than 0-0\r\n"))
 			continue
-		}else if ms<prevms || (ms == prevms && incr<=previncr){
+		}else if ms<prevms || (ms == prevms && real_incr<=previncr){
 			conn.Write([]byte("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n"))
 			continue
 		}
@@ -859,25 +879,6 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 	}
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
 
-func SplitId(id string, store map[string]string)(int, int){
-	idParts := strings.Split(id, "-")
-	ms,_ := strconv.Atoi(idParts[0])
-	incr := idParts[1] // initially equals string
-
-	maxid := 0 
-	if(incr == "*"){
-		for key,_ := range store{
-			id, _ := strconv.Atoi(strings.Split(key, "-")[1]) // returns an integer
-			if id > maxid{
-				maxid = id
-			}
-		}
-		return ms, maxid+1
-	}else{
-		maxid,_ = strconv.Atoi(incr)
-		return ms, maxid
-	}
-}
 
 func hsDist(lat1 float64,lat2 float64, long1 float64, long2 float64) float64 {
 	const rEarth = 6372797.560856  
