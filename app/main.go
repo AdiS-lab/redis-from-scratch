@@ -83,16 +83,20 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 	
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	var queue [][]string
+	var subscribeMode bool
+	var channelArr []string
+
+	prev_id := "0-0" // every stream has to have their own. if stream don't exist then reset prev_id
+	// 
 	isQueue := false
 	watchCheck = false
 	firstPONG = false
 	firstOK = false
 	expectingRDB = false
 	userAuth := false
-	var subscribeMode bool
+
 	writeStatements := []string{"SET", "RPUSH", "LPUSH", "INCR", "LPOP", "BLPOP"} // defining arr of write cmds. 
 	subStatements := []string{"SUBSCRIBE", "PUBLISH", "UNSUBSCRIBE"}
-	var channelArr []string
 
 	otherDir := configs["dir"] 
 	filePath := configs["dbfilename"]
@@ -113,7 +117,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			// go waitKey(allKeys[i], ms)
 		}
 	}
-
+	// executing everything in rdb file
 	_, exists := configs["manifest"]
 	if exists{ 
 		 info,_ = os.ReadFile(configs["manifest"])
@@ -212,6 +216,52 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			// but length is bad, then or isQueue = false
 			isQueue = true
 			conn.Write([]byte("+OK\r\n"))
+		} else if input == "XADD"{
+		//  redis-cli XADD stream_key 1526919030474-0 temperature 36 humidity 95 "1526919030474-0"
+		stream_key := statement[1] 
+		stream_id := statement[2]	
+
+		_,exists := streams[stream_key] 
+		if !exists { // it's a key value, then key value, intiialized as empty, for lists we use {}
+			streams[stream_key] = map[string]map[string]string{}
+		}
+		_,idThere := streams[stream_key][stream_id]
+		if(!idThere){
+			streams[stream_key][stream_id] = map[string]string{}
+			prev_id = "0-0"
+		}
+
+		idParts := strings.Split(stream_id, "-")
+		prevParts := strings.Split(prev_id, "-")
+
+		prevms,_ := strconv.Atoi(prevParts[0])
+		previncr,_ := strconv.Atoi(prevParts[1])
+
+		ms,_ := strconv.Atoi(idParts[0]) 
+		incr,_ := strconv.Atoi(idParts[1])
+
+		if ms==0 && incr==0{
+			conn.Write([]byte("-ERR The ID specified in XADD must be greater than 0-0"))
+			continue
+		}else if ms<prevms{
+			conn.Write([]byte("-ERR The ID specified in XADD is equal or smaller than the target stream top item"))
+			continue
+		}else if ms == prevms && incr<=previncr{
+			conn.Write([]byte("-ERR The ID specified in XADD is equal or smaller than the target stream top item"))
+			continue
+		}
+
+		for i:=3; i<len(statement); i+=2{
+			fmt.Println("this is the streams ", streams)
+			key := statement[i] 
+			value := statement[i+1]
+			fmt.Println("this is key and value ", key, value)
+			fmt.Println("this is id ", stream_id)
+			streams[stream_key][stream_id][key] = value
+		}
+		prev_id = stream_id
+		// prev_id can be by index, or can be by tracking smth. 
+		conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(stream_id), stream_id)))
 		} else if input == "WATCH" {// set keys that can't be changed
 			if isQueue == true {
 				conn.Write([]byte("-ERR WATCH inside MULTI is not allowed\r\n"))
@@ -301,7 +351,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 				fmt.Println("channel updated ? " , channelArr)
 			}
 			conn.Write([]byte(fmt.Sprintf("*3\r\n$%d\r\n%s\r\n$%d\r\n%s\r\n:%d\r\n",len("subscribe"), "subscribe", len(channel), channel, numChannels)))
-		}else if(input ==  "UNSUBSCRIBE"){
+		} else if(input ==  "UNSUBSCRIBE"){
 			//pop channel arr as well
 			channelName := statement[1]
 			if slices.Contains(totalSubs[channelName], conn){
@@ -319,7 +369,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			}
 			conn.Write([]byte(fmt.Sprintf("*3\r\n$11\r\nunsubscribe\r\n$%d\r\n%s\r\n:%d\r\n", len(channelName), channelName, len(channelArr))))
 
-		}else if isQueue == true && len(statement) > 0 {// to actually put stuff inside our queue
+		} else if isQueue == true && len(statement) > 0 {// to actually put stuff inside our queue
 
 			queue = append(queue, statement)
 			conn.Write([]byte("+QUEUED\r\n"))
@@ -813,24 +863,6 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			return "+stream\r\n"
 		}
 		return "+none\r\n"
-	case "XADD":
-		//  redis-cli XADD stream_key 1526919030474-0 temperature 36 humidity 95 "1526919030474-0"
-		stream_key := statement[1] 
-		stream_id := statement[2]
-		_,exists := streams[stream_key] 
-		if !exists { // it's a key value, then key value, intiialized as empty, for lists we use {}
-			streams[stream_key] = map[string]map[string]string{}
-			streams[stream_key][stream_id] = map[string]string{}
-		}
-		for i:=3; i<len(statement); i+=2{
-			fmt.Println("this is the streams ", streams)
-			key := statement[i] 
-			value := statement[i+1]
-			fmt.Println("this is key and value ", key, value)
-			fmt.Println("this is id ", stream_id)
-			streams[stream_key][stream_id][key] = value
-		}
-		return fmt.Sprintf("$%d\r\n%s\r\n", len(stream_id), stream_id)
 	default:
 		return ("+messageNotFound\r\n")
 	}
