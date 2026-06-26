@@ -224,12 +224,11 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		_,exists := streams[stream_key] 
 		if !exists { // it's a key value, then key value, intiialized as empty, for lists we use {}
 			streams[stream_key] = map[string]map[string]string{}
-		}
-		_,idThere := streams[stream_key][prev_id]
-		if(!idThere){
-			fmt.Println("making it in here and resetting the previous id")
-			streams[stream_key][stream_id] = map[string]string{}
 			prev_id = "0-0"
+		}
+		_,idThere := streams[stream_key][stream_id] // if current id is 
+		if(!idThere){
+			streams[stream_key][stream_id] = map[string]string{}
 		}
 
 		idParts := strings.Split(stream_id, "-")
