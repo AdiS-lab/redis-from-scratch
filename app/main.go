@@ -164,6 +164,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		// manage masterUpdate by checking when doesn't equal one of those. 
 		fmt.Println("before going into check is ", masterUpdate)
 		//______________________________ auth mode _________________________________________________
+		fmt.Println("userAuth is after setting ", userAuth)
 		if !authState && !userAuth && input!="AUTH"{ 
 			fmt.Println("made it inside the authenticatino error ")
 			conn.Write([]byte("-WRONGPASS invalid username-password pair or user is disabled.\r\n"))
