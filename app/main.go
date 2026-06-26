@@ -956,9 +956,23 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		fmt.Println("this is idBound ", idBound)
 		
 		if idBound[0] == "$"{
-			_, count, maxId:= xread(keys, []string{"0-0"})
+			temp_arr := []string{}
+			prevms := 0 
+			previncr := 0 
+
+			for key, _ := range streams[keys[0]]{
+				ms,_ := strconv.Atoi(strings.Split(key, "-")[0])
+				incr,_ := strconv.Atoi(strings.Split(key, "-")[1])
+	
+				temp_arr = sortStrArr(temp_arr, key, prevms, ms, previncr, incr)
+				prevms = ms
+				previncr = incr
+			}
+			maxId := temp_arr[len(temp_arr)-1]
+
+
 			ch1 := make(chan string)
-			go waitOnDollar(milliseconds, ch1, keys, []string{maxId}, count) 
+			go waitXread(milliseconds, ch1, keys, []string{maxId}) 
 			return <- ch1
 
 		}else{
@@ -1062,6 +1076,7 @@ func xread(keys []string, idBound []string)(string, int, string){
 	maxId:="0-0"
 	if len(lastCmd) > 1{
 		maxId = lastCmd[len(lastCmd)-1]
+		fmt.Println(maxId)
 	}
 	
 	return fmt.Sprintf("*%d\r\n", countKeys) + fullStr, totalEntries, maxId
