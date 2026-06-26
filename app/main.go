@@ -1059,9 +1059,12 @@ func xread(keys []string, idBound []string)(string, int, string){
 		insideArr := fmt.Sprintf("*%d\r\n", count) + kv
 		fullStr += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(keys[i]), keys[i], insideArr)
 	}
+	maxId:="0-0"
+	if len(lastCmd) > 1{
+		maxId = lastCmd[len(lastCmd)-1]
+	}
 	
-	
-	return fmt.Sprintf("*%d\r\n", countKeys) + fullStr, totalEntries, lastCmd[len(lastCmd)-1]
+	return fmt.Sprintf("*%d\r\n", countKeys) + fullStr, totalEntries, maxId
 }
 
 
