@@ -248,11 +248,11 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			}
 		}else{
 			fmt.Println("made it inside the second step hwere not *")
-			ms,_ := strconv.Atoi(strings.Split(stream_id, "-")[0])
+			ms,_ = strconv.Atoi(strings.Split(stream_id, "-")[0])
 			incr := strings.Split(stream_id, "-")[1]
 
-			prevms,_ := strconv.Atoi(strings.Split(prev_id, "-")[0])
-			previncr,_:= strconv.Atoi(strings.Split(prev_id, "-")[1])
+			prevms,_ = strconv.Atoi(strings.Split(prev_id, "-")[0])
+			previncr,_ = strconv.Atoi(strings.Split(prev_id, "-")[1])
 
 			if incr == "*"{
 				fmt.Println("made it inside the incr step" )
