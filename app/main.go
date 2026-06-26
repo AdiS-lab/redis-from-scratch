@@ -252,7 +252,7 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 			streams[stream_key][stream_id][key] = value
 		}
 		prev_id = fmt.Sprintf("%d-%d",ms,incr)
-		conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(stream_id), stream_id)))
+		conn.Write([]byte(fmt.Sprintf("$%d\r\n%s\r\n", len(prev_id), prev_id)))
 		} else if input == "WATCH" {// set keys that can't be changed
 			if isQueue == true {
 				conn.Write([]byte("-ERR WATCH inside MULTI is not allowed\r\n"))
