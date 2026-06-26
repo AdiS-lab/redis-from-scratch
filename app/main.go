@@ -1005,7 +1005,7 @@ func xread(keys []string, idBound []string)(string, int){
 		for ids, vals := range streams[keys[i]]{
 			msKey,_ := strconv.Atoi(strings.Split(ids, "-")[0])
 			incrKey,_ := strconv.Atoi(strings.Split(ids, "-")[1])
-			if msKey > ms1 ||( msKey == ms1 && incrKey >= incr){
+			if msKey > ms1 ||( msKey == ms1 && incrKey > incr){
 					kv += createChunk(ids, vals) 
 					count ++
 					totalEntries ++
