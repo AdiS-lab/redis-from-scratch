@@ -758,7 +758,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		if slices.Contains(users[user].Passwords, hashPass){
 			return "+OK\r\n"
 		}
-		return "-ERR WRONGPASS invalid username-password pair or user is disabled.\r\n"
+		return "-WRONGPASS invalid username-password pair or user is disabled.\r\n"
 
 	default:
 		return ("+messageNotFound\r\n")
