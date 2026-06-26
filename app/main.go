@@ -938,7 +938,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		for i, vals := range statement{
 			if vals == "BLOCKING"{
 				milliseconds,_ = strconv.Atoi(statement[i+1])
-			}else if strings.ToUpper(vals) == "STREAM"{
+			}else if strings.ToUpper(vals) == "STREAMS"{
 				startind = i+1
 			}
 		} 
