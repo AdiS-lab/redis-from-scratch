@@ -810,7 +810,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		if(storageExists){
 			return "+string\r\n"
 		}else if streamExists{
-			return "+streams\r\n"
+			return "+stream\r\n"
 		}
 		return "+none\r\n"
 	case "XADD":
