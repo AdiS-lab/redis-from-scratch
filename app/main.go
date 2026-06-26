@@ -989,10 +989,9 @@ func waitXread(ms int, ch chan string, keys []string, idBound []string){
 func xread(keys []string, idBound []string)(string, int){
 	fullStr := ""
 	countKeys := 0
+	totalEntries := 0
 	
 	for i:=0; i < len(keys); i++ {  
-		totalEntries := 0
-
 		count:=0
 		kv := ""
 
