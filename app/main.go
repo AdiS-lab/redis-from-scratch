@@ -906,7 +906,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			fmt.Println("all other keys ", incrKey, incr)
 			fmt.Println("all toher ms ", ms1, msKey)
 			if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
-				
+				fmt.Println("made it inside this conditional")
 				goodMessage += createChunk(data, value)
 				count++
 
@@ -931,6 +931,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 
 func createChunk(data string, value map[string]string)string{
 	tempArr := []string{}
+	fmt.Print("made it inside create chunk  ", value)
 	for key1,values := range value{ 
 		tempArr = append(tempArr, key1, values)  //array of strings, back to back to back
 	}
