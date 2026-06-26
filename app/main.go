@@ -701,8 +701,8 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	case "ACL":
 		if statement[1] == "WHOAMI" {
 			return "$7\r\ndefault\r\n"
-		}else if statement[1] == "GETUSER"{
-			return "*2\r\n$5\r\nflags\r\n*0\r\n"
+		}else if statement[1] == "GETUSER"{ 
+			return fmt.Sprintf("*2\r\n$5\r\nflags\r\n*1\r\n$%d\r\n%s\r\n", len("no pass"), "no pass")
 		}
 		return ""
 	default:
