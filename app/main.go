@@ -1049,6 +1049,7 @@ func readRDB(info []byte) ([]string, []string, []string) {
 				count++
 				i = i + 3 + realLen + realLen2
 			}
+			break
 		} else {
 			i++
 		}
