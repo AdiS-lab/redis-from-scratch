@@ -900,6 +900,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		// == ms2 make sure less than or equal to index if specified
 		count := 0 
 		goodMessage := ""
+
 		for data, value := range streams[key]{ // this goes through all our id's 
 			msKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
 			incrKey,_ := strconv.Atoi(strings.Split(data, "-")[1])
@@ -908,7 +909,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
 				fmt.Println("made it inside this conditional")
 				goodMessage += createChunk(data, value)
-				fmt.Println(goodMessage)
+				fmt.Println("this is good message ", goodMessage)
 				count++
 
 			}else if msKey > ms1 && msKey < ms2{
@@ -920,10 +921,9 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 				count ++ 
 			}
 		}		
-		fmt.Println("this is count afterwards ", count)
 		preMessage := fmt.Sprintf("*%d\r\n", count)
 		preMessage += goodMessage
-		return goodMessage
+		return preMessage
 
 	default:
 		return ("+messageNotFound\r\n")
