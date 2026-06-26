@@ -979,8 +979,10 @@ func waitXread(ms int, ch chan string, keys []string, idBound []string){
 		message, count := xread(keys, idBound)
 		if(count > 0){
 			ch <- message
+			ticker.Stop()
 		}else if time.Now().After(deadline){
 			ch <- "*-1\r\n"
+			ticker.Stop()
 		}	
 	}
 }
@@ -1004,6 +1006,8 @@ func xread(keys []string, idBound []string)(string, int){
 		// list of ids, in each id 
 		for ids, vals := range streams[keys[i]]{
 			fmt.Println("these are vals inside of a stream ", vals)
+			fmt.Println("these are vals inside of a stream ", ids)
+
 			msKey,_ := strconv.Atoi(strings.Split(ids, "-")[0])
 			incrKey,_ := strconv.Atoi(strings.Split(ids, "-")[1])
 			if msKey > ms1 ||( msKey == ms1 && incrKey > incr){
