@@ -55,7 +55,7 @@ var expired = make(map[string]int)
 var totalSubs = make(map[string][]net.Conn)
 var sortedSets = make(map[string][]Entry)  // in the key we should have a list populated by multiple entries, if we want to create a new one, we just do so. 
 var users = make(map[string]User) // map each connection to a user
-var nopass = true 
+var authenticated = true 
 
 var watchCheck bool
 var firstPONG bool
@@ -712,17 +712,17 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 	case "ACL":
 		switch statement[1]{
 		case "WHOAMI":  // have to find connection and then find user
+			if(!authenticated){
+				return "-NOAUTH Authentication required."
+			}
 			user:="default"
 			for name,u := range users{
 				if u.Connection == conn{
 					user = name
 				}
 			}
-			if(users[user].Connection == conn){
-				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user) // have to loop through
-			}else{
-				return "-NOAUTH Authentication required."
-			}
+			// on creatino 
+			return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user) // have to loop through
 
 		case "GETUSER": 
 			user := statement[2]
@@ -741,6 +741,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 			if len(statement) > 3 { // if password exists
 				flags =[]string{}
 				password = statement[3][1:]
+				authenticated = false 
 			} 							
 			hashedPassword := sha256.Sum256([]byte(password)) // gives hashed password in 32 bits
 			hashPass := fmt.Sprintf("%x", hashedPassword) // gives hash password in hexdecimal
@@ -752,6 +753,7 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 				if(len(users[user].Passwords) ==1){ // this means just added
 					upUser = User{Connection: conn, Passwords: append(users[user].Passwords, hashPass), Flags: []string{}}
 				}
+				fmt.Println("the user is ", users[user])
 				users[user] = upUser
 			}else{
 				passwords = []string{hashPass}
