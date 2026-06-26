@@ -877,10 +877,63 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			return "+stream\r\n"
 		}
 		return "+none\r\n"
+	case "XRANGE":
+		key := statement[1] 
+		arg1 := strings.Split(statement[2], "-")
+		arg2 := strings.Split(statement[2], "-")
+		ms1,_ := strconv.Atoi(arg1[0]) //  first milliseconds
+		ms2,_ := strconv.Atoi(arg2[0]) // second milliseconds
+		incr := 0
+		incr2 := math.MaxInt32
+
+		if len(arg1) > 1{
+			incr,_ = strconv.Atoi(arg1[1])
+		}
+		if len(arg2) > 1{
+			incr2,_ = strconv.Atoi(arg2[1])
+		}
+
+		// ms == ms this is valid, but make sure everything is greater than or equal to index
+		// >ms <ms2 is all valid
+		// == ms2 make sure less than or equal to index if specified
+		count := 0 
+		goodMessage := ""
+		for data, value := range streams[key]{ // this goes through all our id's 
+			msKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
+			incrKey,_ := strconv.Atoi(strings.Split(data, "-")[0])
+
+			if ms1 == msKey && incr <= incrKey{// have to go inside and get all kv pairs
+				goodMessage += createChunk(data, value)
+				count++
+
+			}else if msKey > ms1 && msKey < ms2{
+				goodMessage += createChunk(data, value)
+				count ++ 
+				//do something with data
+			}else if msKey == ms2 && incrKey < incr2{
+				goodMessage += createChunk(data,value)
+				count ++ 
+			}
+		}		
+
+		preMessage := fmt.Sprintf("*%d\r\n", count)
+		preMessage += goodMessage
+		return goodMessage
+
 	default:
 		return ("+messageNotFound\r\n")
 	}
 } // so if equal then run a loop that goes through all that are equal and sort of lexigraphically
+
+func createChunk(data string, value map[string]string)string{
+	tempArr := []string{}
+	for key1,values := range value{ 
+		tempArr = append(tempArr, key1, values)  //array of strings, back to back to back
+	}
+	message := createArr(tempArr, 0, len(tempArr))
+	other := fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(data), data, message)
+	return other
+}
 
 func hsDist(lat1 float64, lat2 float64, long1 float64, long2 float64) float64 {
 	const rEarth = 6372797.560856
@@ -1044,7 +1097,7 @@ func readRDB(info []byte) ([]string, []string, []string) {
 				realLen2 := int(info[keyLen])
 				vals := info[keyLen+1 : keyLen+1+realLen2]
 
-				// fmt.Println("this is key ", string(keys))
+				// fmt.Println("this is data ", string(keys))
 				// fmt.Println("this is value ", string(vals))
 
 				allKeys = append(allKeys, string(keys))
