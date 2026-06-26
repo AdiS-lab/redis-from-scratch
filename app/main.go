@@ -907,23 +907,20 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 			fmt.Println("all toher ms ", ms1, msKey)
 			if ms1 == msKey && incrKey >= incr{// have to go inside and get all kv pairs
 				fmt.Println("made it inside this conditional")
-				addMessage := createChunk(data, value)
-				goodMessage += addMessage
+				goodMessage += createChunk(data, value)
 				fmt.Println(goodMessage)
 				count++
 
 			}else if msKey > ms1 && msKey < ms2{
-				addMessage := createChunk(data, value)
-				goodMessage += addMessage
+				goodMessage += createChunk(data, value)
 				count ++ 
 				//do something with data
 			}else if msKey == ms2 && incrKey < incr2 && ms2>ms1{
-				addMessage := createChunk(data, value)
-				goodMessage += addMessage
+				goodMessage += createChunk(data,value)
 				count ++ 
 			}
 		}		
-
+		fmt.Println("this is count afterwards ", count)
 		preMessage := fmt.Sprintf("*%d\r\n", count)
 		preMessage += goodMessage
 		return goodMessage
