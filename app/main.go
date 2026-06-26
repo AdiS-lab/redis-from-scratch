@@ -230,8 +230,6 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		if(!idThere){
 			streams[stream_key][stream_id] = map[string]string{}
 		} 
-		real_incr := 0
-
 		ms,_ := strconv.Atoi(strings.Split(stream_id, "-")[0])
 		incr := strings.Split(stream_id, "-")[1]
 
@@ -239,9 +237,11 @@ func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
 		previncr,_:= strconv.Atoi(strings.Split(prev_id, "-")[1])
 
 		if ms<prevms{
+			fmt.Println("this is ms and prevms ", ms, prevms)
 			conn.Write([]byte("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n"))
 			continue		
 		}
+		real_incr := 0
 		if incr == "*" && ms==prevms{
 			if ms == prevms{
 				real_incr = previncr +1
