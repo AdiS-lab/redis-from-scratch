@@ -66,6 +66,9 @@ var expectingRDB = false
 
 // _____________ loop through client message ______________________________
 func handleConnection(conn net.Conn, fullPort string) { //  conn is a byte slice
+	users["default"] = User{Connection: conn, Passwords:[]string{}, Flags: []string{"nopass"}}
+
+	
 	reader := bufio.NewReader(conn) //TCP is a stream, so as soon as data ends new comes, and the reader keeps going forward
 	var queue [][]string
 	isQueue := false
@@ -708,9 +711,18 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return createArr(validPlaces, 0, len(validPlaces))
 	case "ACL":
 		switch statement[1]{
-		case "WHOAMI":  // have to find connection and then find user 
+		case "WHOAMI":  // have to find connection and then find user
 			user:="default"
-			return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user) // have to loop through
+			for name,u := range users{
+				if u.Connection == conn{
+					user = name
+				}
+			}
+			if(users[user].Connection == conn){
+				return fmt.Sprintf("$%d\r\n%s\r\n", len(user), user) // have to loop through
+			}else{
+				return "-NOAUTH Authentication required."
+			}
 
 		case "GETUSER": 
 			user := statement[2]
@@ -1184,9 +1196,6 @@ func main() {
 	configs["appenddirname"] = "appendonlydir"
 	configs["appendfilename"] = "appendonly.aof"
 	configs["appendfsync"] = "everysec"
-
-	users["default"] = User{Passwords:[]string{}, Flags: []string{"nopass"}}
-
 
 	if len(os.Args) > 2 {
 		if os.Args[1] == "--port" || os.Args[1] == "-p" {
