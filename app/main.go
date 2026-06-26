@@ -1060,7 +1060,7 @@ func xread(keys []string, idBound []string)(string, int){
 		fullStr += fmt.Sprintf("*2\r\n$%d\r\n%s\r\n%s", len(keys[i]), keys[i], insideArr)
 
 	}
-	fmt.Println("this is my last command ", lastCmd)
+	fmt.Println("this is my last command ", lastCmd[len(lastCmd)-1])
 
 	return fmt.Sprintf("*%d\r\n", countKeys) + fullStr, totalEntries
 }
