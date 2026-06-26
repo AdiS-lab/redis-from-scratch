@@ -820,6 +820,7 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 		_,exists := streams[stream_key] 
 		if !exists { // it's a key value, then key value, intiialized as empty, for lists we use {}
 			streams[stream_key][stream_id] = map[string]string{}
+			fmt.Println("this is sterams ", streams)
 		}
 		for i:=3; i<len(statement); i+=2{
 			fmt.Println("this is the streams ", streams)
