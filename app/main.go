@@ -805,15 +805,24 @@ func execute(statement []string, conn net.Conn, fullPort string, userAuth *bool)
 	case "TYPE":
 		//string, list, set, zset, hash, stream, and vectorset
 		sk := statement[1]
-		_,exists := storage[sk]
-		if(exists){
+		_,storageExists := storage[sk]
+		_,streamExists := streams[sk] // problem is the keys could be the same 
+		if(storageExists){
 			return "+string\r\n"
-		}	
+		}else if streamExists{
+			return "+streams\r\n"
+		}
 		return "+none\r\n"
 	case "XADD":
 		//  redis-cli XADD stream_key 1526919030474-0 temperature 36 humidity 95 "1526919030474-0"
 		stream_key := statement[1] 
 		stream_id := statement[2]
+		_,exists := streams[stream_key] 
+		if !exists { // it's a key value, then key value, intiialized as empty, for lists we use {}
+			streams[stream_key] = map[string]map[string]string{}
+		}
+		// have to create if it doesn't exist, how did we handle this, in all cases we just added the next thing
+		
 		for i:=3; i<len(statement); i+=2{
 			key := statement[i] 
 			value := statement[i+1]
