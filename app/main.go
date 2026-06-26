@@ -700,14 +700,11 @@ func execute(statement []string, conn net.Conn, fullPort string) string {
 		return createArr(validPlaces, 0, len(validPlaces))
 	case "ACL":
 		if statement[1] == "WHOAMI" {
-		return "$7\r\ndefault\r\n"
+			return "$7\r\ndefault\r\n"
 		}else if statement[1] == "GETUSER"{
 			return "*2\r\n$3\r\nflags\r\n*0\r\n"
 		}
-
-		//basically just finding jawn, then parsing location, then finding distance, then comparing to radius
-
-
+		return ""
 	default:
 		return ("+messageNotFound\r\n")
 	}
